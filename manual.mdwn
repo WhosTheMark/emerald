@@ -1,0 +1,92 @@
+# Palabras Reservadas
+
+## Tipos Escalares
+
+* boolbasaur - bool
+* charizard  - char
+* intmonchan - int
+* floatzel   - float
+
+## Tipos Colección
+
+* onix - string
+* tipo arreglo[N..M]
+
+## Tipos Estructurados
+
+* registeer - register
+* **ejemplo**: registeer REG { int campo1 := 0; int campo2; }
+* **ejemplo acceder al campo**: REG.campo1  
+* unown - union
+
+## Vacío
+
+* voidporeon - void
+
+## Selector
+
+* if () {...}
+* if () INST;
+* if () {...} else {...}
+* if () {...} else if () {...}
+* if () {...} else if () {...} else {...}
+
+## Iteraciones
+
+* for VAR from INIC to FIN {...}
+* for VAR from INIC to FIN by SALTO {...}
+* while () {...}
+
+## Entrada/Salida
+
+* read ???
+* print 
+
+## Operadores
+_En orden de precedencia_
+
+* \! \  - unario
+* \^
+* \* \  / \ %
+* \+ \  - 
+* \< \  <=  \  >=  \  > 
+* \= \  !=
+* \&&
+* \||
+
+## Asignación
+
+* :=
+
+## Declaración e Inicialización de Variables
+
+### Pasado por Valor
+
+* int V1, V2;
+* int V3;
+* int V4, V5 := 0, 1;
+* int V6 := 2;
+
+### Pasado por Referencia
+
+* int var V1, var V2;
+* int var V3;
+
+## Comentarios
+
+* \# una línea
+* /* */ 
+
+## Etiquetas
+
+* etiqueta:
+* BOOM - break
+* BOOM etiqueta - break 
+* continue etiqueta
+* continue
+
+## Case
+
+* switch (EXPR) { case VALOR -> BLOQUE; default -> BLOQUE; }
+* switch (EXPR) { case VALOR -> BLOQUE; }
+* Los rangos son disjuntos
