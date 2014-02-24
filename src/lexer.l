@@ -1,6 +1,9 @@
+%option yylineno
+
 %{
 
 #include <stdio.h>
+#include "parser.tab.h"
 
 %}
 
@@ -8,136 +11,135 @@ DIGIT [0-9]
 
 %%
 
-boolbasaur      { printf("boolType\n"); }
+boolbasaur      { return tk_boolType; }
 
-intmonchan      { printf("intType\n"); }
+intmonchan      { return tk_intType; }
 
-charizard       { printf("charType\n"); }
+charizard       { return tk_charType; }
 
-floatzel        { printf("floatType\n"); }
+floatzel        { return tk_floatType; }
 
-onix            { printf("stringType\n"); }
+onix            { return tk_stringType; }
 
-registeer       { printf("structType\n"); }
+registeer       { return tk_structType; }
 
-unown           { printf("unionType\n"); }
+unown           { return tk_unionType; }
 
-voidporeon      { printf("voidType\n"); }
+voidporeon      { return tk_voidType; }
 
-if              { printf("if\n"); }
+if              { return tk_if; }
 
-else            { printf("else\n"); }
+else            { return tk_else; }
 
-for             { printf("for\n"); }
+for             { return tk_for; }
 
-from            { printf("from\n"); }
+from            { return tk_from; }
 
-to              { printf("to\n"); }
+to              { return tk_to; }
 
-by              { printf("by\n"); }
+by              { return tk_by; }
 
-while           { printf("while\n"); }
+while           { return tk_while; }
 
-read            { printf("read\n"); }
+read            { return tk_read; }
 
-print           { printf("print\n"); }
+print           { return tk_print; }
 
-println         { printf("println\n"); }
+println         { return tk_println; }
 
-BOOM            { printf("break\n"); }
+BOOM            { return tk_break; }
 
-continue        { printf("continue\n"); }
+continue        { return tk_continue; }
 
-switch          { printf("switch\n"); }
+switch          { return tk_switch; }
 
-case            { printf("case\n"); }
+case            { return tk_case; }
 
-default         { printf("default\n"); }
+default         { return tk_default; }
 
-return          { printf("return\n"); }
+return          { return tk_return; }
 
-const           { printf("const\n"); }
+const           { return tk_const; }
 
-var             { printf("var\n"); }
+var             { return tk_var; }
 
-true            { printf("true\n"); }
+true            { return tk_true; }
 
-false           { printf("false\n"); }
+false           { return tk_false; }
 
-"!"             { printf("negation\n"); }
+"!"             { return tk_negation; }
 
-"-"             { printf("minus\n"); }
+"-"             { return tk_minus; }
 
-"^"             { printf("power\n"); }
+"^"             { return tk_power; }
 
-"*"             { printf("multi\n"); }
+"*"             { return tk_multi; }
 
-"/"             { printf("division\n"); }
+"/"             { return tk_division; }
 
-"%"             { printf("mod\n"); }
+"%"             { return tk_mod; }
 
-"+"             { printf("plus\n"); }
+"+"             { return tk_plus; }
 
-"<"             { printf("lessThan\n"); }
+"<"             { return tk_lessThan; }
 
-"<="            { printf("lessEq\n"); }
+"<="            { return tk_lessEq; }
 
-">"             { printf("moreThan\n"); }
+">"             { return tk_moreThan; }
 
-">="            { printf("moreEq\n"); }
+">="            { return tk_moreEq; }
 
-"="             { printf("equal\n"); }
+"="             { return tk_equal; }
 
-"!="            { printf("notEqual\n"); }
+"!="            { return tk_notEqual; }
 
-"&&"            { printf("and\n"); }
+"&&"            { return tk_and; }
 
-"||"            { printf("or\n"); }
+"||"            { return tk_or; }
 
-":="            { printf("asignment\n"); }
+":="            { return tk_asignment; }
 
-".."            { printf("range\n"); }
+".."            { return tk_range; }
 
-"."             { printf("dot\n"); }
+"."             { return tk_dot; }
 
-";"             { printf("semicolon\n"); }
+";"             { printf("hola"); return tk_semicolon; }
 
-"("             { printf("LParenthesis\n"); }
+"("             { return tk_LParenthesis; }
 
-")"             { printf("RParenthesis\n"); }
+")"             { return tk_RParenthesis; }
 
-"{"             { printf("LCurly\n"); }
+"{"             { return tk_LCurly; }
 
-"}"             { printf("RCurly\n"); }
+"}"             { return tk_RCurly; }
 
-"["             { printf("LBracket\n"); }
+"["             { return tk_LBracket; }
 
-"]"             { printf("RBracket\n"); }
+"]"             { return tk_RBracket; }
 
-","             { printf("comma\n"); }
+","             { return tk_comma; }
 
-{DIGIT}+                  { printf("%d\n", atoi(yytext)); }
+{DIGIT}+                  { yylval.intNum = atoi(yytext); return tk_int; }
 
-{DIGIT}+.{DIGIT}+         { printf("%f\n", atof(yytext)); }
+{DIGIT}+.{DIGIT}+         { yylval.floatNum = atof(yytext); return tk_float;}
 
-[a-zA-Z_][a-zA-Z0-9_]*    { printf("%s\n", yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval.ident = yytext; return tk_identifier;}
 
-#(.|[^\n])*               { printf("%s\n", yytext); }
+#(.|[^\n])*               { /* Comentario simple */ }
 
-\"(\\.|[^\"\\])*\"        { printf("%s\n", yytext); }
+\"(\\.|[^\"\\])*\"        { yylval.str = yytext; return tk_string; }
 
-\'(\\.|[^\'\\])\'         { printf("%s\n", yytext); }
+\'(\\.|[^\'\\])\'         { yylval.chars = yytext[1]; return tk_char; }
 
 [\n \t]                   {}
 
-\/\*([^*]|\*+[^/*])*\*+\/ { printf("%s\n", yytext); }
+\/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */ }
 
-.                       { printf("NO SE NADA: %s\n", yytext); }
+.                       { /*yyerror("KABOOM: %s\n", *yytext);*/}
 
 %%
-
+/*
 main(int argc, char **argv) {
-
 
    if(argc > 1) 
       if(!(yyin = fopen(argv[1], "r"))){
@@ -149,7 +151,7 @@ main(int argc, char **argv) {
     yylex();
     fclose(yyin);
     
-}
+}*/
 
 
 
