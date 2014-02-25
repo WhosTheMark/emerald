@@ -1,25 +1,31 @@
+%language "C++"
+%locations
+
 
 %{
 
 #include <stdio.h>
+#include "ast.h"
 void yyerror (char const *);
-int yylex();
+extern "C" {int yyparse(void); int yylex(void); int yywrap() { return 1;}}
 extern FILE *yyin;
 
 %}
 
 %union{
-   
+   Node *node;
    int intNum;
    float floatNum;
    char* ident;
    char* str;
-   char chars;  
+   char* strOp;
+   char chars;
+   int token;
 
 }
 
 
-%token tk_booltype tk_boolType  tk_intType  tk_charType  tk_floatType  
+%token tk_boolType  tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
 %token tk_if  tk_else  tk_for  tk_from  tk_to  tk_by  tk_while  
 %token tk_read  tk_print  tk_println  tk_break  tk_continue  tk_switch  
@@ -27,6 +33,10 @@ extern FILE *yyin;
 %token tk_lessThan  tk_lessEq  tk_moreThan  tk_moreEq  tk_equal tk_mod  
 %token tk_notEqual  tk_and  tk_or  tk_asignment  tk_range  tk_dot  tk_semicolon  
 %token tk_comma  tk_int  tk_float  tk_identifier  tk_string  tk_char  
+
+%type <node> EXPR tk_int tk_float tk_identifier tk_char tk_string NUMBER
+%type <node> BOOLEAN tk_true tk_false 
+%type <strOp> '!' '-' '(' ')' tk_dot '+' '/' '=' '^' '[' ']' 
 
 %left tk_or
 %left tk_and
@@ -37,6 +47,7 @@ extern FILE *yyin;
 %right '^'
 %nonassoc '!' UMINUS 
 %left tk_dot
+%right '['
 
 %%
    START: EXPR ;
@@ -47,7 +58,7 @@ extern FILE *yyin;
        | EXPR '/' EXPR
        | EXPR '^' EXPR
        | EXPR '=' EXPR
-       //| EXPR '[' EXPR ']'
+       | EXPR '[' EXPR ']'
        | EXPR tk_mod EXPR
        | EXPR tk_and EXPR
        | EXPR tk_or EXPR
@@ -56,10 +67,11 @@ extern FILE *yyin;
        | EXPR tk_lessThan EXPR
        | EXPR tk_moreThan EXPR
        | EXPR tk_notEqual EXPR 
-       | EXPR tk_dot tk_identifier
-       | '!' EXPR
-       | '-' EXPR %prec UMINUS  
-       | '(' EXPR ')'
+       | tk_identifier '(' EXPR ')'
+       | '(' EXPR ')' { $$ = $2; } 
+       | EXPR tk_dot tk_identifier 
+       | '!' EXPR { $$ = $2; }
+       | '-' EXPR %prec UMINUS   
        | NUMBER
        | BOOLEAN 
        | tk_identifier 
@@ -85,7 +97,7 @@ main(int argc, char **argv) {
       }
       
       
-    yyparse();
+    yy::parser::parse();
     fclose(yyin);
     
 }

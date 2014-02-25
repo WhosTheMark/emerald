@@ -23,27 +23,6 @@ public:
    NodeFloat(float v) : value(v) {};
 };
 
-class NodeChar : public NodeExpr {
-public:
-   char value;
-   NodeChar(char v) : value(v) {};
-};
-
-class NodeStr : public NodeExpr {
-public:
-   string value;
-   NodeStr(string v) : value(v) {};
-};
-
-class NodeBool : public NodeExpr {
-public:
-   bool value;
-   NodeBool(bool v) : value(v) {};
-};
-
-
-
-
 class NodeIdentifier : public NodeExpr {
 public:
    string name;

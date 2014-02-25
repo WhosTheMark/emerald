@@ -3,7 +3,11 @@
 %{
 
 #include <stdio.h>
-#include "parser.tab.h"
+#include "parser.tab.hh"
+
+extern "C" {int yylex(&YYLTYPE, &semantic_type);}
+extern YYLTYPE yylloc;
+extern semantic_type yylval;
 
 %}
 
@@ -67,57 +71,40 @@ true            { return tk_true; }
 
 false           { return tk_false; }
 
-"!"             { return yytext[0]; }
+"%"             { yylval.strOp = yytext; return tk_mod; }
 
-"-"             { return yytext[0]; }
+"<"             { yylval.strOp = yytext; return tk_lessThan; }
 
-"^"             { return yytext[0]; }
+"<="            { yylval.strOp = yytext; return tk_lessEq; }
 
-"*"             { return yytext[0]; }
+">"             { yylval.strOp = yytext; return tk_moreThan; }
 
-"/"             { return yytext[0]; }
+">="            { yylval.strOp = yytext; return tk_moreEq; }
 
-"%"             { return tk_mod; }
+"!="            { yylval.strOp = yytext; return tk_notEqual; }
 
-"+"             { return yytext[0]; }
+"&&"            { yylval.strOp = yytext; return tk_and; }
 
-"<"             { return tk_lessThan; }
+"||"            { yylval.strOp = yytext; return tk_or; }
 
-"<="            { return tk_lessEq; }
+":="            { yylval.strOp = yytext; return tk_asignment; }
 
-">"             { return tk_moreThan; }
+".."            { yylval.strOp = yytext; return tk_range; }
 
-">="            { return tk_moreEq; }
-
-"="             { return yytext[0]; }
-
-"!="            { return tk_notEqual; }
-
-"&&"            { return tk_and; }
-
-"||"            { return tk_or; }
-
-":="            { return tk_asignment; }
-
-".."            { return tk_range; }
-
-"."             { return tk_dot; }
+"."             { yylval.strOp = yytext; return tk_dot; }
 
 ";"             { return tk_semicolon; }
 
-"("             { return yytext[0]; }
-
-")"             { return yytext[0]; }
-
-"{"             { return yytext[0]; }
-
-"}"             { return yytext[0]; }
-
-"["             { return yytext[0]; }
-
-"]"             { return yytext[0]; }
-
 ","             { return tk_comma; }
+
+"!" | "-" |
+"^" | "*" |            
+"/" | "=" |            
+"+" | "(" |            
+")" | "{" |          
+"}" | "[" |          
+"]"             { yylval.strOp = yytext; return yytext[0]; }
+
 
 {DIGIT}+                  { yylval.intNum = atoi(yytext); return tk_int; }
 
@@ -152,11 +139,11 @@ main(int argc, char **argv) {
     fclose(yyin);
     
 }*/
+/*
+int yywrap() {return 1; }
 
 
-
-
-
+*/
 
 
 
