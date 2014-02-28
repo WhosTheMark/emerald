@@ -1,98 +1,109 @@
-%option yylineno
 
 %{
-
+#include <string>
+#include "scanner.hpp"
 #include <stdio.h>
 #include "parser.tab.h"
 
+typedef yy::Parser::token token;
+
+#define strToken(s) ( new std::string(s) )
+
 
 %}
+
+%option yylineno
+%option debug
+%option nodefault
+%option yyclass="Scanner"
+%option noyywrap
+%option c++
 
 DIGIT [0-9]
 
 %%
 
-boolbasaur      { return tk_boolType; }
+boolbasaur      { return token::tk_boolType; }
 
-intmonchan      { return tk_intType; }
+intmonchan      { return token::tk_intType; }
 
-charizard       { return tk_charType; }
+charizard       { return token::tk_charType; }
 
-floatzel        { return tk_floatType; }
+floatzel        { return token::tk_floatType; }
 
-onix            { return tk_stringType; }
+onix            { return token::tk_stringType; }
 
-registeer       { return tk_structType; }
+registeer       { return token::tk_structType; }
 
-unown           { return tk_unionType; }
+unown           { return token::tk_unionType; }
 
-voidporeon      { return tk_voidType; }
+voidporeon      { return token::tk_voidType; }
 
-if              { return tk_if; }
+if              { return token::tk_if; }
 
-else            { return tk_else; }
+else            { return token::tk_else; }
 
-for             { return tk_for; }
+for             { return token::tk_for; }
 
-from            { return tk_from; }
+from            { return token::tk_from; }
 
-to              { return tk_to; }
+to              { return token::tk_to; }
 
-by              { return tk_by; }
+by              { return token::tk_by; }
 
-while           { return tk_while; }
+while           { return token::tk_while; }
 
-read            { return tk_read; }
+read            { return token::tk_read; }
 
-print           { return tk_print; }
+print           { return token::tk_print; }
 
-println         { return tk_println; }
+println         { return token::tk_println; }
 
-BOOM            { return tk_break; }
+BOOM            { return token::tk_break; }
 
-continue        { return tk_continue; }
+continue        { return token::tk_continue; }
 
-switch          { return tk_switch; }
+switch          { return token::tk_switch; }
 
-case            { return tk_case; }
+case            { return token::tk_case; }
 
-default         { return tk_default; }
+default         { return token::tk_default; }
 
-return          { return tk_return; }
+return          { return token::tk_return; }
 
-const           { return tk_const; }
+const           { return token::tk_const; }
 
-var             { return tk_var; }
+var             { return token::tk_var; }
 
-true            { return tk_true; }
+true            { return token::tk_true; }
 
-false           { return tk_false; }
+false           { return token::tk_false; }
 
-"%"             { yylval.strOp = yytext; return tk_mod; }
+"%"             { yylval->strOp = yytext; return token::tk_mod; }
 
-"<"             { yylval.strOp = yytext; return tk_lessThan; }
+"<"             { yylval->strOp = yytext; return token::tk_lessThan; }
 
-"<="            { yylval.strOp = yytext; return tk_lessEq; }
+"<="            { yylval->strOp = yytext; return token::tk_lessEq; }
 
-">"             { yylval.strOp = yytext; return tk_moreThan; }
+">"             { yylval->strOp = yytext; return token::tk_moreThan; }
 
-">="            { yylval.strOp = yytext; return tk_moreEq; }
+">="            { yylval->strOp = yytext; return token::tk_moreEq; }
 
-"!="            { yylval.strOp = yytext; return tk_notEqual; }
+"!="            { yylval->strOp = yytext; return token::tk_notEqual; }
 
-"&&"            { yylval.strOp = yytext; return tk_and; }
+"&&"            { yylval->strOp = yytext; return token::tk_and; }
 
-"||"            { yylval.strOp = yytext; return tk_or; }
+"||"            { yylval->strOp = yytext; return token::tk_or; }
 
-":="            { yylval.strOp = yytext; return tk_asignment; }
+":="            { yylval->strOp = yytext; return token::tk_asignment; }
 
-".."            { yylval.strOp = yytext; return tk_range; }
+".."            { yylval->strOp = yytext; return token::tk_range; }
 
-"."             { yylval.strOp = yytext; return tk_dot; }
+"."             { yylval->strOp = yytext; return token::tk_dot; }
 
-";"             { return tk_semicolon; }
+";"             { return token::tk_semicolon; }
 
-","             { return tk_comma; }
+","             { return token::tk_comma; }
 
 "!" | "-" |
 "^" | "*" |            
@@ -100,20 +111,20 @@ false           { return tk_false; }
 "+" | "(" |            
 ")" | "{" |          
 "}" | "[" |          
-"]"             { yylval.strOp = yytext; return yytext[0]; }
+"]"             { yylval->strOp = yytext; return yytext[0]; }
 
 
-{DIGIT}+                  { yylval.intNum = atoi(yytext); return tk_int; }
+{DIGIT}+                  { yylval->intNum = atoi(yytext); return token::tk_int; }
 
-{DIGIT}+.{DIGIT}+         { yylval.floatNum = atof(yytext); return tk_float;}
+{DIGIT}+.{DIGIT}+         { yylval->floatNum = atof(yytext); return token::tk_float;}
 
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval.ident = yytext; return tk_identifier;}
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = yytext; return token::tk_identifier;}
 
 #(.|[^\n])*               { /* Comentario simple */ }
 
-\"(\\.|[^\"\\])*\"        { yylval.str = yytext; return tk_string; }
+\"(\\.|[^\"\\])*\"        { yylval->str = yytext; return token::tk_string; }
 
-\'(\\.|[^\'\\])\'         { yylval.chars = yytext[1]; return tk_char; }
+\'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
 
 [\n \t]                   {}
 
@@ -141,6 +152,8 @@ int yywrap() {return 1; }
 
 
 */
+
+//#undef yyFlexLexer
 
 
 

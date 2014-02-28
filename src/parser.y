@@ -1,12 +1,35 @@
+%skeleton "lalr1.cc"
+%require "2.7"
+%debug
+%defines
+%define parser_class_name "Parser"
 
-%{
+%code requires{
+   class Driver;
+   class Scanner;
+}
 
-#include <stdio.h>
-void yyerror (char const *);
-int yylex();
-extern FILE *yyin;
+%lex-param { Scanner &scanner }
+%parse-param { Scanner &scanner }
 
-%}
+%lex-param { Driver &driver }
+%parse-param { Driver &driver }
+
+%code{
+
+   #include <iostream>
+   #include <cstdlib>
+   #include <fstream>
+   #include "driver.hpp"
+   
+   static int yylex(yy::Parser::semantic_type *yylval, 
+                    Scanner &scanner, Driver &driver);
+   //#include <stdio.h>
+   //void yyerror (char const *);
+   //int yylex();
+   //extern FILE *yyin;
+
+}
 
 %union{
    
@@ -44,42 +67,56 @@ extern FILE *yyin;
 %%
    START: EXPR ;
    
-   EXPR: EXPR '+' EXPR 
-       | EXPR '-' EXPR
-       | EXPR '*' EXPR
-       | EXPR '/' EXPR
-       | EXPR '^' EXPR
-       | EXPR '=' EXPR
-       | EXPR '[' EXPR ']'
-       | EXPR tk_mod EXPR
-       | EXPR tk_and EXPR
-       | EXPR tk_or EXPR
-       | EXPR tk_lessEq EXPR
-       | EXPR tk_moreEq EXPR
-       | EXPR tk_lessThan EXPR
-       | EXPR tk_moreThan EXPR
-       | EXPR tk_notEqual EXPR 
-       | EXPR tk_dot tk_identifier
-       | tk_identifier '(' EXPR ')' // lista de expresiones
-       | '!' EXPR
-       | '-' EXPR %prec UMINUS  
-       | '(' EXPR ')'
-       | NUMBER
-       | BOOLEAN 
-       | tk_identifier 
-       | tk_char 
-       | tk_string ; 
-       
-   NUMBER: tk_int
-         | tk_float ; 
+   EXPR
+      : EXPR '+' EXPR 
+      | EXPR '-' EXPR
+      | EXPR '*' EXPR
+      | EXPR '/' EXPR
+      | EXPR '^' EXPR
+      | EXPR '=' EXPR
+      | EXPR '[' EXPR ']'
+      | EXPR tk_mod EXPR
+      | EXPR tk_and EXPR
+      | EXPR tk_or EXPR
+      | EXPR tk_lessEq EXPR
+      | EXPR tk_moreEq EXPR
+      | EXPR tk_lessThan EXPR
+      | EXPR tk_moreThan EXPR
+      | EXPR tk_notEqual EXPR 
+      | EXPR tk_dot tk_identifier
+      | tk_identifier '(' EXPR ')' // lista de expresiones
+      | '!' EXPR
+      | '-' EXPR %prec UMINUS  
+      | '(' EXPR ')'
+      | NUMBER
+      | BOOLEAN 
+      | tk_identifier 
+      | tk_char 
+      | tk_string ; 
+      
+   NUMBER
+      : tk_int
+      | tk_float ; 
          
-   BOOLEAN: tk_true 
-          | tk_false ;
+   BOOLEAN
+      : tk_true 
+      | tk_false ;
        
    //FOR: tk_for tk_identifier tk_from   
 
 %%
 
+void yy::Parser::error(const yy::Parser::location_type &l, const std::string &err_msg) {
+   std::cerr << "Error: " << err_msg << "\n";
+}
+
+#include "scanner.hpp"
+static int yylex(yy::Parser::semantic_type *yylval, Scanner &scanner, Driver &driver) {
+   return scanner.yylex(yylval);
+}
+
+
+/*
 main(int argc, char **argv) {
 
    if(argc > 1) 
@@ -99,3 +136,4 @@ void yyerror(char const *s) {
 
   fprintf(stderr, "%s\n", s);
 }
+*/
