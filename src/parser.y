@@ -14,12 +14,14 @@ extern FILE *yyin;
    float floatNum;
    char* ident;
    char* str;
-   char chars;  
+   char chars; 
+   char* strOp;
+   int token;
 
 }
 
 
-%token tk_booltype tk_boolType  tk_intType  tk_charType  tk_floatType  
+%token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
 %token tk_if  tk_else  tk_for  tk_from  tk_to  tk_by  tk_while  
 %token tk_read  tk_print  tk_println  tk_break  tk_continue  tk_switch  
@@ -37,6 +39,7 @@ extern FILE *yyin;
 %right '^'
 %nonassoc '!' UMINUS 
 %left tk_dot
+%right '['
 
 %%
    START: EXPR ;
@@ -47,7 +50,7 @@ extern FILE *yyin;
        | EXPR '/' EXPR
        | EXPR '^' EXPR
        | EXPR '=' EXPR
-       //| EXPR '[' EXPR ']'
+       | EXPR '[' EXPR ']'
        | EXPR tk_mod EXPR
        | EXPR tk_and EXPR
        | EXPR tk_or EXPR
@@ -57,6 +60,7 @@ extern FILE *yyin;
        | EXPR tk_moreThan EXPR
        | EXPR tk_notEqual EXPR 
        | EXPR tk_dot tk_identifier
+       | tk_identifier '(' EXPR ')' // lista de expresiones
        | '!' EXPR
        | '-' EXPR %prec UMINUS  
        | '(' EXPR ')'
