@@ -49,7 +49,7 @@
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
-%token tk_if  tk_else  tk_for  tk_from  tk_to  tk_by  tk_while  
+%token tk_if  tk_else tk_elsif tk_for  tk_from  tk_to  tk_by  tk_while  
 %token tk_read  tk_print  tk_println  tk_break  tk_continue  tk_switch  
 %token tk_case  tk_default  tk_return  tk_const  tk_var  tk_true  tk_false   
 %token tk_lessThan  tk_lessEq  tk_moreThan  tk_moreEq  tk_equal tk_mod  
@@ -67,11 +67,12 @@
 %left tk_dot
 %right '['
 %nonassoc IFPREC
-%nonassoc tk_else
+%nonassoc tk_elsif
+%nonassoc tk_else 
 
 %%
    START
-      : EXPR { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
+      : STMT { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
    
    EXPR
       : EXPR '+' EXPR { $$ = $1 + $3; }
@@ -116,29 +117,26 @@
    ARGSLIST
       : EXPR
       | ARGSLIST tk_comma EXPR ;
-/*
+
    STMT
       : IFSTMT 
-      | EXPR ;
+      | ASIGNMENT ;
+      
+   ASIGNMENT
+      : tk_identifier tk_asignment EXPR ;
       
    IFSTMT
-      : tk_if EXPR STMT IFLIST %prec IFPREC ;
+      : tk_if EXPR STMT %prec IFPREC
+      | tk_if EXPR STMT IFLIST ;
       
    IFLIST
-      : ELSESTMT 
-      | ELSELIST ;
-      
-   ELSELIST
-      : tk_else tk_if EXPR STMT ELSESTMT 
-      | ELSELIST tk_else tk_if EXPR STMT ELSESTMT ;
+      : tk_else STMT 
+      | tk_elsif EXPR STMT 
+      | tk_elsif EXPR STMT IFLIST ;
     
-    ELSESTMT
-      :  vacio */
-  /*    | tk_else STMT ;
+
      
-     
-     
-*/
+ 
        
    //FOR: tk_for tk_identifier tk_from   
 

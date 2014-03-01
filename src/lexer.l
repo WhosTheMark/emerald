@@ -43,6 +43,8 @@ if              { return token::tk_if; }
 
 else            { return token::tk_else; }
 
+elsif           { return token::tk_elsif; }
+
 for             { return token::tk_for; }
 
 from            { return token::tk_from; }
