@@ -20,6 +20,7 @@
    #include <iostream>
    #include <cstdlib>
    #include <fstream>
+   #include <math.h>
    #include "driver.hpp"
    
    static int yylex(yy::Parser::semantic_type *yylval, 
@@ -43,6 +44,8 @@
 
 }
 
+%type <intNum> tk_int EXPR NUMBER
+
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
@@ -56,25 +59,29 @@
 %left tk_or
 %left tk_and
 %nonassoc '=' tk_notEqual
-%nonassoc tk_moreEq tk_moreThan tk_lessEq tk_lessThan
+%nonassoc tk_moreEq tk_moreThan tk_lessEq tk_lessThan tk_range
 %left '+' '-'
 %left '*' '/' tk_mod
 %right '^'
 %nonassoc '!' UMINUS 
 %left tk_dot
 %right '['
+%nonassoc IFPREC
+%nonassoc tk_else
 
 %%
-   START: EXPR ;
+   START
+      : EXPR { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
    
    EXPR
-      : EXPR '+' EXPR 
-      | EXPR '-' EXPR
-      | EXPR '*' EXPR
-      | EXPR '/' EXPR
-      | EXPR '^' EXPR
+      : EXPR '+' EXPR { $$ = $1 + $3; }
+      | EXPR '-' EXPR { $$ = $1 - $3; }
+      | EXPR '*' EXPR { $$ = $1 * $3; }
+      | EXPR '/' EXPR { $$ = $1 / $3; }
+      | EXPR '^' EXPR { $$ = pow($1,$3); } 
       | EXPR '=' EXPR
-      | EXPR '[' EXPR ']'
+      | EXPR '[' EXPR ']'  {$$ = pow($1,$3); std::cout << "[\n"; }
+      | EXPR tk_range EXPR 
       | EXPR tk_mod EXPR
       | EXPR tk_and EXPR
       | EXPR tk_or EXPR
@@ -84,10 +91,10 @@
       | EXPR tk_moreThan EXPR
       | EXPR tk_notEqual EXPR 
       | EXPR tk_dot tk_identifier
-      | tk_identifier '(' EXPR ')' // lista de expresiones
+      | tk_identifier '(' ARGS ')' // lista de expresiones
       | '!' EXPR
-      | '-' EXPR %prec UMINUS  
-      | '(' EXPR ')'
+      | '-' EXPR %prec UMINUS  { $$ = -$2; }
+      | '(' EXPR ')' { $$ = $2; }
       | NUMBER
       | BOOLEAN 
       | tk_identifier 
@@ -95,12 +102,43 @@
       | tk_string ; 
       
    NUMBER
-      : tk_int
-      | tk_float ; 
+      : tk_int { $$ = $1; std::cout << $1 << "\n"; }
+      | tk_float ;  
          
    BOOLEAN
       : tk_true 
       | tk_false ;
+      
+   ARGS
+      : /* vacio */
+      | ARGSLIST ;
+      
+   ARGSLIST
+      : EXPR
+      | ARGSLIST tk_comma EXPR ;
+/*
+   STMT
+      : IFSTMT 
+      | EXPR ;
+      
+   IFSTMT
+      : tk_if EXPR STMT IFLIST %prec IFPREC ;
+      
+   IFLIST
+      : ELSESTMT 
+      | ELSELIST ;
+      
+   ELSELIST
+      : tk_else tk_if EXPR STMT ELSESTMT 
+      | ELSELIST tk_else tk_if EXPR STMT ELSESTMT ;
+    
+    ELSESTMT
+      :  vacio */
+  /*    | tk_else STMT ;
+     
+     
+     
+*/
        
    //FOR: tk_for tk_identifier tk_from   
 

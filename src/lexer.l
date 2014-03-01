@@ -105,18 +105,24 @@ false           { return token::tk_false; }
 
 ","             { return token::tk_comma; }
 
-"!" | "-" |
-"^" | "*" |            
-"/" | "=" |            
-"+" | "(" |            
-")" | "{" |          
-"}" | "[" |          
+"!" | 
+"-" |
+"^" | 
+"*" |            
+"/" | 
+"=" |            
+"+" | 
+"(" |            
+")" | 
+"{" |          
+"}" | 
+"[" |          
 "]"             { yylval->strOp = yytext; return yytext[0]; }
 
 
 {DIGIT}+                  { yylval->intNum = atoi(yytext); return token::tk_int; }
 
-{DIGIT}+.{DIGIT}+         { yylval->floatNum = atof(yytext); return token::tk_float;}
+{DIGIT}+\.{DIGIT}+        { yylval->floatNum = atof(yytext); return token::tk_float;}
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = yytext; return token::tk_identifier;}
 
@@ -130,7 +136,7 @@ false           { return token::tk_false; }
 
 \/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */ }
 
-.                       { /*yyerror("KABOOM: %s\n", *yytext);*/}
+.                       { std::cout << "Error: " << yytext << "\n"; /*yyerror("KABOOM: %s\n", *yytext);*/}
 
 %%
 /*
