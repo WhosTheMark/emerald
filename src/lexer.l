@@ -55,12 +55,6 @@ by              { return token::tk_by; }
 
 while           { return token::tk_while; }
 
-read            { return token::tk_read; }
-
-print           { return token::tk_print; }
-
-println         { return token::tk_println; }
-
 BOOM            { return token::tk_break; }
 
 continue        { return token::tk_continue; }
@@ -80,6 +74,8 @@ var             { return token::tk_var; }
 true            { return token::tk_true; }
 
 false           { return token::tk_false; }
+
+tag             { return token::tk_tag; }
 
 "%"             { yylval->strOp = yytext; return token::tk_mod; }
 
@@ -105,7 +101,11 @@ false           { return token::tk_false; }
 
 ";"             { return token::tk_semicolon; }
 
-","             { return token::tk_comma; }
+","             { return token::tk_comma; } 
+
+":"             { return token::tk_colon; }
+
+"->"            { return token::tk_arrow; }
 
 "!" | 
 "-" |
@@ -134,7 +134,9 @@ false           { return token::tk_false; }
 
 \'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
 
-[\n \t]                   {}
+\n                        { /*yylloc->lines(1);*/ }
+
+[ \t]                     { }
 
 \/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */ }
 

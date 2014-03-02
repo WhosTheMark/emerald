@@ -23,8 +23,7 @@
    #include <math.h>
    #include "driver.hpp"
    
-   static int yylex(yy::Parser::semantic_type *yylval, 
-                    Scanner &scanner, Driver &driver);
+   static int yylex(yy::Parser::semantic_type *yylval,Scanner &scanner, Driver &driver);
    //#include <stdio.h>
    //void yyerror (char const *);
    //int yylex();
@@ -44,13 +43,13 @@
 
 }
 
-%type <intNum> tk_int EXPR NUMBER
+//%type <intNum> tk_int EXPR NUMBER
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
 %token tk_if  tk_else tk_elsif tk_for  tk_from  tk_to  tk_by  tk_while  
-%token tk_read  tk_print  tk_println  tk_break  tk_continue  tk_switch  
+%token tk_break  tk_continue  tk_switch  tk_colon tk_tag tk_arrow
 %token tk_case  tk_default  tk_return  tk_const  tk_var  tk_true  tk_false   
 %token tk_lessThan  tk_lessEq  tk_moreThan  tk_moreEq  tk_equal tk_mod  
 %token tk_notEqual  tk_and  tk_or  tk_asignment  tk_range  tk_dot  tk_semicolon  
@@ -72,17 +71,17 @@
 
 %%
    START
-      : STMT { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
+      : INST { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
    
    EXPR
-      : EXPR '+' EXPR { $$ = $1 + $3; }
-      | EXPR '-' EXPR { $$ = $1 - $3; }
-      | EXPR '*' EXPR { $$ = $1 * $3; }
-      | EXPR '/' EXPR { $$ = $1 / $3; }
-      | EXPR '^' EXPR { $$ = pow($1,$3); } 
+      : EXPR '+' EXPR 
+      | EXPR '-' EXPR 
+      | EXPR '*' EXPR 
+      | EXPR '/' EXPR 
+      | EXPR '^' EXPR 
       | EXPR '=' EXPR
-      | EXPR '[' EXPR ']'  {$$ = pow($1,$3); std::cout << "[\n"; }
-      | EXPR tk_range EXPR 
+      | EXPR '[' EXPR ']' 
+      | EXPR tk_range EXPR //Quizas solo va en las declaraciones :D
       | EXPR tk_mod EXPR
       | EXPR tk_and EXPR
       | EXPR tk_or EXPR
@@ -92,18 +91,21 @@
       | EXPR tk_moreThan EXPR
       | EXPR tk_notEqual EXPR 
       | EXPR tk_dot tk_identifier
-      | tk_identifier '(' ARGS ')' // lista de expresiones
       | '!' EXPR
-      | '-' EXPR %prec UMINUS  { $$ = -$2; }
-      | '(' EXPR ')' { $$ = $2; }
-      | NUMBER
-      | BOOLEAN 
-      | tk_identifier 
-      | tk_char 
+      | '-' EXPR %prec UMINUS  
+      | '(' EXPR ')' 
+      | CONST 
+      | FUNCCALL
+      | tk_identifier  
       | tk_string ; 
       
+   CONST
+      : NUMBER
+      | BOOLEAN
+      | tk_char ;
+      
    NUMBER
-      : tk_int { $$ = $1; std::cout << $1 << "\n"; }
+      : tk_int 
       | tk_float ;  
          
    BOOLEAN
@@ -118,36 +120,116 @@
       : EXPR
       | ARGSLIST tk_comma EXPR ;
 
+   INST
+      : STMT 
+      | BLOCK ;
+      
    STMT
       : IFSTMT 
-      | ASIGNMENT ;
+      | ASIGNMENT 
+      | WHILESTMT 
+      | FORSTMT 
+      | FUNCCALL
+      | BREAK 
+      | CONTINUE 
+      | LABEL 
+      | RETURN 
+      | SWITCHSTMT ;
+      
+   BLOCK
+      : '{' DECLARATION STMTLIST '}' ;
+
+   STMTLIST
+      : STMT   
+      | STMT tk_semicolon STMTLIST ;
       
    ASIGNMENT
       : tk_identifier tk_asignment EXPR ;
       
    IFSTMT
-      : tk_if EXPR STMT %prec IFPREC
-      | tk_if EXPR STMT IFLIST ;
+      : tk_if EXPR INST %prec IFPREC
+      | tk_if EXPR INST IFLIST ;
       
    IFLIST
-      : tk_else STMT 
-      | tk_elsif EXPR STMT 
-      | tk_elsif EXPR STMT IFLIST ;
+      : tk_else INST 
+      | tk_elsif EXPR INST 
+      | tk_elsif EXPR INST IFLIST ;
     
+   WHILESTMT
+      : tk_while EXPR INST ;
+      
+   FORSTMT
+      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR INST
+      | tk_for tk_identifier tk_from EXPR tk_to EXPR INST ;
 
-     
+   FUNCCALL
+      : tk_identifier '(' ARGS ')' ;
+      
+   BREAK
+      : tk_break
+      | tk_break tk_identifier ;
+      
+   CONTINUE
+      : tk_continue
+      | tk_continue tk_identifier ;
+      
+   LABEL
+      : tk_tag tk_colon tk_identifier ;
+      
+   RETURN
+      : tk_return
+      | tk_return EXPR ;
+      
+   SWITCHSTMT
+      : tk_switch EXPR '{' CASE '}' ;
+      
+   CASE
+      : tk_case CONST tk_arrow BLOCK
+      | tk_case CONST tk_arrow BLOCK CASELIST ; 
+      
+   CASELIST
+      : tk_default tk_arrow BLOCK 
+      | tk_case CONST tk_arrow BLOCK
+      | tk_case CONST tk_arrow BLOCK CASELIST ; 
+      
+   DECLARATION
+      : /* vacio */
+      | TYPE DECLARELIST INITLIST tk_semicolon ;
+      
+   DECLARELIST   
+      : CONSTTYPE tk_identifier
+      | CONSTTYPE tk_identifier tk_comma DECLARELIST ;
+      
+   CONSTTYPE
+      : /* vacio */
+      | tk_const ;
+      
+   INITLIST 
+      : /* vacio */
+      | tk_asignment ARGSLIST ;
+      
+   TYPE
+      : tk_intType
+      | tk_floatType
+      | tk_boolType
+      | tk_charType
+      | tk_stringType 
+      | tk_unionType tk_identifier
+      | tk_structType tk_identifier ;      
+      
+   VAR
+      : /* vacio */
+      | tk_var ;
  
-       
-   //FOR: tk_for tk_identifier tk_from   
-
+ 
 %%
 
 void yy::Parser::error(const yy::Parser::location_type &l, const std::string &err_msg) {
-   std::cerr << "Error: " << err_msg << "\n";
+   std::cerr << "Error: " << err_msg << l << "\n";
 }
 
 #include "scanner.hpp"
-static int yylex(yy::Parser::semantic_type *yylval, Scanner &scanner, Driver &driver) {
+static int yylex(yy::Parser::semantic_type *yylval,Scanner &scanner, Driver &driver) {
    return scanner.yylex(yylval);
 }
 
