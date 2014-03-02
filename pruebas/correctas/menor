@@ -9,17 +9,19 @@ registeer persona {
 
 /* Esto es un ******** comentario ****
    de varias // lineas muy feo. */
+/*
+boolbasaur menorEdad (registeer persona p1,registeer persona p2) {
 
-boolbasaur menorEdad (persona p1, persona p2) {
-
-   return p1.edad < p2.edad;
-}
+   return p1.edad < p2.edad
+}*/
 
 voidporeon main() {
 
-   persona p1;
-   persona p2;
+   registeer persona p1;
+   registeer persona p2;
    boolbasaur menor;
+   
+   a:= 0;
 
    p1.cedula := 12345;
    p1.nombre := "Andrea";
@@ -30,9 +32,9 @@ voidporeon main() {
    p2.edad := 21;
 
    if (menorEdad(p1,p2)) 
-      print("Mentira.");
+      print("Mentira.")
    
    else
-      print("Como sabes?");
+      print("Como sabes?")
 
 }

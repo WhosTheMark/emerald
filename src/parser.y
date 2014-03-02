@@ -71,8 +71,17 @@
 
 %%
    START
-      : INST { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
+      : DEFLIST { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
    
+   DEFLIST
+      : DEFINITION
+      | DEFINITION DEFLIST ;
+   
+   DEFINITION
+      : FUNCDEF 
+      | REGISTER
+      | DECLARATION ;
+      
    EXPR
       : EXPR '+' EXPR 
       | EXPR '-' EXPR 
@@ -81,7 +90,6 @@
       | EXPR '^' EXPR 
       | EXPR '=' EXPR
       | EXPR '[' EXPR ']' 
-      | EXPR tk_range EXPR //Quizas solo va en las declaraciones :D
       | EXPR tk_mod EXPR
       | EXPR tk_and EXPR
       | EXPR tk_or EXPR
@@ -137,14 +145,24 @@
       | SWITCHSTMT ;
       
    BLOCK
-      : '{' DECLARATION STMTLIST '}' ;
+      : '{' STMTLIST '}' 
+      | '{' DECLARELIST STMTLIST '}' ;
 
    STMTLIST
       : STMT   
       | STMT tk_semicolon STMTLIST ;
       
    ASIGNMENT
-      : tk_identifier tk_asignment EXPR ;
+      : ASIGNLIST tk_asignment ARGSLIST ;
+      
+   ASIGNLIST
+      : tk_identifier ARRDOT
+      | tk_identifier ARRDOT tk_comma ASIGNLIST ;
+      
+   ARRDOT
+      : /* vacio */
+      | '[' EXPR ']' ARRDOT 
+      | tk_dot tk_identifier ARRDOT ;      
       
    IFSTMT
       : tk_if EXPR INST %prec IFPREC
@@ -193,17 +211,24 @@
       | tk_case CONST tk_arrow BLOCK CASELIST ; 
       
    DECLARATION
+      : TYPE IDLIST INITLIST tk_semicolon 
+      | COMPLEXTYPE IDLIST INITLIST tk_semicolon;
+      
+   IDLIST   
+      : tk_identifier ARRAYDECL
+      | tk_identifier ARRAYDECL tk_comma IDLIST 
+      | tk_const tk_identifier ARRAYDECL
+      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST ;
+     
+   ARRAYDECL
       : /* vacio */
-      | TYPE DECLARELIST INITLIST tk_semicolon ;
-      
-   DECLARELIST   
-      : CONSTTYPE tk_identifier
-      | CONSTTYPE tk_identifier tk_comma DECLARELIST ;
-      
-   CONSTTYPE
-      : /* vacio */
-      | tk_const ;
-      
+      | '[' EXPR tk_range EXPR ']' ;
+     
+     
+   DECLARELIST
+      : DECLARATION 
+      | DECLARELIST DECLARATION;
+   
    INITLIST 
       : /* vacio */
       | tk_asignment ARGSLIST ;
@@ -213,14 +238,28 @@
       | tk_floatType
       | tk_boolType
       | tk_charType
-      | tk_stringType 
-      | tk_unionType tk_identifier
-      | tk_structType tk_identifier ;      
+      | tk_stringType;      
       
+   COMPLEXTYPE
+      : tk_unionType tk_identifier
+      | tk_structType tk_identifier ;
+     
    VAR
       : /* vacio */
       | tk_var ;
  
+   REGISTER
+      : tk_structType tk_identifier '{' DECLARELIST '}' ;
+      
+   FUNCDEF
+      : TYPE tk_identifier '(' ')' BLOCK
+      | tk_voidType tk_identifier '(' ')' BLOCK
+      | TYPE tk_identifier '(' ARGSDEF ')' BLOCK 
+      | tk_voidType tk_identifier '(' ARGSDEF ')' BLOCK ; 
+      
+   ARGSDEF
+      : TYPE VAR tk_identifier
+      | TYPE VAR tk_identifier tk_comma ARGSDEF ;
  
 %%
 

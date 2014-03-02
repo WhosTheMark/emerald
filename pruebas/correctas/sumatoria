@@ -6,12 +6,12 @@ voidporeon main() {
    floatzel arr[INIC..FIN];
    floatzel suma := 0;
 
-   for i in INIC to FIN      
+   for i from INIC to FIN      
       arr[i] := intToFloatzel(i);
 
-   for i in INIC to FIN
+   for i from INIC to FIN
       suma := suma + arr[i];
 
-   print(suma);
+   print(suma)
 
 }
