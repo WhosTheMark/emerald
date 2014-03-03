@@ -1,0 +1,11 @@
+
+
+{
+   a:= a; 
+   b := a;
+   if true
+      c := hola;
+   else
+      d:= 'a';;
+   
+}
