@@ -22,29 +22,29 @@ Por ejemplo, `0.28`, `28.0` son números válidos pero `.28` y `28.` no.
 
 Las cadenas de caracteres, **`onix`**, son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
 
-     "Emerald FTW", "pokemon", "Hola!"
+     "Emerald FTW"    "pokemon"    "Hola!"
 
 Un comentario simple (de una linea) son representados de la siguiente manera:
 
-    # Hola, éste es un comentario de una línea.
+    # Hola, este comentario es de una linea.
 
 Un comentario de varias lineas se representa así: 
 
-    /* Éste es comentario de varias
+    /* Este comentario es de varias
        lineas en el lenguaje Emerald.
-       Es muy chévere. */
+       Es muy chevere. */
 
 ## Arreglos
 
 Los arreglos son declarados de la siguiente manera:
 
-    <tipo> <identificador>[<número>..<número>]
+    <tipo> <identificador> [ <número> .. <número> ]
 
 Por ejemplo:
 
-    intmonchan arreglo[1..10]
-    floatzel otroArreglo[0..100]
-    charizard arreglo3[9..19]
+    intmonchan arreglo1[1..10]
+    floatzel   arreglo2[0..99]
+    charizard  arreglo3[9..19]
 
 ## Tipos Estructurados
 
