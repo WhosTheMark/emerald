@@ -8,7 +8,7 @@
 typedef yy::Parser::token token;
 
 #define strToken(s) ( new std::string(s) )
-
+#define YY_USER_ACTION yylloc->columns(yyleng);
 
 %}
 
@@ -22,6 +22,10 @@ typedef yy::Parser::token token;
 DIGIT [0-9]
 
 %%
+
+%{
+   yylloc->step();
+%}
 
 boolbasaur      { return token::tk_boolType; }
 
@@ -128,17 +132,17 @@ tag             { return token::tk_tag; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = yytext; return token::tk_identifier;}
 
-#(.|[^\n])*               { /* Comentario simple */ }
+#(.|[^\n])*               { yylloc->lines(1); /* Comentario simple */ }
 
 \"(\\.|[^\"\\])*\"        { yylval->str = yytext; return token::tk_string; }
 
 \'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
 
-\n                        { /*yylloc->lines(1);*/ }
+\n                        { yylloc->lines(1); }
 
-[ \t]                     { }
+[ \t]                     { yylloc->step(); }
 
-\/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */ }
+\/\*([^*]|\*+[^/*])*\*+\/ { yylloc->step(); /* Cometario en bloque */ }
 
 .                       { std::cout << "Error: " << yytext << "\n"; /*yyerror("KABOOM: %s\n", *yytext);*/}
 

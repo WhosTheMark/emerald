@@ -2,6 +2,8 @@
 %require "2.7"
 %debug
 %defines
+%locations
+
 %define parser_class_name "Parser"
 
 %code requires{
@@ -23,7 +25,7 @@
    #include <math.h>
    #include "driver.hpp"
    
-   static int yylex(yy::Parser::semantic_type *yylval,Scanner &scanner, Driver &driver);
+   static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, Scanner &scanner, Driver &driver);
    //#include <stdio.h>
    //void yyerror (char const *);
    //int yylex();
@@ -264,12 +266,12 @@
 %%
 
 void yy::Parser::error(const yy::Parser::location_type &l, const std::string &err_msg) {
-   std::cerr << "Error: " << err_msg << l << "\n";
+   std::cerr << "Error: " << l << "\n";
 }
 
 #include "scanner.hpp"
-static int yylex(yy::Parser::semantic_type *yylval,Scanner &scanner, Driver &driver) {
-   return scanner.yylex(yylval);
+static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, Scanner &scanner, Driver &driver) {
+   return scanner.yylex(yylval,yylloc);
 }
 
 
