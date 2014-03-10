@@ -26,11 +26,11 @@ public:
       return false;
    };
 
-   TableIt* lookup(string str) {
+   pair<string,Symbol*> *lookup(string str) {
 
       TableIt it = table.find(str);
       if (table.end() != it)
-         return new TableIt(it);
+         return new pair<string,Symbol*>(*it);
 
       return nullptr;
    };
@@ -71,6 +71,12 @@ int main () {
    table.insert(&varPerson);
    
    table.print();
+  
+   pair<string,Symbol*> *sym = table.lookup("int");
+
+   if (sym != nullptr)
+      sym->second->printSym();
+   
    
    return 0;
 }
