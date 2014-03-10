@@ -43,12 +43,12 @@ class Function : public Definition {
 
 public:
    Definition *returnType;
-   vector<pair<string,Declaration> > *arguments;
+   vector<pair<string,Declaration*>*> arguments;
    int numArgs;
    //TODO body
 
    Function(string n, int l, int c, Definition *r,
-           vector<pair<string,Declaration> > *args,
+           vector<pair<string,Declaration*>*> args,
            int numA): returnType(r), arguments(args), numArgs(numA),
            Definition(n,l,c) {};
 
@@ -75,10 +75,10 @@ public:
 class Declaration : public Symbol {
 
 public:
-   pair<string,Definition> *type;
+   pair<string,Definition*> *type;
    bool constant;
 
-   Declaration(string n, int l, int c, pair<string,Definition> *p, bool con) :
+   Declaration(string n, int l, int c, pair<string,Definition*> *p, bool con) :
       type(p), constant(con), Symbol(n,l,c) {};
 
    void printSym(int tabs=0) {
@@ -94,7 +94,7 @@ public:
    int lower;
    int upper;
 
-   ArrayDecl(string n, int l, int c, pair<string,Definition> *p, bool con, int low, int u) :
+   ArrayDecl(string n, int l, int c, pair<string,Definition*> *p, bool con, int low, int u) :
       lower(low), upper(u), Declaration(n,l,c,p,con) {};
 
    //NOTE Imprimir lower y upper?
@@ -109,14 +109,15 @@ public:
 int main () {
 
    Basic basicInt("int", -1,-1, 4);
-   Function func("squirtle", 1, 1, &basicInt, nullptr, 1);
-   pair<string,Definition> pairDef(basicInt.name,basicInt);
+   vector<pair<string,Declaration*>*> emptyVector;
+   Function func("squirtle", 1, 1, &basicInt, emptyVector, 1);
+   pair<string,Definition*> pairDef(basicInt.name,&basicInt);
 
    Declaration variable("i", 2, 3, &pairDef, false);
    ArrayDecl array("intArr", 5, 6, &pairDef, false, 0, 10);
 
    Register reg("persona", 8, 9, 28);
-   pair<string,Definition> pairReg(reg.name,reg);
+   pair<string,Definition*> pairReg(reg.name,&reg);
    Declaration varPerson("Andrea", 6, 66, &pairReg, false);
 
 
