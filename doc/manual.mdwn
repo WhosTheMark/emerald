@@ -9,18 +9,18 @@ A continuación se presentan las palabras reservadas del lenguaje. Éstas no pue
     boolbasaur    charizard    intmonchan    floatzel    voidporeon   onix    
     registeer     unown        true          false       const        var
     for           from         to            by          while        return
-    if            elsif        else          read        print        BOOM
-    tag           continue     switch        case        default
+    if            elsif        else          read        print        println
+    tag           BOOM         continue      switch      case         default
 
 Un identificador es una secuencia de caracteres alfanúmericos y el símbolo `_`, que empieza con una letra. Emerald es sensible a mayúsculas, 
 por lo tanto los identificadores `Ejem`, `ejem` y `eJEm` son diferentes.
 
-Los enteros, **`intmonchan`**, se representan con una secuencia de dígitos del `0` al `9`.
+Los enteros se representan con una secuencia de dígitos del `0` al `9`.
 
-Los floats, **`floatzel`**, empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
+Los floats empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
 Por ejemplo, `0.28`, `28.0` son números válidos pero `.28` y `28.` no.
 
-Las cadenas de caracteres, **`onix`**, son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
+Las cadenas de caracteres son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
 
      "Emerald FTW"    "pokemon"    "Hola!"
 
@@ -34,7 +34,22 @@ Un comentario de varias lineas se representa así:
        lineas en el lenguaje Emerald.
        Es muy chevere. */
 
-## Arreglos
+      
+## Tipos
+
+Los tipos que se manejan en Emerald son los siguientes:
+
+* **intmonchan**: Tipo entero.
+* **floatzel**:   Tipo punto flotante.
+* **charizard**:  Tipo caracter ASCII.
+* **boolbasaur**: Tipo booleano (true, false).
+* **onix**:       Secuencia de caracteres ASCII inmutable.
+* **voidporeon**: El vacío. Utilizado solamente en funciones. 
+
+### Arreglos
+
+Los arreglos son unidimensionales con índices arbitrarios. 
+Además son de tamaño fijo y constante a tiempo de compilación.
 
 Los arreglos son declarados de la siguiente manera:
 
@@ -46,11 +61,12 @@ Por ejemplo:
     floatzel   arreglo2[0..99]
     charizard  arreglo3[9..19]
 
-## Tipos Estructurados
+### Tipos Estructurados
 
 Un registro, `registeer`, se declara de la siguiente manera:
 
     registeer <identificador> {
+    
         <tipo1> <identificador1> ;
         <tipo2> <identificador2> := <inicialización> ;
         ...
@@ -60,7 +76,9 @@ Un registro, `registeer`, se declara de la siguiente manera:
 Uniones, `unown`, se representan de la misma manera:
 
     unown <identificador> {
+        
         <tipo1> <identificador1> ;
+    
         <tipo2> <identificador2> := <inicialización> ;
         ...
         <tipoN> <identificadorN> ;
@@ -70,13 +88,24 @@ Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
 
     registro.campo
     
+
+Ejemplo:
+
+    registeer persona {   
+        intmonchan cedula; 
+        onix nombre;
+        intmonchan edad;
+    }
+
+    voidporeon main () {
     
-
-## Vacío
-
-* voidporeon - void
-
-## Selector
+       registeer persona p;
+       p.edad := 21;
+       
+    }
+   
+    
+### Selector
 
     if <expresiónBooleana> {
         ...
@@ -105,7 +134,9 @@ Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
         ...
     }
 
-## Iteraciones
+### Iteraciones
+
+
 
     for <identificador> from <expresión> to <expresión> {
          ...
@@ -119,29 +150,35 @@ Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
          ...
     }
 
-## Entrada/Salida
+### Entrada/Salida
 
-* read()
-* print() 
+Las palabras reservadas para entreda y salida son `read`, `print` y `println`.
 
-## Operadores
+    intmonchan num;
+    print ("Ingrese su numero favorito: ");
+    read(num);
+    ...
+    
+### Precedencia de Operadores
 
-_En orden de precedencia de mayor a menor_
+De mayor a menor precedencia.
 
-* !    - unario
-* ^
-* *    \    %
-* +    - 
-* <    <=   >=    > 
-* =    !=
-* &&
-* ||
+             Operador | Descripción
+             -------- | -----------
+    !    - unario     | Negación booleana y menos unario
+    ^                 | Potenciación
+    *    /    %       | Multiplicación, división y módulo
+    +    -            | Suma y resta
+    <    <=   >=    > | Relacionales
+    =    !=           | Igualdad y desigualdad
+    &&                | Operador lógico y
+   &#124;&#124;       | Operador lógico o
 
-## Asignación
+### Asignación
 
     :=
 
-## Declaración e Inicialización de Variables
+### Declaración e Inicialización de Variables
 
 Pasado por Valor
 
@@ -156,7 +193,7 @@ Pasado por Referencia
     <tipo> var <identificador> ;
     <tipo> <identificador, var <identificador> ;
 
-## Etiquetas
+### Etiquetas
 
 Se representan de la siguiente manera:
 
@@ -168,7 +205,7 @@ Se representan de la siguiente manera:
 * continue etiqueta
 * continue
 
-## Switch
+### Switch
 
 Los rangos son disjuntos y valor default es opcional. Deben haber al menos
 dos case en el switch.
@@ -180,3 +217,9 @@ dos case en el switch.
         default       -> { ... }
     }
 
+### Conversiones Explícitas
+
+* intToFloatzel
+* floatToIntmonchan
+* charToIntmonchan
+* intToCharizard

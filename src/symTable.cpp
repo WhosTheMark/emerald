@@ -41,12 +41,24 @@ public:
    };
 
    void print(int tabs=0){
-
-      for(TableIt it = table.begin(); it != table.end(); ++it)
+      
+      printTabs(tabs);
+      cout << "----------------------------------------\n";
+      
+      for(TableIt it = table.begin(); it != table.end(); ++it) {
+       
+         printTabs(tabs);
          it->second->printSym();
+      }
+   };
+   
+   void printTabs(int tabs) {
+    
+      for (int i=0; i < tabs ; ++i) 
+         cout << "    ";      
    };
 };
-
+/*
 int main () {
 
    Basic basicInt("int", -1,-1, 4);
@@ -79,4 +91,4 @@ int main () {
    
    
    return 0;
-}
+}*/
