@@ -1,35 +1,112 @@
-#include <iostream>
+#include <string>
+#include <vector>
+#include "tableTree.cpp"
+#include "expressions.cpp"
+#include "instructions.cpp"
 
 using namespace std;
 
-class Node {
+
+class DefNode { };
+
+class ArgsDef {
    
 public:
-   virtual ~Node() {}
+   
+   string id;
+   bool variable;
+   
+   ArgsDef(string i, bool v) : id(i), variable(v) {};
+   
 };
 
-class NodeExpr : public Node {};
-
-class NodeInt : public NodeExpr {
+class FuncDef : public DefNode {
+  
 public:
-   int value;
-   NodeInt(int v) : value(v) {};
-};
-
-class NodeFloat : public NodeExpr {
-public:
-   float value;
-   NodeFloat(float v) : value(v) {};
-};
-
-class NodeIdentifier : public NodeExpr {
-public:
+   
    string name;
-   NodeIdentifier(const string& n) : name(n) {};
+   string returnType;
+   vector<ArgsDef*> args;
+   Block *block;
+   SymTableNode *table;   
+   
+   FuncDef(string n, string rt, vector<ArgsDef*> a, Block *b) :
+           name(n) , returnType(rt) , args(a) , block(b) {};
 };
 
-class NodeBinaryOp : public NodeExpr {
+class IdNode {
+
 public:
    
-   NodeExpr *lhs;
-   NodeExpr *rhs;
+   string name;
+   bool constant;
+   
+   IdNode(string n, bool c) : name(n), constant(c) {};
+      
+};
+
+class ArrayDeclare : public IdNode {
+   
+public:
+   
+   Expression *lower;
+   Expression *upper;
+   
+   ArrayDeclare(string n, bool c, Expression *l, Expression *u) : 
+               IdNode(n,c) , lower(l), upper(u) {};
+   
+};
+
+class DeclareNode : public DefNode {
+  
+public:
+   
+   string type;
+   vector<IdNode*> ids;
+   vector<Expression*> inits;
+   
+   DeclareNode(string t, vector<IdNode*> id, vector<Expression*> init) :
+               type(t), ids(id), inits(init) {};
+                 
+};
+
+class RegisterDef : public DefNode {
+  
+public:
+   
+   string name;
+   vector<DeclareNode*> fields;
+   
+   RegisterDef(string n, vector<DeclareNode*> f) : name(n) , fields(f) {};
+   
+};
+
+
+class DefList {   
+   
+public:
+   
+   vector<DefNode*> list;
+   
+   DefList(vector<DefNode*> l) : list(l) {};
+
+};
+
+class AST {
+   
+public:
+   
+   DefList *root;
+   TableTree table;
+   
+   AST(DefList *r) : root(r) {};
+   
+};
+   
+   
+int main () {
+   
+   
+ return 0;
+ 
+}
