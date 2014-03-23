@@ -1,3 +1,6 @@
+#ifndef SYMBOL_
+#define SYMBOL_
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -138,3 +141,5 @@ int main () {
    
    return 0;
 }*/
+
+#endif

@@ -1,7 +1,12 @@
+
+
 #include <iostream>
 #include <string>
 #include <map>
+
+#if ! defined(SYMBOL_)
 #include "symbol.cpp"
+#endif
 
 using namespace std;
 

@@ -7,6 +7,7 @@
 %define parser_class_name "Parser"
 
 %code requires{
+   #include "symbol.cpp"
    class Driver;
    class Scanner;
    class TableTree;
@@ -30,10 +31,11 @@
    #include "driver.hpp"
    #include <vector>
    #include <string>
-
+      
    static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, 
    Scanner &scanner, Driver &driver, TableTree &scopeTree);   
    typedef std::vector<std::string*> vecString;
+   typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
 }
 
 %union{
@@ -47,13 +49,20 @@
    int token;
    std::string* ids;
    std::vector<std::string*>* idsList;
-
+   bool boolean;
+   std::vector<std::pair<std::string,Declaration*>*> *vecFunction;
+   std::pair<std::string,std::string> *complex; 
 }
 
 //%type <intNum> tk_int EXPR NUMBER
 %type <idsList> IDLIST
 %type <ids> tk_identifier TYPE tk_charType tk_floatType tk_intType tk_boolType tk_stringType
-%type <ids> COMPLEXTYPE tk_structType tk_unionType
+%type <ids> tk_structType tk_unionType tk_voidType
+%type <complex> COMPLEXTYPE
+%type <boolean> VAR
+%type <vecFunction> ARGSDEF
+
+
 %token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
 %token tk_if  tk_else tk_elsif tk_for  tk_from  tk_to  tk_by  tk_while  
@@ -221,7 +230,7 @@
       | tk_case CONST tk_arrow BLOCK CASELIST ; 
       
    DECLARATION
-      : TYPE IDLIST INITLIST tk_semicolon  { vecString::reverse_iterator it = $2->rbegin(); 
+      : TYPE IDLIST INITLIST tk_semicolon { vecString::reverse_iterator it = $2->rbegin(); 
                                              pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
                                              
                                              if (dynamic_cast<Definition*>(symType->second) != 0)  
@@ -232,8 +241,27 @@
                                                 }
                                              else
                                                 cout << "BOOM\n";
-                                           }
-      | COMPLEXTYPE IDLIST INITLIST tk_semicolon;
+                                          }
+                                           
+      | COMPLEXTYPE IDLIST INITLIST tk_semicolon { vecString::reverse_iterator it = $2->rbegin(); 
+                                                   pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
+                                             
+                                                   if ((dynamic_cast<Register*>(symType->second) != 0) && ($1->first == "registeer"))  
+                                             
+                                                      for(; it != $2->rend(); ++it) {                                                                                                   
+                                                         Declaration *decl = new Declaration(**it,0,0,symType,false);                                                   
+                                                         scopeTree.insert(decl);
+                                                      }
+                                                      
+                                                   else if ($1->first == "unown") 
+                                                      cout << "HAY QUE HACER UNOWNS!!!\n";
+                                                      
+                                                   else
+                                                      cout << "BOOM\n";
+                                                 }
+      ;
+      
+      
       
    IDLIST   
       : tk_identifier ARRAYDECL { vecString *idList = new vecString; 
@@ -268,28 +296,89 @@
       | tk_stringType;      
       
    COMPLEXTYPE
-      : tk_unionType tk_identifier { $$ = $2; }
-      | tk_structType tk_identifier { $$ = $2; };
+      : tk_unionType tk_identifier { $$ = new pair<string,string>(*$1,*$2); }                                      
+      | tk_structType tk_identifier { $$ = new pair<string,string>(*$1,*$2); }
+      ;
      
    VAR
-      : /* vacio */
-      | tk_var ;
+      : /* vacio */ { $$ = false; }
+      | tk_var { $$ = true; } ;
  
    REGISTER
-      : tk_structType tk_identifier '{' DECLARELIST '}' ;
+      : tk_structType tk_identifier '{' DECLARELIST '}' { Register *reg = new Register(*$2,0,0,0);
+                                                          scopeTree.insert(reg);
+                                                          //NOTE que hacemos con los campos?
+                                                        }
+      ;
       
    FUNCDEF
-      : TYPE tk_identifier '(' ')' BLOCK { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+      : TYPE tk_identifier '(' ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
                                            Function *func = new Function(*$2,0,0,symType);
                                            scopeTree.insert(func);
-                                         }
-      | tk_voidType tk_identifier '(' ')' BLOCK
-      | TYPE tk_identifier '(' ARGSDEF ')' BLOCK 
-      | tk_voidType tk_identifier '(' ARGSDEF ')' BLOCK ; 
+                                           scopeTree.enterScope();
+                                   } 
+                                   
+                                   BLOCK { scopeTree.exitScope(); }
+                                   
+      | tk_voidType tk_identifier '(' ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+                                            Function *func = new Function(*$2,0,0,symType);
+                                            scopeTree.insert(func);
+                                            scopeTree.enterScope();
+                                          } 
+                                          
+                                          BLOCK { scopeTree.exitScope(); }
+                                          
+      | TYPE tk_identifier '(' ARGSDEF ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+                                                   vecFunc *args = new vecFunc;
+                                                   vecFunc::reverse_iterator it = $4->rbegin();
+                                                   
+                                                   for(; it != $4->rend(); ++it)                                                  
+                                                      args->push_back(*it);
+                                                      
+                                                  Function *func = new Function(*$2,0,0,symType,*args);
+                                                  scopeTree.insert(func);
+                                                  scopeTree.enterScope();
+                                                  
+                                                  for(it = $4->rbegin(); it != $4->rend(); ++it) 
+                                                         scopeTree.insert((*it)->second);
+                                           }
+                                           
+                                           BLOCK { scopeTree.exitScope(); }
+      
+      | tk_voidType tk_identifier '(' ARGSDEF ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+                                                    vecFunc *args = new vecFunc;
+                                                    vecFunc::reverse_iterator it = $4->rbegin();
+                                                         
+                                                    for(; it != $4->rend(); ++it)                                                  
+                                                      args->push_back(*it);
+                                                            
+                                                    Function *func = new Function(*$2,0,0,symType,*args);
+                                                    scopeTree.insert(func);
+                                                    scopeTree.enterScope();
+                                                  
+                                                    for(it = $4->rbegin(); it != $4->rend(); ++it) 
+                                                         scopeTree.insert((*it)->second);
+                                                  } 
+                                                  
+                                                  BLOCK { scopeTree.exitScope(); }
+      ; 
       
    ARGSDEF
-      : TYPE VAR tk_identifier
-      | TYPE VAR tk_identifier tk_comma ARGSDEF ;
+      : TYPE VAR tk_identifier { vecFunc *args = new vecFunc;
+                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
+                                 Declaration *decl = new Declaration(*$3,0,0,symType,!$2);
+                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
+                                 args->push_back(arg);
+                                 $$ = args;
+                               }
+                                 
+      | TYPE VAR tk_identifier tk_comma ARGSDEF { pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
+                                                  Declaration *decl = new Declaration(*$3,0,0,symType,!$2);
+                                                  pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
+                                                  $5->push_back(arg);
+                                                  $$ = $5;
+                                                }      
+      ;
  
 %%
 
