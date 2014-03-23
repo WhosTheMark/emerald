@@ -2,6 +2,12 @@
 #include <cassert>
 #include "driver.hpp"
 
+
+const int INT_SIZE = 32;
+const int CHAR_SIZE = 8;
+const int FLOAT_SIZE = 32;
+const int BOOL_SIZE = 1;
+   
 Driver::~Driver() {
    delete(scanner);
    delete(parser);
@@ -23,7 +29,9 @@ void Driver::parse(const char *file) {
    
    delete(parser);
    parser = nullptr;
-   parser = new yy::Parser(*scanner,*this);
+   scopeTree = new TableTree;
+   initializeTree(scopeTree);
+   parser = new yy::Parser(*scanner,*this,*scopeTree);
    
    assert(parser != nullptr);
    
@@ -34,3 +42,19 @@ void Driver::parse(const char *file) {
    
 }
 
+void Driver::initializeTree(TableTree *scopeTree) {
+   
+   scopeTree->enterScope();
+   
+   Basic *basicInt = new Basic("intmonchan",-1,-1,INT_SIZE);
+   Basic *basicChar = new Basic("charizard",-1,-1,CHAR_SIZE);
+   Basic *basicFloat = new Basic("floatzel",-1,-1,FLOAT_SIZE);
+   Basic *basicBool = new Basic("boolbasaur",-1,-1,BOOL_SIZE);
+   Basic *basicVoid = new Basic("voidporeon",-1,-1,0);
+   
+   scopeTree->insert(basicInt);
+   scopeTree->insert(basicChar);
+   scopeTree->insert(basicFloat);
+   scopeTree->insert(basicBool);
+   scopeTree->insert(basicVoid);
+}

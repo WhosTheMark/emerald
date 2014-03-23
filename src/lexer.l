@@ -27,21 +27,21 @@ DIGIT [0-9]
    yylloc->step();
 %}
 
-boolbasaur      { return token::tk_boolType; }
+boolbasaur      { yylval->ids = strToken(yytext); return token::tk_boolType; }
 
-intmonchan      { return token::tk_intType; }
+intmonchan      { yylval->ids = strToken(yytext); return token::tk_intType; }
 
-charizard       { return token::tk_charType; }
+charizard       { yylval->ids = strToken(yytext); return token::tk_charType; }
 
-floatzel        { return token::tk_floatType; }
+floatzel        { yylval->ids = strToken(yytext); return token::tk_floatType; }
 
-onix            { return token::tk_stringType; }
+onix            { yylval->ids = strToken(yytext); return token::tk_stringType; }
 
-registeer       { return token::tk_structType; }
+registeer       { yylval->ids = strToken(yytext); return token::tk_structType; }
 
-unown           { return token::tk_unionType; }
+unown           { yylval->ids = strToken(yytext); return token::tk_unionType; }
 
-voidporeon      { return token::tk_voidType; }
+voidporeon      { yylval->ids = strToken(yytext); return token::tk_voidType; }
 
 if              { return token::tk_if; }
 
@@ -130,7 +130,7 @@ tag             { return token::tk_tag; }
 
 {DIGIT}+\.{DIGIT}+        { yylval->floatNum = atof(yytext); return token::tk_float;}
 
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = yytext; return token::tk_identifier;}
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = strToken(yytext); return token::tk_identifier;}
 
 #(.|[^\n])*               { yylloc->lines(1); /* Comentario simple */ }
 

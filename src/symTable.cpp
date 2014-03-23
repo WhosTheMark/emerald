@@ -22,7 +22,7 @@ public:
          table.insert(pair<string,Symbol*>(sym->name,sym));
          return true;
       }
-
+      //TODO error de declarar la variable mas de una vez
       return false;
    };
 

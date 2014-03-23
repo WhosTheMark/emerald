@@ -9,6 +9,7 @@
 %code requires{
    class Driver;
    class Scanner;
+   class TableTree;
 }
 
 %lex-param { Scanner &scanner }
@@ -17,6 +18,9 @@
 %lex-param { Driver &driver }
 %parse-param { Driver &driver }
 
+%lex-param { TableTree &scopeTree }
+%parse-param { TableTree &scopeTree }
+
 %code{
 
    #include <iostream>
@@ -24,30 +28,32 @@
    #include <fstream>
    #include <math.h>
    #include "driver.hpp"
-   
-   static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, Scanner &scanner, Driver &driver);
-   //#include <stdio.h>
-   //void yyerror (char const *);
-   //int yylex();
-   //extern FILE *yyin;
+   #include <vector>
+   #include <string>
 
+   static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, 
+   Scanner &scanner, Driver &driver, TableTree &scopeTree);   
+   typedef std::vector<std::string*> vecString;
 }
 
 %union{
    
    int intNum;
    float floatNum;
-   char* ident;
+   std::string* ident;
    char* str;
    char chars; 
    char* strOp;
    int token;
+   std::string* ids;
+   std::vector<std::string*>* idsList;
 
 }
 
 //%type <intNum> tk_int EXPR NUMBER
-
-
+%type <idsList> IDLIST
+%type <ids> tk_identifier TYPE tk_charType tk_floatType tk_intType tk_boolType tk_stringType
+%type <ids> COMPLEXTYPE tk_structType tk_unionType
 %token tk_boolType tk_intType  tk_charType  tk_floatType  
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType  
 %token tk_if  tk_else tk_elsif tk_for  tk_from  tk_to  tk_by  tk_while  
@@ -71,9 +77,11 @@
 %nonassoc tk_elsif
 %nonassoc tk_else 
 
+
 %%
+
    START
-      : DEFLIST { /*std::cout << "Result: " << $1 << "\n";*/ } ; 
+      : { scopeTree.enterScope(); } DEFLIST { scopeTree.printTree(); } ; 
    
    DEFLIST
       : DEFINITION
@@ -148,7 +156,7 @@
       
    BLOCK
       : '{' STMTLIST '}' 
-      | '{' DECLARELIST STMTLIST '}' ;
+      | '{' { scopeTree.enterScope(); } DECLARELIST STMTLIST '}' { scopeTree.exitScope(); } ;
 
    STMTLIST
       : STMT   
@@ -213,14 +221,31 @@
       | tk_case CONST tk_arrow BLOCK CASELIST ; 
       
    DECLARATION
-      : TYPE IDLIST INITLIST tk_semicolon 
+      : TYPE IDLIST INITLIST tk_semicolon  { vecString::reverse_iterator it = $2->rbegin(); 
+                                             pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
+                                             
+                                             if (dynamic_cast<Definition*>(symType->second) != 0)  
+                                             
+                                                for(; it != $2->rend(); ++it) {                                                                                                   
+                                                   Declaration *decl = new Declaration(**it,0,0,symType,false);                                                   
+                                                   scopeTree.insert(decl);
+                                                }
+                                             else
+                                                cout << "BOOM\n";
+                                           }
       | COMPLEXTYPE IDLIST INITLIST tk_semicolon;
       
    IDLIST   
-      : tk_identifier ARRAYDECL
-      | tk_identifier ARRAYDECL tk_comma IDLIST 
-      | tk_const tk_identifier ARRAYDECL
-      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST ;
+      : tk_identifier ARRAYDECL { vecString *idList = new vecString; 
+                                  idList->push_back($1);
+                                  $$ = idList; }
+      | tk_identifier ARRAYDECL tk_comma IDLIST { $4->push_back($1); 
+                                                  $$ = $4; }
+      | tk_const tk_identifier ARRAYDECL { vecString *idList = new vecString; 
+                                           idList->push_back($2);
+                                           $$ = idList; /*TODO FALTA CONST*/ }  
+      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST { $5->push_back($2); 
+                                                           $$ = $5; };
      
    ARRAYDECL
       : /* vacio */
@@ -236,15 +261,15 @@
       | tk_asignment ARGSLIST ;
       
    TYPE
-      : tk_intType
+      : tk_intType 
       | tk_floatType
       | tk_boolType
       | tk_charType
       | tk_stringType;      
       
    COMPLEXTYPE
-      : tk_unionType tk_identifier
-      | tk_structType tk_identifier ;
+      : tk_unionType tk_identifier { $$ = $2; }
+      | tk_structType tk_identifier { $$ = $2; };
      
    VAR
       : /* vacio */
@@ -254,7 +279,10 @@
       : tk_structType tk_identifier '{' DECLARELIST '}' ;
       
    FUNCDEF
-      : TYPE tk_identifier '(' ')' BLOCK
+      : TYPE tk_identifier '(' ')' BLOCK { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+                                           Function *func = new Function(*$2,0,0,symType);
+                                           scopeTree.insert(func);
+                                         }
       | tk_voidType tk_identifier '(' ')' BLOCK
       | TYPE tk_identifier '(' ARGSDEF ')' BLOCK 
       | tk_voidType tk_identifier '(' ARGSDEF ')' BLOCK ; 
@@ -270,7 +298,8 @@ void yy::Parser::error(const yy::Parser::location_type &l, const std::string &er
 }
 
 #include "scanner.hpp"
-static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, Scanner &scanner, Driver &driver) {
+static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, 
+                 Scanner &scanner, Driver &driver, TableTree &scopeTree) {
    return scanner.yylex(yylval,yylloc);
 }
 
@@ -296,3 +325,4 @@ void yyerror(char const *s) {
   fprintf(stderr, "%s\n", s);
 }
 */
+

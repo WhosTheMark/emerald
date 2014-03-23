@@ -6,12 +6,23 @@
 
 using namespace std;
 
+class SymTableNode {
+
+public:
+   SymTable table;
+   SymTableNode *parent;
+   vector<SymTableNode*> children;
+   
+   SymTableNode(SymTableNode *p) : parent(p) {};
+   SymTableNode() : parent(nullptr) {};
+   
+};  
+
 
 class TableTree {
-   
-   class SymTableNode;
-   
+     
 public:
+   
    SymTableNode *root;
    SymTableNode *currentScope;
    
@@ -65,12 +76,14 @@ public:
       return nullptr;      
    };
    
+    
    void printTree() {
     
       printNode(0,root);
       
    };
    
+
 private:   
   
    void printNode(int tabs, SymTableNode *currentNode) {
@@ -82,19 +95,8 @@ private:
          printNode(tabs+1,*it);   
    };
    
-   class SymTableNode {
-   
-   public:
-      SymTable table;
-      SymTableNode *parent;
-      vector<SymTableNode*> children;
-      
-      SymTableNode(SymTableNode *p) : parent(p) {};
-      SymTableNode() : parent(nullptr) {};
-      
-   };  
 };
-
+/*
 int main () {
    
    Basic basicInt("int", -1,-1, 4);
@@ -145,4 +147,4 @@ int main () {
    
    
    
-}
+}*/
