@@ -132,63 +132,37 @@ tag             { return token::tk_tag; }
 
 [a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = strToken(yytext); return token::tk_identifier;}
 
-#(.|[^\n])*               { yylloc->lines(1); /* Comentario simple */ }
+#(.|[^\n])*               { /* Comentario simple */ }
 
-\"(\\.|[^\"\\])*\"        { yylval->str = yytext; return token::tk_string; }
+\"(\\.|[^\"\\])*\"        { yylval->str = yytext; 
+                            
+                            for(int i = 0; i < yyleng; ++i) {
+                            
+                              if (yytext[i] == '\n')  
+                                 yylloc->lines(1);
+                            }
+
+                            return token::tk_string; }
+
+\"(\\.|[^\"\\])*          { std::cout << "Missing quotation mark, string begins at line: " << yylloc->begin.line << ", column: " << yylloc->begin.column << "\n"; }
 
 \'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
 
-\n                        { yylloc->lines(1); }
+\n                        { yylloc->lines(1); yylloc->step(); }
 
 [ \t]                     { yylloc->step(); }
 
-\/\*([^*]|\*+[^/*])*\*+\/ { yylloc->step(); /* Cometario en bloque */ }
+\/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */
+                            
+                            for(int i = 0; i < yyleng; ++i) {
+                            
+                              if (yytext[i] == '\n') 
+                                 yylloc->lines(1);                           
+                            }
 
-.                       { std::cout << "Error: " << yytext << "\n"; /*yyerror("KABOOM: %s\n", *yytext);*/}
+                            yylloc->step();  }
+
+.                       { std::cout << "ERROR invalid character: " << yytext << " at line: " << yylloc->begin.line << ", column: " << yylloc->begin.column << "\n";}
 
 %%
-/*
-main(int argc, char **argv) {
 
-   if(argc > 1) 
-      if(!(yyin = fopen(argv[1], "r"))){
-         perror(argv[1]);
-         return(-1);
-      }
-      
-      
-    yylex();
-    fclose(yyin);
-    
-}*/
-/*
-int yywrap() {return 1; }
-
-
-*/
-
-//#undef yyFlexLexer
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   

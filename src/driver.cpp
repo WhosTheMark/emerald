@@ -39,6 +39,8 @@ void Driver::parse(const char *file) {
    
    if(parser->parse() != ACCEPT)
       std::cerr << "Parse Failed\n";
+   else
+      scopeTree->printTree();
    
 }
 
@@ -50,11 +52,13 @@ void Driver::initializeTree(TableTree *scopeTree) {
    Basic *basicChar = new Basic("charizard",-1,-1,CHAR_SIZE);
    Basic *basicFloat = new Basic("floatzel",-1,-1,FLOAT_SIZE);
    Basic *basicBool = new Basic("boolbasaur",-1,-1,BOOL_SIZE);
+   Basic *basicStr = new Basic("onix",-1,-1,0);
    Basic *basicVoid = new Basic("voidporeon",-1,-1,0);
    
    scopeTree->insert(basicInt);
    scopeTree->insert(basicChar);
    scopeTree->insert(basicFloat);
    scopeTree->insert(basicBool);
+   scopeTree->insert(basicStr);
    scopeTree->insert(basicVoid);
 }

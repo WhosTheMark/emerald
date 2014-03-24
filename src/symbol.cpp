@@ -37,7 +37,7 @@ public:
 
    void printSym(int tabs=0) {
 
-      cout << "PRIMITIVE TYPE: " << name << "\n";
+      cout << "PRIMITIVE TYPE: " << name << "\n" ;
    };
 
 };
@@ -60,7 +60,7 @@ public:
 
    void printSym(int tabs=0) {
 
-      cout << "FUNCTION NAME: " << name << " RETURN TYPE: " << returnType->name << "\n";
+      cout << "FUNCTION NAME: " << name << " RETURN TYPE: " << returnType->name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
@@ -74,7 +74,8 @@ public:
 
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del registro
-      cout << "REGISTER NAME: " << name << "\n";
+      Symbol::printSym(tabs);
+      cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
@@ -89,7 +90,7 @@ public:
 
    void printSym(int tabs=0) {
 
-      cout << "VARIABLE NAME: " << name << " TYPE: " << type-> first << "\n" ;
+      cout << "VARIABLE NAME: " << name << " TYPE: " << type-> first << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
 
 };
@@ -106,7 +107,7 @@ public:
    //NOTE Imprimir lower y upper?
    void printSym(int tabs=0) {
 
-      cout << "ARRAY NAME: " << name << " TYPE: " << type-> first << "\n" ;
+      cout << "ARRAY NAME: " << name << " TYPE: " << type-> first << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
 
 };

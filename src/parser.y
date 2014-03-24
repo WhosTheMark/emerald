@@ -34,7 +34,7 @@
       
    static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc, 
    Scanner &scanner, Driver &driver, TableTree &scopeTree);   
-   typedef std::vector<std::string*> vecString;
+   typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
 }
 
@@ -48,7 +48,7 @@
    char* strOp;
    int token;
    std::string* ids;
-   std::vector<std::string*>* idsList;
+   std::vector<std::pair<std::string*,yy::position>*> *idsList;
    bool boolean;
    std::vector<std::pair<std::string,Declaration*>*> *vecFunction;
    std::pair<std::string,std::string> *complex; 
@@ -90,7 +90,8 @@
 %%
 
    START
-      : { scopeTree.enterScope(); } DEFLIST { scopeTree.printTree(); } ; 
+      : { scopeTree.enterScope(); } DEFLIST { scopeTree.exitScope(); } 
+      ; 
    
    DEFLIST
       : DEFINITION
@@ -236,7 +237,7 @@
                                              if (dynamic_cast<Definition*>(symType->second) != 0)  
                                              
                                                 for(; it != $2->rend(); ++it) {                                                                                                   
-                                                   Declaration *decl = new Declaration(**it,0,0,symType,false);                                                   
+                                                   Declaration *decl = new Declaration(*((**it).first),(**it).second.line,(**it).second.column,symType,false);                                                   
                                                    scopeTree.insert(decl);
                                                 }
                                              else
@@ -249,7 +250,7 @@
                                                    if ((dynamic_cast<Register*>(symType->second) != 0) && ($1->first == "registeer"))  
                                              
                                                       for(; it != $2->rend(); ++it) {                                                                                                   
-                                                         Declaration *decl = new Declaration(**it,0,0,symType,false);                                                   
+                                                         Declaration *decl = new Declaration(*((**it).first),(**it).second.line,(**it).second.column,symType,false);                                                   
                                                          scopeTree.insert(decl);
                                                       }
                                                       
@@ -265,14 +266,18 @@
       
    IDLIST   
       : tk_identifier ARRAYDECL { vecString *idList = new vecString; 
-                                  idList->push_back($1);
+                                  pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
+                                  idList->push_back(idPos);
                                   $$ = idList; }
-      | tk_identifier ARRAYDECL tk_comma IDLIST { $4->push_back($1); 
+      | tk_identifier ARRAYDECL tk_comma IDLIST { pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
+                                                  $4->push_back(idPos); 
                                                   $$ = $4; }
-      | tk_const tk_identifier ARRAYDECL { vecString *idList = new vecString; 
-                                           idList->push_back($2);
+      | tk_const tk_identifier ARRAYDECL { vecString *idList = new vecString;
+                                           pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
+                                           idList->push_back(idPos);
                                            $$ = idList; /*TODO FALTA CONST*/ }  
-      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST { $5->push_back($2); 
+      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST { pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
+                                                           $5->push_back(idPos); 
                                                            $$ = $5; };
      
    ARRAYDECL
@@ -305,23 +310,27 @@
       | tk_var { $$ = true; } ;
  
    REGISTER
-      : tk_structType tk_identifier '{' DECLARELIST '}' { Register *reg = new Register(*$2,0,0,0);
+      : tk_structType tk_identifier '{' DECLARELIST '}' { //cout << @1 << "\n";
+                                                          yy::position pos = @1.begin;
+                                                          Register *reg = new Register(*$2,pos.line,pos.column,0);
                                                           scopeTree.insert(reg);
                                                           //NOTE que hacemos con los campos?
                                                         }
       ;
       
    FUNCDEF
-      : TYPE tk_identifier '(' ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
-                                           Function *func = new Function(*$2,0,0,symType);
-                                           scopeTree.insert(func);
-                                           scopeTree.enterScope();
+      : TYPE tk_identifier '(' ')' { yy::position pos = @1.begin;
+                                     Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
+                                     Function *func = new Function(*$2,pos.line,pos.column,symType);
+                                     scopeTree.insert(func);
+                                     scopeTree.enterScope();
                                    } 
                                    
                                    BLOCK { scopeTree.exitScope(); }
                                    
       | tk_voidType tk_identifier '(' ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
-                                            Function *func = new Function(*$2,0,0,symType);
+                                            yy::position pos = @1.begin;
+                                            Function *func = new Function(*$2,pos.line,pos.column,symType);
                                             scopeTree.insert(func);
                                             scopeTree.enterScope();
                                           } 
@@ -334,8 +343,9 @@
                                                    
                                                    for(; it != $4->rend(); ++it)                                                  
                                                       args->push_back(*it);
-                                                      
-                                                  Function *func = new Function(*$2,0,0,symType,*args);
+                                                  
+                                                  yy::position pos = @1.begin;
+                                                  Function *func = new Function(*$2,pos.line,pos.column,symType,*args);
                                                   scopeTree.insert(func);
                                                   scopeTree.enterScope();
                                                   
@@ -351,8 +361,9 @@
                                                          
                                                     for(; it != $4->rend(); ++it)                                                  
                                                       args->push_back(*it);
-                                                            
-                                                    Function *func = new Function(*$2,0,0,symType,*args);
+                                                    
+                                                    yy::position pos = @1.begin;
+                                                    Function *func = new Function(*$2,pos.line,pos.column,symType,*args);
                                                     scopeTree.insert(func);
                                                     scopeTree.enterScope();
                                                   
@@ -364,16 +375,18 @@
       ; 
       
    ARGSDEF
-      : TYPE VAR tk_identifier { vecFunc *args = new vecFunc;
+      : TYPE VAR tk_identifier { yy::position pos = @3.begin;
+                                 vecFunc *args = new vecFunc;
                                  pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
-                                 Declaration *decl = new Declaration(*$3,0,0,symType,!$2);
+                                 Declaration *decl = new Declaration(*$3,pos.line,pos.column,symType,!$2);
                                  pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
                                  args->push_back(arg);
                                  $$ = args;
                                }
                                  
-      | TYPE VAR tk_identifier tk_comma ARGSDEF { pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
-                                                  Declaration *decl = new Declaration(*$3,0,0,symType,!$2);
+      | TYPE VAR tk_identifier tk_comma ARGSDEF { yy::position pos = @3.begin;
+                                                  pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
+                                                  Declaration *decl = new Declaration(*$3,pos.line,pos.column,symType,!$2);
                                                   pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
                                                   $5->push_back(arg);
                                                   $$ = $5;
@@ -407,7 +420,7 @@ main(int argc, char **argv) {
     fclose(yyin);
     
 }
-
+// 
 
 void yyerror(char const *s) {
 
