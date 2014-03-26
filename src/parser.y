@@ -423,6 +423,23 @@
                                         $5->push_back(arg);
                                         $$ = $5;
                                       }
+
+      | VAR COMPLEXTYPE ARG { vecFunc *args = new vecFunc;
+                              pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
+                              $3->constant = !$1;
+                              $3->type = symType;
+                              pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                              args->push_back(arg);
+                              $$ = args;
+                            }
+
+      | VAR COMPLEXTYPE ARG tk_comma ARGSDEF { pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
+                                               $3->constant = !$1;
+                                               $3->type = symType;
+                                               pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                                               $5->push_back(arg);
+                                               $$ = $5;
+                                             }
       ;
 
    ARG
