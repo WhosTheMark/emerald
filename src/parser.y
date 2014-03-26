@@ -36,7 +36,6 @@
    Scanner &scanner, Driver &driver, TableTree &scopeTree);
    typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
-
    vector<Declaration*> declList;
 }
 
@@ -128,7 +127,12 @@
       | '(' EXPR ')'
       | CONST
       | FUNCCALL
-      | tk_identifier
+      | tk_identifier { if (scopeTree.lookup(*$1) == nullptr){
+                           yy::position pos = @1.begin;
+                           cout << "The variable " << *$1 << " at line: " << pos.line;
+                           cout << ", column: " << pos.column << " has not been declared.\n";
+                        }
+                      }
       | tk_string ;
 
    CONST
@@ -180,8 +184,19 @@
       : ASIGNLIST tk_asignment ARGSLIST ;
 
    ASIGNLIST
-      : tk_identifier ARRDOT
-      | tk_identifier ARRDOT tk_comma ASIGNLIST ;
+      : tk_identifier ARRDOT { if (scopeTree.lookup(*$1) == nullptr){
+                                 yy::position pos = @1.begin;
+                                 cout << "The variable " << *$1 << " at line: " << pos.line;
+                                 cout << ", column: " << pos.column << " has not been declared.\n";
+                              }
+                           }
+
+      | tk_identifier ARRDOT tk_comma ASIGNLIST { if (scopeTree.lookup(*$1) == nullptr){
+                                                      yy::position pos = @1.begin;
+                                                      cout << "The variable " << *$1 << " at line: " << pos.line;
+                                                      cout << ", column: " << pos.column << " has not been declared.\n";
+                                                  }
+                                                };
 
    ARRDOT
       : /* vacio */
@@ -253,8 +268,6 @@
                                                                                        (**it).second.column,symType,false);
                                                    scopeTree.insert(decl);
                                                 }
-                                             else
-                                                cout << "BOOM: Symbol" << symType->second << " is not a valid Definition\n";
                                           }
 
       | COMPLEXTYPE IDLIST INITLIST tk_semicolon { vecString::reverse_iterator it = $2->rbegin();
@@ -279,7 +292,7 @@
                                                       }
 
                                                    else
-                                                      cout << "BOOM\n";
+                                                      cout << "BOOM\n"; //Se utilizó el nombre de un registeer como el de unown o viceversa
                                                  }
       ;
 
