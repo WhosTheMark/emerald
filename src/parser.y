@@ -199,8 +199,24 @@
       : tk_while EXPR INST ;
 
    FORSTMT
-      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR INST
-      | tk_for tk_identifier tk_from EXPR tk_to EXPR INST ;
+      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR { yy::position pos = @2.begin;
+                                                                  pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
+                                                                  Declaration *decl = new Declaration(*$2,pos.line,pos.column,symType,false);
+                                                                  scopeTree.enterScope();                         
+                                                                  scopeTree.insert(decl);
+                                                                } 
+                           
+                                                                INST { scopeTree.exitScope(); }
+                              
+      | tk_for tk_identifier  tk_from EXPR tk_to EXPR { yy::position pos = @2.begin;
+                                                        pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
+                                                        Declaration *decl = new Declaration(*$2,pos.line,pos.column,symType,false);
+                                                        scopeTree.enterScope();                         
+                                                        scopeTree.insert(decl);
+                                                      } 
+                              
+                                                      INST { scopeTree.exitScope(); }
+      ;
 
    FUNCCALL
       : tk_identifier '(' ARGS ')' ;
@@ -328,7 +344,8 @@
                                                           scopeTree.insert(un);
                                                           //NOTE que hacemos con los campos?
                                                         }
-
+      ;
+      
    FUNCDEF
       : TYPE tk_identifier '(' ')' { yy::position pos = @1.begin;
                                      Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
@@ -402,6 +419,23 @@
                                         $5->push_back(arg);
                                         $$ = $5;
                                       }
+                                      
+      | VAR COMPLEXTYPE ARG { vecFunc *args = new vecFunc;
+                              pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
+                              $3->constant = !$1;
+                              $3->type = symType;
+                              pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                              args->push_back(arg);
+                              $$ = args;
+                            }
+
+      | VAR COMPLEXTYPE ARG tk_comma ARGSDEF { pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
+                                               $3->constant = !$1;
+                                               $3->type = symType;
+                                               pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                                               $5->push_back(arg);
+                                               $$ = $5;
+                                             }                                
       ;
 
    ARG
