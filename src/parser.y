@@ -269,8 +269,14 @@
                                                          scopeTree.insert(decl);
                                                       }
 
-                                                   else if ($1->first == "unown")
-                                                      cout << "HAY QUE HACER UNOWNS!!!\n"; //TODO
+                                                   else if (symType == nullptr ||
+                                                      ((dynamic_cast<Union*>(symType->second) != 0) && ($1->first == "unown")))
+
+                                                      for(; it != $2->rend(); ++it) {
+                                                         Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
+                                                                                             (**it).second.column,symType,false);
+                                                         scopeTree.insert(decl);
+                                                      }
 
                                                    else
                                                       cout << "BOOM\n";
