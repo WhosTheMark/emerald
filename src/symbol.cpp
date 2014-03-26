@@ -54,13 +54,20 @@ public:
          Definition(n,l,c), returnType(r), arguments(args) {
               numArgs = arguments.size();
          };
-           
+
    Function(string n, int l, int c, Basic *r) : 
             Definition(n,l,c), returnType(r), numArgs(0) {};
 
    void printSym(int tabs=0) {
 
-      cout << "FUNCTION NAME: " << name << " RETURN TYPE: " << returnType->name << " LINE: " << line << " COLUMN: " << column << "\n";
+      cout << "FUNCTION NAME: " << name << " RETURN TYPE: ";
+
+      if (returnType != nullptr)
+         cout << returnType->name;
+      else
+         cout << "Not Defined";
+
+      cout << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
@@ -74,7 +81,7 @@ public:
 
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del registro
-      Symbol::printSym(tabs);
+      //Symbol::printSym(tabs);
       cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
@@ -90,7 +97,14 @@ public:
 
    void printSym(int tabs=0) {
 
-      cout << "VARIABLE NAME: " << name << " TYPE: " << type-> first << " LINE: " << line << " COLUMN: " << column << "\n" ;
+      cout << "VARIABLE NAME: " << name << " TYPE: ";
+
+      if(type != nullptr)
+         cout << type-> first;
+      else
+         cout << "Not Defined";
+
+      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
 
 };
@@ -107,7 +121,14 @@ public:
    //NOTE Imprimir lower y upper?
    void printSym(int tabs=0) {
 
-      cout << "ARRAY NAME: " << name << " TYPE: " << type-> first << " LINE: " << line << " COLUMN: " << column << "\n" ;
+      cout << "ARRAY NAME: " << name << " TYPE: ";
+
+      if(type != nullptr)
+         cout << type-> first;
+      else
+         cout << "Not Defined";
+
+      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
 
 };
