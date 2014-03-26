@@ -9,11 +9,13 @@ registeer persona {
 
 /* Esto es un ******** comentario ****
    de varias // lineas muy feo. */
-/*
+
+/* 
 boolbasaur menorEdad (registeer persona p1,registeer persona p2) {
 
    return p1.edad < p2.edad
-}*/
+}
+*/
 
 voidporeon main() {
 
