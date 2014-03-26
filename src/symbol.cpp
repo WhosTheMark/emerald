@@ -55,7 +55,7 @@ public:
               numArgs = arguments.size();
          };
 
-   Function(string n, int l, int c, Basic *r) : 
+   Function(string n, int l, int c, Basic *r) :
             Definition(n,l,c), returnType(r), numArgs(0) {};
 
    void printSym(int tabs=0) {
@@ -83,6 +83,20 @@ public:
       //TODO imprimir la tabla del registro
       //Symbol::printSym(tabs);
       cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
+   };
+};
+
+class Union : public Definition {
+
+public:
+   int size;
+   //TODO table
+
+   Union(string n, int l, int c, int s): Definition(n,l,c), size(s) {};
+
+   void printSym(int tabs=0) {
+      //TODO imprimir la tabla del union
+      cout << "UNION NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
@@ -160,7 +174,7 @@ int main () {
    Symbol *we = new ArrayDecl("whatever", 5, 6, pairDef, false, 0, 10);
    we->printSym();
    delete(we);
-   
+
    return 0;
 }*/
 

@@ -52,15 +52,16 @@
    bool boolean;
    std::vector<std::pair<std::string,Declaration*>*> *vecFunction;
    std::pair<std::string,std::string> *complex;
+   Declaration *declr;
 }
 
-//%type <intNum> tk_int EXPR NUMBER
 %type <idsList> IDLIST
 %type <ids> tk_identifier TYPE tk_charType tk_floatType tk_intType tk_boolType tk_stringType
 %type <ids> tk_structType tk_unionType tk_voidType
 %type <complex> COMPLEXTYPE
 %type <boolean> VAR
 %type <vecFunction> ARGSDEF
+%type <declr> ARG
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -100,6 +101,7 @@
    DEFINITION
       : FUNCDEF
       | REGISTER
+      | UNION
       | DECLARATION ;
 
    EXPR
@@ -320,6 +322,13 @@
                                                         }
       ;
 
+   UNION
+      : tk_unionType tk_identifier '{' DECLARELIST '}' { yy::position pos = @1.begin;
+                                                          Union *un = new Union(*$2,pos.line,pos.column,0);
+                                                          scopeTree.insert(un);
+                                                          //NOTE que hacemos con los campos?
+                                                        }
+
    FUNCDEF
       : TYPE tk_identifier '(' ')' { yy::position pos = @1.begin;
                                      Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
@@ -377,22 +386,32 @@
       ;
 
    ARGSDEF
-      : TYPE VAR tk_identifier { yy::position pos = @3.begin;
-                                 vecFunc *args = new vecFunc;
-                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
-                                 Declaration *decl = new Declaration(*$3,pos.line,pos.column,symType,!$2);
-                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
-                                 args->push_back(arg);
-                                 $$ = args;
-                               }
+      :  VAR TYPE ARG { vecFunc *args = new vecFunc;
+                       pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+                       $3->constant = !$1;
+                       $3->type = symType;
+                       pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                       args->push_back(arg);
+                       $$ = args;
+                     }
 
-      | TYPE VAR tk_identifier tk_comma ARGSDEF { yy::position pos = @3.begin;
-                                                  pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
-                                                  Declaration *decl = new Declaration(*$3,pos.line,pos.column,symType,!$2);
-                                                  pair<string,Declaration*> *arg = new pair<string,Declaration*>(*$3,decl);
-                                                  $5->push_back(arg);
-                                                  $$ = $5;
-                                                }
+      | VAR TYPE ARG tk_comma ARGSDEF { pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+                                        $3->constant = !$1;
+                                        $3->type = symType;
+                                        pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                                        $5->push_back(arg);
+                                        $$ = $5;
+                                      }
+      ;
+
+   ARG
+      : tk_identifier { yy::position pos = @1.begin;
+                        $$ = new Declaration(*$1,pos.line,pos.column,nullptr,false);
+                      }
+      | '[' tk_identifier tk_range tk_identifier ']' tk_identifier { yy::position pos = @6.begin; //TODO agregar variable boundaries
+                                                                     $$ = new ArrayDecl(*$6,pos.line,pos.column,nullptr,false,-1,-1);
+
+                                                                   }
       ;
 
 %%
