@@ -19,7 +19,7 @@ boolbasaur palindrome (intmonchan[init..end] arr) {
 
       if (arr[i] != arr[len-i])
          return false
-   }
+   };
 
    return true
 }
