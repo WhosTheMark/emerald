@@ -36,6 +36,8 @@
    Scanner &scanner, Driver &driver, TableTree &scopeTree);
    typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
+
+   vector<Declaration*> declList;
 }
 
 %union{
@@ -199,8 +201,16 @@
       : tk_while EXPR INST ;
 
    FORSTMT
-      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR INST
-      | tk_for tk_identifier tk_from EXPR tk_to EXPR INST ;
+      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR { scopeTree.enterScope();
+                                                                  yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
+                                                                  Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
+                                                                  scopeTree.insert(decl);
+                                                         } INST { scopeTree.exitScope(); }
+      | tk_for tk_identifier tk_from EXPR tk_to EXPR { scopeTree.enterScope();
+                                                       yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
+                                                       Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
+                                                       scopeTree.insert(decl);
+                                              } INST { scopeTree.exitScope(); };
 
    FUNCCALL
       : tk_identifier '(' ARGS ')' ;
@@ -260,7 +270,7 @@
                                                       }
 
                                                    else if ($1->first == "unown")
-                                                      cout << "HAY QUE HACER UNOWNS!!!\n";
+                                                      cout << "HAY QUE HACER UNOWNS!!!\n"; //TODO
 
                                                    else
                                                       cout << "BOOM\n";
@@ -328,25 +338,24 @@
                                                           scopeTree.insert(un);
                                                           //NOTE que hacemos con los campos?
                                                         }
+      ;
 
    FUNCDEF
       : TYPE tk_identifier '(' ')' { yy::position pos = @1.begin;
                                      Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
                                      Function *func = new Function(*$2,pos.line,pos.column,symType);
                                      scopeTree.insert(func);
-                                     scopeTree.enterScope();
                                    }
 
-                                   BLOCK { scopeTree.exitScope(); }
+                                   BLOCK {  }
 
       | tk_voidType tk_identifier '(' ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
                                             yy::position pos = @1.begin;
                                             Function *func = new Function(*$2,pos.line,pos.column,symType);
                                             scopeTree.insert(func);
-                                            scopeTree.enterScope();
                                           }
 
-                                          BLOCK { scopeTree.exitScope(); }
+                                          BLOCK {  }
 
       | TYPE tk_identifier '(' ARGSDEF ')' { Basic *symType = (Basic*) scopeTree.lookup(*$1)->second;
                                                    vecFunc *args = new vecFunc;
@@ -362,6 +371,11 @@
 
                                                   for(it = $4->rbegin(); it != $4->rend(); ++it)
                                                          scopeTree.insert((*it)->second);
+                                                  vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
+                                                  for(;declIt != declList.rend(); ++declIt)
+                                                     scopeTree.insert(*declIt);
+
+                                                  declList.empty();
                                            }
 
                                            BLOCK { scopeTree.exitScope(); }
@@ -380,6 +394,13 @@
 
                                                     for(it = $4->rbegin(); it != $4->rend(); ++it)
                                                          scopeTree.insert((*it)->second);
+
+                                                    vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
+                                                    for(;declIt != declList.rend(); ++declIt)
+                                                         scopeTree.insert(*declIt);
+
+                                                    declList.empty();
+
                                                   }
 
                                                   BLOCK { scopeTree.exitScope(); }
@@ -408,9 +429,15 @@
       : tk_identifier { yy::position pos = @1.begin;
                         $$ = new Declaration(*$1,pos.line,pos.column,nullptr,false);
                       }
-      | '[' tk_identifier tk_range tk_identifier ']' tk_identifier { yy::position pos = @6.begin; //TODO agregar variable boundaries
+      | '[' tk_identifier tk_range tk_identifier ']' tk_identifier { pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
+                                                                     yy::position lowerPos = @2.begin;
+                                                                     Declaration *lower = new Declaration(*$2,lowerPos.line,lowerPos.column,symType,false);
+                                                                     yy::position upperPos = @4.begin;
+                                                                     Declaration *upper = new Declaration(*$4,upperPos.line,upperPos.column,symType,false);
+                                                                     declList.push_back(lower);
+                                                                     declList.push_back(upper);
+                                                                     yy::position pos = @6.begin;
                                                                      $$ = new ArrayDecl(*$6,pos.line,pos.column,nullptr,false,-1,-1);
-
                                                                    }
       ;
 

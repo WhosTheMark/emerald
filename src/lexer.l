@@ -105,24 +105,24 @@ tag             { return token::tk_tag; }
 
 ";"             { return token::tk_semicolon; }
 
-","             { return token::tk_comma; } 
+","             { return token::tk_comma; }
 
 ":"             { return token::tk_colon; }
 
 "->"            { return token::tk_arrow; }
 
-"!" | 
+"!" |
 "-" |
-"^" | 
-"*" |            
-"/" | 
-"=" |            
-"+" | 
-"(" |            
-")" | 
-"{" |          
-"}" | 
-"[" |          
+"^" |
+"*" |
+"/" |
+"=" |
+"+" |
+"(" |
+")" |
+"{" |
+"}" |
+"[" |
 "]"             { yylval->strOp = yytext; return yytext[0]; }
 
 
@@ -134,11 +134,11 @@ tag             { return token::tk_tag; }
 
 #(.|[^\n])*               { /* Comentario simple */ }
 
-\"(\\.|[^\"\\])*\"        { yylval->str = yytext; 
-                            
+\"(\\.|[^\"\\])*\"        { yylval->str = yytext;
+
                             for(int i = 0; i < yyleng; ++i) {
-                            
-                              if (yytext[i] == '\n')  
+
+                              if (yytext[i] == '\n')
                                  yylloc->lines(1);
                             }
 
@@ -153,11 +153,11 @@ tag             { return token::tk_tag; }
 [ \t]                     { yylloc->step(); }
 
 \/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */
-                            
+
                             for(int i = 0; i < yyleng; ++i) {
-                            
-                              if (yytext[i] == '\n') 
-                                 yylloc->lines(1);                           
+
+                              if (yytext[i] == '\n')
+                                 yylloc->lines(1);
                             }
 
                             yylloc->step();  }
