@@ -11,6 +11,7 @@ extern int errorCount;
 class SymTableNode {
 
 public:
+
    SymTable table;
    SymTableNode *parent;
    vector<SymTableNode*> children;
@@ -19,7 +20,6 @@ public:
    SymTableNode() : parent(nullptr) {};
 
 };
-
 
 class TableTree {
 
@@ -30,6 +30,7 @@ public:
 
    TableTree() : root(nullptr) , currentScope(nullptr) {};
 
+   /* Abre un alcance nuevo. */
    void enterScope() {
 
       if (root != nullptr) {
@@ -38,29 +39,33 @@ public:
          currentScope->children.push_back(child);
          currentScope = child;
 
+      /* Si no existe la raiz, crea el primer alcance. */
       } else {
 
          SymTableNode *newRoot = new SymTableNode();
          root = newRoot;
          currentScope = newRoot;
-
       }
    };
 
+   /* Cierra el alcance actual. */
    void exitScope() {
 
       currentScope = currentScope->parent;
    };
 
+   /* Inserta un simbolo al alcance actual. */
    bool insert(Symbol *sym) {
 
+      /* Si el simbolo no esta en la raiz, se intenta de agregar.*/
       if (!root->table.contains(sym)) {
 
          vector<SymTableNode*>::iterator it = root->children.begin();
 
+         /* Si el simbolo es una funcion o tipo definido por el usuario
+          * o esta en el alcance actual entonces no se agrega.*/
          if ((it != root->children.end() && root->children.front()->table.contains(sym)
             && dynamic_cast<Declaration*>((root->children.front()->table.lookup(sym->name))->second) == 0)
-
             || !currentScope->table.insert(sym)) {
 
             ++errorCount;
@@ -76,6 +81,7 @@ public:
 
    };
 
+   /* Busca el simbolo dado su nombre en el arbol de tablas.*/
    pair<string,Symbol*> *lookup(string symName) {
 
       SymTableNode *aux = currentScope;
@@ -92,17 +98,17 @@ public:
       return nullptr;
    };
 
-
+   /* Imprime el arbol de tablas. */
    void printTree() {
 
       printNode(0,root);
       cout << "\n";
-
    };
 
 
 private:
 
+   /* Imprime un nodo del arbol de tablas. */
    void printNode(int tabs, SymTableNode *currentNode) {
 
       currentNode->table.print(tabs);
@@ -111,57 +117,4 @@ private:
       for ( ; it != currentNode->children.end() ; ++it)
          printNode(tabs+1,*it);
    };
-
 };
-/*
-int main () {
-
-   Basic basicInt("int", -1,-1, 4);
-   vector<pair<string,Declaration*>*> emptyVector;
-   Function func("squirtle", 1, 1, &basicInt, emptyVector, 1);
-   pair<string,Definition*> pairDef(basicInt.name,&basicInt);
-
-   Declaration variable("i", 2, 3, &pairDef, false);
-   ArrayDecl array("intArr", 5, 6, &pairDef, false, 0, 10);
-   Function funcInt("i", 1, 1, &basicInt, emptyVector, 1);
-   Register reg("persona", 8, 9, 28);
-   pair<string,Definition*> pairReg(reg.name,&reg);
-   Declaration varPerson("Andrea", 6, 66, &pairReg, false);
-
-   TableTree tree;
-   tree.enterScope();
-
-   tree.insert(&basicInt);
-   tree.insert(&func);
-
-   tree.enterScope();
-
-   tree.insert(&variable);
-   tree.insert(&array);
-
-   tree.enterScope();
-
-   tree.insert(&funcInt);
-   tree.insert(&reg);
-
-   //tree.exitScope();
-   tree.insert(&varPerson);
-
-   tree.printTree();
-
-   pair<string,Symbol*> *sym = tree.lookup("i");
-
-   sym->second->printSym();
-
-   tree.exitScope();
-
-   sym = tree.lookup("i");
-
-   sym->second->printSym();
-
-
-   return 0;
-
-
-
-}*/

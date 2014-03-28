@@ -44,6 +44,7 @@ void Driver::parse(const char *file) {
 
 }
 
+/* Inicializacion del arbol de tablas con los tipos primitivos. */
 void Driver::initializeTree(TableTree *scopeTree) {
 
    scopeTree->enterScope();

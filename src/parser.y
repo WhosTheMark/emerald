@@ -146,7 +146,7 @@
       | tk_identifier               {  if (scopeTree.lookup(*$1) == nullptr) {
                                           ++errorCount;
                                           yy::position pos = @1.begin;
-                                          cout << "The variable " << *$1 << " at line: " << pos.line;
+                                          cout << "The variable '" << *$1 << "' at line: " << pos.line;
                                           cout << ", column: " << pos.column << " has not been declared.\n";
                                        }
                                     }
@@ -195,7 +195,7 @@
       | '{'                         {  scopeTree.enterScope(); }
          DECLARELIST STMTLIST       {  scopeTree.exitScope();
                                     }
-      | '{' '}'                     { ++errorCount;
+      | '{' '}'                     {  ++errorCount;
                                        cout << "Error at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column;
                                        cout << ": a block must have at least one statement.\n";
@@ -248,11 +248,11 @@
       | '[' EXPR ']' ARRDOT
       | tk_dot tk_identifier ARRDOT
 
-      | '[' error ']'   { ++errorCount;
-                          cout << "Invalid expression in array asignment at line: ";
-                          cout << @2.begin.line << ", column: " << @2.begin.column;
-                          cout << ".\n";
-                          yyerrok;
+      | '[' error ']'   {  ++errorCount;
+                           cout << "Invalid expression in array asignment at line: ";
+                           cout << @2.begin.line << ", column: " << @2.begin.column;
+                           cout << ".\n";
+                           yyerrok;
                         }
 
       ;
@@ -302,14 +302,18 @@
       ;
 
    FORSTMT
-      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR   {  scopeTree.enterScope();
+      : tk_for tk_identifier tk_from EXPR tk_to EXPR tk_by EXPR   {  /* Se abre un nuevo alcance para la variable de la
+                                                                      * instruccion for y la agrega a la tabla. */
+                                                                     scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
                                                                      scopeTree.insert(decl);
                                                                   }
                                                             INST  {  scopeTree.exitScope(); }
 
-      | tk_for tk_identifier tk_from EXPR tk_to EXPR              {  scopeTree.enterScope();
+      | tk_for tk_identifier tk_from EXPR tk_to EXPR              {  /* Se abre un nuevo alcance para la variable de la
+                                                                      * instruccion for y la agrega a la tabla. */
+                                                                     scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
                                                                      scopeTree.insert(decl);
@@ -363,7 +367,8 @@
       ;
 
    DECLARATION
-      : TYPE IDLIST INITLIST tk_semicolon          {  vecString::reverse_iterator it = $2->rbegin();
+      : TYPE IDLIST INITLIST tk_semicolon          {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
+                                                      vecString::reverse_iterator it = $2->rbegin();
                                                       pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
 
                                                       if (symType == nullptr || dynamic_cast<Definition*>(symType->second) != 0)
@@ -374,7 +379,8 @@
                                                             scopeTree.insert(decl);
                                                          }
                                                    }
-      | COMPLEXTYPE IDLIST INITLIST tk_semicolon   {  vecString::reverse_iterator it = $2->rbegin();
+      | COMPLEXTYPE IDLIST INITLIST tk_semicolon   {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
+                                                      vecString::reverse_iterator it = $2->rbegin();
                                                       pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
 
                                                       if (symType == nullptr ||
@@ -421,28 +427,37 @@
       ;
 
    IDLIST
-      : tk_identifier ARRAYDECL                          {  vecString *idList = new vecString;
+      : tk_identifier ARRAYDECL                          {  /* Se crea una nueva lista de strings para los identificadores
+                                                             * y se agrega el identificador actual.*/
+                                                            vecString *idList = new vecString;
                                                             pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
                                                             idList->push_back(idPos);
                                                             $$ = idList;
                                                          }
-      | tk_identifier ARRAYDECL tk_comma IDLIST          {  pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
+      | tk_identifier ARRAYDECL tk_comma IDLIST          {  /* Se agrega el identificador actual a la lista ya creada.*/
+                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
                                                             $4->push_back(idPos);
                                                             $$ = $4;
                                                          }
-      | tk_const tk_identifier ARRAYDECL                 {  vecString *idList = new vecString;
+      | tk_const tk_identifier ARRAYDECL                 {  /* Se crea una nueva lista de strings para los identificadores
+                                                             * y se agrega el identificador actual.*/
+                                                            vecString *idList = new vecString;
                                                             pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
                                                             idList->push_back(idPos);
-                                                            $$ = idList; /*TODO FALTA CONST*/
+                                                            $$ = idList;
+                                                            /*TODO Falta poner si es una constante*/
                                                          }
-      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST {  pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
+      | tk_const tk_identifier ARRAYDECL tk_comma IDLIST {  /* Se agrega el identificador actual a la lista ya creada.*/
+                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
                                                             $5->push_back(idPos);
                                                             $$ = $5;
+                                                            /*TODO Falta poner si es una constante*/
                                                          }
       | error tk_comma IDLIST                            {  ++errorCount;
                                                             cout << "Error in declaration at line: " << @1.begin.line;
                                                             cout << ", column: " << @1.begin.column << ".\n";
                                                             yyerrok;
+                                                            $$ = $3;
                                                          }
       ;
 
@@ -486,7 +501,7 @@
 
    VAR
       : /* empty */  {  $$ = false; }
-      | tk_var       {  $$ = true; }
+      | tk_var       {  $$ = true;  }
       ;
 
    REGISTER
@@ -496,7 +511,6 @@
                                              yy::position pos = @1.begin;
                                              Register *reg = new Register(*$2,pos.line,pos.column,0);
                                              scopeTree.insert(reg);
-                                             //NOTE que hacemos con los campos?
                                           }
       ;
 
@@ -506,7 +520,6 @@
                                              yy::position pos = @1.begin;
                                              Union *un = new Union(*$2,pos.line,pos.column,0);
                                              scopeTree.insert(un);
-                                             //NOTE que hacemos con los campos?
                                           }
       ;
 
@@ -529,22 +542,27 @@
                                                       vecFunc *args = new vecFunc;
                                                       vecFunc::reverse_iterator it = $4->rbegin();
 
+                                                      /* Invierte la lista de argumentos para agregarla a la declaracion. */
                                                       for(; it != $4->rend(); ++it)
                                                          args->push_back(*it);
 
                                                       yy::position pos = @1.begin;
                                                       Function *func = new Function(*$2,pos.line,pos.column,symType,*args);
                                                       scopeTree.insert(func);
+
+                                                      /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
                                                       scopeTree.enterScope();
 
                                                       for(it = $4->rbegin(); it != $4->rend(); ++it)
                                                          scopeTree.insert((*it)->second);
 
+                                                      /* Si hay arreglos en los argumentos entonces se agregan
+                                                       * las variables asociadas a sus delimitadores. */
                                                       vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
                                                       for(;declIt != declList.rend(); ++declIt)
                                                          scopeTree.insert(*declIt);
 
-                                                      declList.empty();
+                                                      declList.empty(); //Vacia la lista.
                                                    }
                                              BLOCK {  scopeTree.exitScope(); }
 
@@ -552,12 +570,15 @@
                                                       vecFunc *args = new vecFunc;
                                                       vecFunc::reverse_iterator it = $4->rbegin();
 
+                                                      /* Invierte la lista de argumentos para agregarla a la declaracion. */
                                                       for(; it != $4->rend(); ++it)
                                                          args->push_back(*it);
 
                                                       yy::position pos = @1.begin;
                                                       Function *func = new Function(*$2,pos.line,pos.column,symType,*args);
                                                       scopeTree.insert(func);
+
+                                                      /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
                                                       scopeTree.enterScope();
 
                                                       for(it = $4->rbegin(); it != $4->rend(); ++it)
@@ -565,17 +586,21 @@
 
                                                       vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
 
+                                                      /* Si hay arreglos en los argumentos entonces se agregan
+                                                       * las variables asociadas a sus delimitadores. */
                                                       for(;declIt != declList.rend(); ++declIt)
                                                          scopeTree.insert(*declIt);
 
-                                                      declList.empty();
+                                                      declList.empty(); //Vacia la lista.
 
                                                    }
                                              BLOCK { scopeTree.exitScope(); }
       ;
 
    ARGSDEF
-      :  VAR TYPE ARG                        {  vecFunc *args = new vecFunc;
+      :  VAR TYPE ARG                        {  /* Se crea una nueva lista para los argumentos de las funciones y
+                                                 * se agrega el argumento actual. */
+                                                vecFunc *args = new vecFunc;
                                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
@@ -583,14 +608,17 @@
                                                 args->push_back(arg);
                                                 $$ = args;
                                              }
-      | VAR TYPE ARG tk_comma ARGSDEF        {  pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+      | VAR TYPE ARG tk_comma ARGSDEF        {  /* Se agrega el argumento actual a la lista de argumentos de la funcion. */
+                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 $$ = $5;
                                              }
-      | VAR COMPLEXTYPE ARG                  {  vecFunc *args = new vecFunc;
+      | VAR COMPLEXTYPE ARG                  {  /* Se crea una nueva lista para los argumentos de las funciones y
+                                                 * se agrega el argumento actual. */
+                                                vecFunc *args = new vecFunc;
                                                 pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
@@ -598,14 +626,16 @@
                                                 args->push_back(arg);
                                                 $$ = args;
                                              }
-      | VAR COMPLEXTYPE ARG tk_comma ARGSDEF {  pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
+      | VAR COMPLEXTYPE ARG tk_comma ARGSDEF {  /* Se agrega el argumento actual a la lista de argumentos de la funcion. */
+                                                pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 $$ = $5;
                                              }
-      |  VAR TYPE ARG tk_comma               {  vecFunc *args = new vecFunc;
+      |  VAR TYPE ARG tk_comma               {  /* Dummy para el manejo de errores cuando hay una coma extra. */
+                                                vecFunc *args = new vecFunc;
                                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
@@ -623,15 +653,19 @@
       : tk_identifier                                                {  yy::position pos = @1.begin;
                                                                         $$ = new Declaration(*$1,pos.line,pos.column,nullptr,false);
                                                                      }
-      | '[' tk_identifier tk_range tk_identifier ']' tk_identifier   {  pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
-                                                                        yy::position lowerPos = @2.begin;
-                                                                        Declaration *lower = new Declaration(*$2,lowerPos.line,lowerPos.column,symType,false);
-                                                                        yy::position upperPos = @4.begin;
-                                                                        Declaration *upper = new Declaration(*$4,upperPos.line,upperPos.column,symType,false);
+      | tk_identifier '[' tk_identifier tk_range tk_identifier ']'   {  pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
+                                                                        yy::position lowerPos = @3.begin;
+                                                                        Declaration *lower = new Declaration(*$3,lowerPos.line,lowerPos.column,symType,false);
+                                                                        yy::position upperPos = @5.begin;
+                                                                        Declaration *upper = new Declaration(*$5,upperPos.line,upperPos.column,symType,false);
+
+                                                                        /* Se agregan los delimitadores del arreglo a una lista global para
+                                                                         * luego ser agregados al alcance correspondiente. */
                                                                         declList.push_back(lower);
                                                                         declList.push_back(upper);
-                                                                        yy::position pos = @6.begin;
-                                                                        $$ = new ArrayDecl(*$6,pos.line,pos.column,nullptr,false,-1,-1);
+
+                                                                        yy::position pos = @1.begin;
+                                                                        $$ = new ArrayDecl(*$1,pos.line,pos.column,nullptr,false,-1,-1);
                                                                      }
       ;
 
@@ -647,6 +681,3 @@ static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *y
                  Scanner &scanner, Driver &driver, TableTree &scopeTree) {
    return scanner.yylex(yylval,yylloc);
 }
-
-
-

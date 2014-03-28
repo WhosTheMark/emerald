@@ -6,12 +6,10 @@
 #include "parser.tab.h"
 
 typedef yy::Parser::token token;
-int errorCount = 0;
+int errorCount = 0; //Contador de errores.
 
 #define strToken(s) ( new std::string(s) )
 #define YY_USER_ACTION yylloc->columns(yyleng);
-
-
 
 %}
 
@@ -30,89 +28,89 @@ DIGIT [0-9]
    yylloc->step();
 %}
 
-boolbasaur      { yylval->ids = strToken(yytext); return token::tk_boolType; }
+boolbasaur     {  yylval->ids = strToken(yytext); return token::tk_boolType; }
 
-intmonchan      { yylval->ids = strToken(yytext); return token::tk_intType; }
+intmonchan     {  yylval->ids = strToken(yytext); return token::tk_intType; }
 
-charizard       { yylval->ids = strToken(yytext); return token::tk_charType; }
+charizard      {  yylval->ids = strToken(yytext); return token::tk_charType; }
 
-floatzel        { yylval->ids = strToken(yytext); return token::tk_floatType; }
+floatzel       {  yylval->ids = strToken(yytext); return token::tk_floatType; }
 
-onix            { yylval->ids = strToken(yytext); return token::tk_stringType; }
+onix           {  yylval->ids = strToken(yytext); return token::tk_stringType; }
 
-registeer       { yylval->ids = strToken(yytext); return token::tk_structType; }
+registeer      {  yylval->ids = strToken(yytext); return token::tk_structType; }
 
-unown           { yylval->ids = strToken(yytext); return token::tk_unionType; }
+unown          {  yylval->ids = strToken(yytext); return token::tk_unionType; }
 
-voidporeon      { yylval->ids = strToken(yytext); return token::tk_voidType; }
+voidporeon     {  yylval->ids = strToken(yytext); return token::tk_voidType; }
 
-if              { return token::tk_if; }
+if             {  return token::tk_if; }
 
-else            { return token::tk_else; }
+else           {  return token::tk_else; }
 
-elsif           { return token::tk_elsif; }
+elsif          {  return token::tk_elsif; }
 
-for             { return token::tk_for; }
+for            {  return token::tk_for; }
 
-from            { return token::tk_from; }
+from           {  return token::tk_from; }
 
-to              { return token::tk_to; }
+to             {  return token::tk_to; }
 
-by              { return token::tk_by; }
+by             {  return token::tk_by; }
 
-while           { return token::tk_while; }
+while          {  return token::tk_while; }
 
-BOOM            { return token::tk_break; }
+BOOM           {  return token::tk_break; }
 
-continue        { return token::tk_continue; }
+continue       {  return token::tk_continue; }
 
-switch          { return token::tk_switch; }
+switch         {  return token::tk_switch; }
 
-case            { return token::tk_case; }
+case           {  return token::tk_case; }
 
-default         { return token::tk_default; }
+default        {  return token::tk_default; }
 
-return          { return token::tk_return; }
+return         {  return token::tk_return; }
 
-const           { return token::tk_const; }
+const          {  return token::tk_const; }
 
-var             { return token::tk_var; }
+var            {  return token::tk_var; }
 
-true            { return token::tk_true; }
+true           {  return token::tk_true; }
 
-false           { return token::tk_false; }
+false          {  return token::tk_false; }
 
-tag             { return token::tk_tag; }
+tag            {  return token::tk_tag; }
 
-"%"             { yylval->strOp = yytext; return token::tk_mod; }
+"%"            {  yylval->strOp = yytext; return token::tk_mod; }
 
-"<"             { yylval->strOp = yytext; return token::tk_lessThan; }
+"<"            {  yylval->strOp = yytext; return token::tk_lessThan; }
 
-"<="            { yylval->strOp = yytext; return token::tk_lessEq; }
+"<="           {  yylval->strOp = yytext; return token::tk_lessEq; }
 
-">"             { yylval->strOp = yytext; return token::tk_moreThan; }
+">"            {  yylval->strOp = yytext; return token::tk_moreThan; }
 
-">="            { yylval->strOp = yytext; return token::tk_moreEq; }
+">="           {  yylval->strOp = yytext; return token::tk_moreEq; }
 
-"!="            { yylval->strOp = yytext; return token::tk_notEqual; }
+"!="           {  yylval->strOp = yytext; return token::tk_notEqual; }
 
-"&&"            { yylval->strOp = yytext; return token::tk_and; }
+"&&"           {  yylval->strOp = yytext; return token::tk_and; }
 
-"||"            { yylval->strOp = yytext; return token::tk_or; }
+"||"           {  yylval->strOp = yytext; return token::tk_or; }
 
-":="            { yylval->strOp = yytext; return token::tk_asignment; }
+":="           {  yylval->strOp = yytext; return token::tk_asignment; }
 
-".."            { yylval->strOp = yytext; return token::tk_range; }
+".."           {  yylval->strOp = yytext; return token::tk_range; }
 
-"."             { yylval->strOp = yytext; return token::tk_dot; }
+"."            {  yylval->strOp = yytext; return token::tk_dot; }
 
-";"             { return token::tk_semicolon; }
+";"            {  return token::tk_semicolon; }
 
-","             { return token::tk_comma; }
+","            {  return token::tk_comma; }
 
-":"             { return token::tk_colon; }
+":"            {  return token::tk_colon; }
 
-"->"            { return token::tk_arrow; }
+"->"           {  return token::tk_arrow; }
 
 "!" |
 "-" |
@@ -126,60 +124,60 @@ tag             { return token::tk_tag; }
 "{" |
 "}" |
 "[" |
-"]"             { yylval->strOp = yytext; return yytext[0]; }
+"]"                        {  yylval->strOp = yytext; return yytext[0]; }
 
+{DIGIT}+                   {  yylval->intNum = atoi(yytext); return token::tk_int; }
 
-{DIGIT}+                  { yylval->intNum = atoi(yytext); return token::tk_int; }
+{DIGIT}+\.{DIGIT}+         {  yylval->floatNum = atof(yytext); return token::tk_float;}
 
-{DIGIT}+\.{DIGIT}+        { yylval->floatNum = atof(yytext); return token::tk_float;}
+[a-zA-Z_][a-zA-Z0-9_]*     {  yylval->ident = strToken(yytext); return token::tk_identifier;}
 
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval->ident = strToken(yytext); return token::tk_identifier;}
+#(.|[^\n])*                { /* Comentario simple */ }
 
-#(.|[^\n])*               { /* Comentario simple */ }
+\"(\\.|[^\"\\])*\"         {  yylval->str = yytext;
 
-\"(\\.|[^\"\\])*\"        { yylval->str = yytext;
+                              /* Cuenta los saltos de linea en un string de varias lineas. */
+                              for(int i = 0; i < yyleng; ++i) {
 
-                            for(int i = 0; i < yyleng; ++i) {
+                                 if (yytext[i] == '\n')
+                                    yylloc->lines(1);
+                              }
+                              return token::tk_string;
+                           }
 
-                              if (yytext[i] == '\n')
-                                 yylloc->lines(1);
-                            }
+\"(\\.|[^\"\\])*           { /* Expresion para el manejo de errores de strings sin comillas que lo cierren.*/
+                              ++errorCount;
+                              std::cout << "Missing quotation mark, string begins at line: ";
+                              std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
+                           }
 
-                            return token::tk_string; }
+\'(\\.|[^\'\\])\'          {  yylval->chars = yytext[1]; return token::tk_char; }
 
-\"(\\.|[^\"\\])*          { ++errorCount;
-                            std::cout << "Missing quotation mark, string begins at line: ";
-                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
-                          }
+\n                         {  yylloc->lines(1); yylloc->step(); }
 
-\'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
+[ \t]                      {  yylloc->step(); }
 
-\n                        { yylloc->lines(1); yylloc->step(); }
+\/\*([^*]|\*+[^/*])*\*+\/  { /* Cometario en bloque */
 
-[ \t]                     { yylloc->step(); }
+                              /* Cuenta los saltos de linea en un commentario de varias lineas. */
+                              for(int i = 0; i < yyleng; ++i) {
 
-\/\*([^*]|\*+[^/*])*\*+\/ { /* Cometario en bloque */
+                                 if (yytext[i] == '\n')
+                                    yylloc->lines(1);
+                              }
+                              yylloc->step();
+                           }
 
-                            for(int i = 0; i < yyleng; ++i) {
+\/\*([^*]|\*+[^/*])*       {  /* Expresion para el manejo de errores de comentarios de bloque sin delimitador.*/
+                              ++errorCount;
+                              std::cout << "Missing end of comment */, comment begins at line: ";
+                              std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
+                           }
 
-                              if (yytext[i] == '\n')
-                                 yylloc->lines(1);
-                            }
-
-                            yylloc->step();
-                          }
-
-
-\/\*([^*]|\*+[^/*])*      { ++errorCount;
-
-                            std::cout << "Missing end of comment */, comment begins at line: ";
-                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
-                          }
-
-.                       { ++errorCount;
-                          std::cout << "The character \"" << yytext << "\" at line: " << yylloc->begin.line;
-                          std::cout << ", column: " << yylloc->begin.column << " is invalid. \n";
-                        }
+.                          {  /* Manejo de caracteres invalidos. */
+                              ++errorCount;
+                              std::cout << "The character \"" << yytext << "\" at line: " << yylloc->begin.line;
+                              std::cout << ", column: " << yylloc->begin.column << " is invalid. \n";
+                           }
 
 %%
-

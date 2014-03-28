@@ -21,13 +21,16 @@ public:
    //virtual ~Symbol();
 };
 
+/* Clase de simbolos utilizada para la definicion de tipos primitivos y
+ * definidos por el usuario y funciones.
+ */
 class Definition : public Symbol {
 
 public:
    Definition(string n, int l, int c) : Symbol(n,l,c) {};
-
 };
 
+/* Clase de tipos primitivos. */
 class Basic : public Definition {
 
 public:
@@ -39,21 +42,21 @@ public:
 
       cout << "PRIMITIVE TYPE: " << name << "\n" ;
    };
-
 };
 
+/* Clase de definicion de funciones. */
 class Function : public Definition {
 
 public:
-   Basic *returnType;
-   vector<pair<string,Declaration*>*> arguments;
-   int numArgs;
+   Basic *returnType; //Tipo de retorno de la funcion.
+   vector<pair<string,Declaration*>*> arguments; //Lista de los argumentos de la funcion.
+   int numArgs; //Numero de argumentos de la funcion.
    //TODO body
 
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args) :
          Definition(n,l,c), returnType(r), arguments(args) {
               numArgs = arguments.size();
-         };
+   };
 
    Function(string n, int l, int c, Basic *r) :
             Definition(n,l,c), returnType(r), numArgs(0) {};
@@ -71,6 +74,7 @@ public:
    };
 };
 
+/* Clase de definicion de registros. */
 class Register : public Definition {
 
 public:
@@ -81,11 +85,12 @@ public:
 
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del registro
-      //Symbol::printSym(tabs);
+
       cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
+/* Clase de definicion de uniones. */
 class Union : public Definition {
 
 public:
@@ -96,14 +101,16 @@ public:
 
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del union
+
       cout << "UNION NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 };
 
+/* Clase de declaracion de simbolos. */
 class Declaration : public Symbol {
 
 public:
-   pair<string,Symbol*> *type;
+   pair<string,Symbol*> *type; //Tipo de la variable declarada.
    bool constant;
 
    Declaration(string n, int l, int c, pair<string,Symbol*> *p, bool con) :
@@ -120,14 +127,14 @@ public:
 
       cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
-
 };
 
+/* Clase de declaracion de arreglos.*/
 class ArrayDecl : public Declaration {
 
 public:
-   int lower;
-   int upper;
+   int lower; //Limite inferior del arreglo.
+   int upper; //Limite superior del arreglo.
 
    ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int u) :
       Declaration(n,l,c,p,con), lower(low), upper(u) {};
@@ -144,38 +151,6 @@ public:
 
       cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
-
 };
-
-/*
-int main () {
-
-   Basic *basicInt = new Basic("int", -1,-1, 4);
-   vector<pair<string,Declaration*>*> emptyVector;
-   Function *func = new Function("squirtle", 1, 1, basicInt, emptyVector, 1);
-   pair<string,Definition*> *pairDef = new pair<string,Definition*>(basicInt->name,basicInt);
-
-   Declaration *variable = new Declaration("i", 2, 3, pairDef, false);
-   ArrayDecl *array = new ArrayDecl("intArr", 5, 6, pairDef, false, 0, 10);
-
-   Register *reg = new Register("persona", 8, 9, 28);
-   pair<string,Definition*> *pairReg = new pair<string,Definition*>(reg->name,reg);
-   Declaration *varPerson = new Declaration("Andrea", 6, 66, pairReg, false);
-
-
-   basicInt->printSym();
-   reg->printSym();
-
-   func->printSym();
-   variable->printSym();
-   array->printSym();
-   varPerson->printSym();
-
-   Symbol *we = new ArrayDecl("whatever", 5, 6, pairDef, false, 0, 10);
-   we->printSym();
-   delete(we);
-
-   return 0;
-}*/
 
 #endif
