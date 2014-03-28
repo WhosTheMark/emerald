@@ -54,13 +54,17 @@ public:
     //TODO ver cuando no se puede redefinir las variables definidas por usuario
 
       if (!root->table.contains(sym)) {
-        if (!currentScope->table.insert(sym)){
-         pair<string,Symbol*> *reDef = this->lookup(sym->name);
-         cout << "Variable " << sym->name << " at line: " << sym->line << ", column: ";
-         cout << sym->column << " has already been defined at line: " << reDef->second->line;
-         cout << " column: " << reDef->second->column << "\n";
-        } else
-           return true;
+         
+         vector<SymTableNode*>::iterator it = root->children.begin();
+         
+         if ((it != root->children.end() && root->children.front()->table.contains(sym))
+            || !currentScope->table.insert(sym)) {
+            pair<string,Symbol*> *reDef = this->lookup(sym->name);
+            cout << "The variable " << sym->name << " at line: " << sym->line << ", column: ";
+            cout << sym->column << " has already been defined at line: " << reDef->second->line;
+            cout << ", column: " << reDef->second->column << ".\n";
+         } else
+            return true;
       }
       return false;
 
@@ -86,6 +90,7 @@ public:
    void printTree() {
 
       printNode(0,root);
+      cout << "\n";
 
    };
 

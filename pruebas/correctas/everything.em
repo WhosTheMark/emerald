@@ -61,11 +61,18 @@ voidporeon main() {
       switch num {
 
          case 1 -> { for i from 0 to 30 by 3
-                        println(int + 1)
+                        println(int + 1);
+                        
+                        println("WIIII++")
                    }
 
-         case 2 -> { intmonchan array[0..5];
+         case 2 -> { charizard c;
+                     intmonchan array[0..5];
+                     
+                     array[1] := 1;
 
+                     c := 'a';
+                     
                      for i from 0 to 5 {
                         array[i] := num * i;
                         println(array[i])
@@ -90,6 +97,7 @@ voidporeon main() {
       boolbasaur unused;
       onix randomStr := "I am random";
 
+      unused := 2;
       tag: aTag;
 
       for i from -100 to 4 {
@@ -99,6 +107,15 @@ voidporeon main() {
          else
             println(i)
       };
+      
+      
+      if 1 = 2 {
+         boolbasaur BOO;
+         println("hello")
+      } elsif 1 < 2 
+         println("BOO")
+      else
+         println();
 
       println(randomStr)
    }

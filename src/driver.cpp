@@ -2,7 +2,7 @@
 #include <cassert>
 #include "driver.hpp"
 
-
+extern int errorCount;
 const int INT_SIZE = 32;
 const int CHAR_SIZE = 8;
 const int FLOAT_SIZE = 32;
@@ -36,10 +36,8 @@ void Driver::parse(const char *file) {
    assert(parser != nullptr);
    
    const int ACCEPT(0);
-   
-   if(parser->parse() != ACCEPT)
-      std::cerr << "Parse Failed\n";
-   else
+      
+   if(parser->parse() == ACCEPT && errorCount == 0)
       scopeTree->printTree();
    
 }
@@ -61,4 +59,5 @@ void Driver::initializeTree(TableTree *scopeTree) {
    scopeTree->insert(basicBool);
    scopeTree->insert(basicStr);
    scopeTree->insert(basicVoid);
+   
 }
