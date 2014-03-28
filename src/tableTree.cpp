@@ -6,6 +6,8 @@
 
 using namespace std;
 
+extern int errorCount;
+
 class SymTableNode {
 
 public:
@@ -51,18 +53,22 @@ public:
    };
 
    bool insert(Symbol *sym) {
-    //TODO ver cuando no se puede redefinir las variables definidas por usuario
 
       if (!root->table.contains(sym)) {
-         
+
          vector<SymTableNode*>::iterator it = root->children.begin();
-         
-         if ((it != root->children.end() && root->children.front()->table.contains(sym))
+
+         if ((it != root->children.end() && root->children.front()->table.contains(sym)
+            && dynamic_cast<Declaration*>((root->children.front()->table.lookup(sym->name))->second) == 0)
+
             || !currentScope->table.insert(sym)) {
+
+            ++errorCount;
             pair<string,Symbol*> *reDef = this->lookup(sym->name);
             cout << "The variable " << sym->name << " at line: " << sym->line << ", column: ";
             cout << sym->column << " has already been defined at line: " << reDef->second->line;
             cout << ", column: " << reDef->second->column << ".\n";
+
          } else
             return true;
       }

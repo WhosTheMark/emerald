@@ -115,10 +115,10 @@
       | EXPR '/' EXPR
       | EXPR '^' EXPR
       | EXPR '=' EXPR
-      | EXPR '=''=' EXPR   {  ++errorCount;
-                              cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
-                              cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
-                           }
+      | EXPR '=''=' EXPR            {  ++errorCount;
+                                       cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
+                                       cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
+                                    }
       | EXPR '[' EXPR ']'
       | EXPR tk_mod EXPR
       | EXPR tk_and EXPR
@@ -132,15 +132,24 @@
       | '!' EXPR
       | '-' EXPR %prec UMINUS
       | '(' EXPR ')'
+      | '(' error ')'               {  ++errorCount;
+                                       cout << "Error in expression at line: " << @2.begin.line;
+                                       cout << ", column: " << @2.begin.column << ".\n";
+                                    }
+      | '(' ')'                     {  ++errorCount;
+                                       cout << "Error at line: " << @1.begin.line;
+                                       cout << ", column: " << @1.begin.column;
+                                       cout << ": parenthesis must contain an expression.\n";
+                                    }
       | CONST
       | FUNCCALL
-      | tk_identifier   {  if (scopeTree.lookup(*$1) == nullptr) {
-                              ++errorCount;
-                              yy::position pos = @1.begin;
-                              cout << "The variable " << *$1 << " at line: " << pos.line;
-                              cout << ", column: " << pos.column << " has not been declared.\n";
-                           }
-                        }
+      | tk_identifier               {  if (scopeTree.lookup(*$1) == nullptr) {
+                                          ++errorCount;
+                                          yy::position pos = @1.begin;
+                                          cout << "The variable " << *$1 << " at line: " << pos.line;
+                                          cout << ", column: " << pos.column << " has not been declared.\n";
+                                       }
+                                    }
       | tk_string
       ;
 
@@ -158,7 +167,7 @@
       | tk_false ;
 
    ARGS
-      : /* vacio */
+      : /* empty */
       | ARGSLIST ;
 
    ARGSLIST
@@ -184,7 +193,13 @@
    BLOCK
       : '{' STMTLIST
       | '{'                         {  scopeTree.enterScope(); }
-         DECLARELIST STMTLIST       {  scopeTree.exitScope();  }
+         DECLARELIST STMTLIST       {  scopeTree.exitScope();
+                                    }
+      | '{' '}'                     { ++errorCount;
+                                       cout << "Error at line: " << @1.begin.line;
+                                       cout << ", column: " << @1.begin.column;
+                                       cout << ": a block must have at least one statement.\n";
+                                    }
       ;
 
    STMTLIST
@@ -212,6 +227,7 @@
 
    ASIGNLIST
       : tk_identifier ARRDOT                    {  if (scopeTree.lookup(*$1) == nullptr) {
+                                                     ++errorCount;
                                                      yy::position pos = @1.begin;
                                                      cout << "The variable " << *$1 << " at line: " << pos.line;
                                                      cout << ", column: " << pos.column << " has not been declared.\n";
@@ -219,6 +235,7 @@
                                                 }
 
       | tk_identifier ARRDOT tk_comma ASIGNLIST {  if (scopeTree.lookup(*$1) == nullptr){
+                                                      ++errorCount;
                                                       yy::position pos = @1.begin;
                                                       cout << "The variable " << *$1 << " at line: " << pos.line;
                                                       cout << ", column: " << pos.column << " has not been declared.\n";
@@ -363,6 +380,7 @@
                                                       if (symType == nullptr ||
                                                          ((dynamic_cast<Register*>(symType->second) != 0) && ($1->first == "registeer")))
 
+
                                                          for (; it != $2->rend(); ++it) {
                                                             Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
                                                                                                 (**it).second.column,symType,false);
@@ -378,8 +396,16 @@
                                                             scopeTree.insert(decl);
                                                          }
 
-                                                      else
-                                                         cout << "Error\n"; //Se utilizó el nombre de un registeer como el de unown o viceversa
+                                                      else if ($1->first == "unown") {
+                                                         ++errorCount;
+                                                         cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                                         cout << ": you declared an unown but '" << $1->second << "' is a registeer type.\n";
+
+                                                      } else if ($1->first == "registeer") {
+                                                         ++errorCount;
+                                                         cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                                         cout << ": you declared a registeer but '" << $1->second << "' is an unown type.\n";
+                                                      }
                                                    }
       | TYPE error tk_semicolon                    {  ++errorCount;
                                                       cout << "Error in declaration at line: " << @2.begin.line;
@@ -421,7 +447,7 @@
       ;
 
    ARRAYDECL
-      : /* vacio */
+      : /* empty */
       | '[' EXPR tk_range EXPR ']'
       | '[' error ']'   {  ++errorCount;
                            cout << "Invalid expression in array declaration at line: ";
@@ -437,7 +463,7 @@
       | DECLARELIST DECLARATION;
 
    INITLIST
-      : /* vacio */
+      : /* empty */
       | tk_asignment ARGSLIST
       | '=' ARGSLIST          {  ++errorCount;
                                  cout << "Error: Perhaps you meant \":=\" instead of \"=\" at line: ";
@@ -459,24 +485,29 @@
       ;
 
    VAR
-      : /* vacio */  {  $$ = false; }
+      : /* empty */  {  $$ = false; }
       | tk_var       {  $$ = true; }
       ;
 
    REGISTER
-      : tk_structType tk_identifier '{' DECLARELIST '}'  {  yy::position pos = @1.begin;
-                                                            Register *reg = new Register(*$2,pos.line,pos.column,0);
-                                                            scopeTree.insert(reg);
-                                                            //NOTE que hacemos con los campos?
-                                                         }
+      : tk_structType tk_identifier '{'   {  scopeTree.enterScope(); }
+
+                        DECLARELIST '}'   {  scopeTree.exitScope();
+                                             yy::position pos = @1.begin;
+                                             Register *reg = new Register(*$2,pos.line,pos.column,0);
+                                             scopeTree.insert(reg);
+                                             //NOTE que hacemos con los campos?
+                                          }
       ;
 
    UNION
-      : tk_unionType tk_identifier '{' DECLARELIST '}'   {  yy::position pos = @1.begin;
-                                                            Union *un = new Union(*$2,pos.line,pos.column,0);
-                                                            scopeTree.insert(un);
-                                                            //NOTE que hacemos con los campos?
-                                                         }
+      : tk_unionType tk_identifier '{'    {  scopeTree.enterScope(); }
+                       DECLARELIST '}'    {  scopeTree.exitScope();
+                                             yy::position pos = @1.begin;
+                                             Union *un = new Union(*$2,pos.line,pos.column,0);
+                                             scopeTree.insert(un);
+                                             //NOTE que hacemos con los campos?
+                                          }
       ;
 
    FUNCDEF
@@ -574,6 +605,18 @@
                                                 $5->push_back(arg);
                                                 $$ = $5;
                                              }
+      |  VAR TYPE ARG tk_comma               {  vecFunc *args = new vecFunc;
+                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+                                                $3->constant = !$1;
+                                                $3->type = symType;
+                                                pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
+                                                args->push_back(arg);
+                                                $$ = args;
+
+                                                ++errorCount;
+                                                cout << "Error: Extra comma at line: " << @4.begin.line;
+                                                cout << ", column: " << @4.begin.column << ".\n";
+                                             }
       ;
 
    ARG
@@ -595,7 +638,8 @@
 %%
 
 void yy::Parser::error(const yy::Parser::location_type &l, const std::string &err_msg) {
-   //std::cerr << "Error: " << l << "\n";
+   ++errorCount;
+   std::cerr << "Unexpected token at line: " << l.begin.line << ", column: " << l.begin.column << "\n";
 }
 
 #include "scanner.hpp"

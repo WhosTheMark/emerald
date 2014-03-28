@@ -147,9 +147,9 @@ tag             { return token::tk_tag; }
 
                             return token::tk_string; }
 
-\"(\\.|[^\"\\])*          { ++errorCount; 
+\"(\\.|[^\"\\])*          { ++errorCount;
                             std::cout << "Missing quotation mark, string begins at line: ";
-                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n"; 
+                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
                           }
 
 \'(\\.|[^\'\\])\'         { yylval->chars = yytext[1]; return token::tk_char; }
@@ -166,18 +166,18 @@ tag             { return token::tk_tag; }
                                  yylloc->lines(1);
                             }
 
-                            yylloc->step();  
+                            yylloc->step();
                           }
-                          
-                          
+
+
 \/\*([^*]|\*+[^/*])*      { ++errorCount;
 
                             std::cout << "Missing end of comment */, comment begins at line: ";
-                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";                           
+                            std::cout << yylloc->begin.line << ", column: " << yylloc->begin.column << ".\n";
                           }
-                          
-.                       { ++errorCount; 
-                          std::cout << "The character: " << yytext << " at line: " << yylloc->begin.line;
+
+.                       { ++errorCount;
+                          std::cout << "The character \"" << yytext << "\" at line: " << yylloc->begin.line;
                           std::cout << ", column: " << yylloc->begin.column << " is invalid. \n";
                         }
 
