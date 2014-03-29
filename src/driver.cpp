@@ -18,8 +18,10 @@ void Driver::parse(const char *file) {
    assert(file != nullptr);
    std::ifstream in_file(file);
 
-   if (!in_file.good())
+   if (!in_file.good()){
+      cout << "The file does not exists.\n";
       exit(EXIT_FAILURE);
+   }
 
    delete(scanner);
    scanner = nullptr;

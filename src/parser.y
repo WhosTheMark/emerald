@@ -403,38 +403,12 @@
                                                       vecString::reverse_iterator it = $2->rbegin();
                                                       pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
 
-                                                      if (symType == nullptr ||
-                                                         ((dynamic_cast<Register*>(symType->second) != 0) && ($1->first == "registeer")))
-
-
-                                                         for (; it != $2->rend(); ++it) {
-                                                            Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                                (**it).second.column,symType,false);
-                                                            scopeTree.insert(decl);
-                                                            delete((*it)->first);
-                                                            delete(*it);
-                                                         }
-
-                                                      else if (symType == nullptr ||
-                                                         ((dynamic_cast<Union*>(symType->second) != 0) && ($1->first == "unown")))
-
-                                                         for (; it != $2->rend(); ++it) {
-                                                            Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                                (**it).second.column,symType,false);
-                                                            scopeTree.insert(decl);
-                                                            delete((*it)->first);
-                                                            delete(*it);
-                                                         }
-
-                                                      else if ($1->first == "unown") {
-                                                         ++errorCount;
-                                                         cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
-                                                         cout << ": you declared an unown but '" << $1->second << "' is a registeer type.\n";
-
-                                                      } else if ($1->first == "registeer") {
-                                                         ++errorCount;
-                                                         cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
-                                                         cout << ": you declared a registeer but '" << $1->second << "' is an unown type.\n";
+                                                      for (; it != $2->rend(); ++it) {
+                                                         Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
+                                                                                             (**it).second.column,symType,false);
+                                                         scopeTree.insert(decl);
+                                                         delete((*it)->first);
+                                                         delete(*it);
                                                       }
 
                                                       delete($2);
@@ -525,11 +499,27 @@
       ;
 
    COMPLEXTYPE
-      : tk_unionType tk_identifier  {  $$ = new pair<string,string>(*$1,*$2);
+      : tk_unionType tk_identifier  {  pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+
+                                       if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                          ++errorCount;
+                                          cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                          cout << ": you declared an unown but '" << *$2 << "' is a registeer type.\n";
+                                       }
+
                                        delete($1);
                                        delete($2);
+                                       $$ = new pair<string,string>(*$1,*$2);
                                     }
-      | tk_structType tk_identifier {  $$ = new pair<string,string>(*$1,*$2);
+      | tk_structType tk_identifier {  pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+
+                                       if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                          ++errorCount;
+                                          cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                                         cout << ": you declared a registeer but '" << *$2 << "' is an unown type.\n";
+                                       }
+
+                                       $$ = new pair<string,string>(*$1,*$2);
                                        delete($1);
                                        delete($2);
                                     }
@@ -717,12 +707,11 @@
                                                                         $$ = new Declaration(*$1,pos.line,pos.column,nullptr,false);
                                                                         delete($1);
                                                                      }
-      | tk_identifier '[' tk_identifier tk_range tk_identifier ']'   {  pair<string,Symbol*> *symTypeL = scopeTree.lookup("intmonchan");
-                                                                        pair<string,Symbol*> *symTypeU = scopeTree.lookup("intmonchan");
+      | tk_identifier '[' tk_identifier tk_range tk_identifier ']'   {  pair<string,Symbol*> *symType = scopeTree.lookup("intmonchan");
                                                                         yy::position lowerPos = @3.begin;
-                                                                        Declaration *lower = new Declaration(*$3,lowerPos.line,lowerPos.column,symTypeL,false);
+                                                                        Declaration *lower = new Declaration(*$3,lowerPos.line,lowerPos.column,symType,false);
                                                                         yy::position upperPos = @5.begin;
-                                                                        Declaration *upper = new Declaration(*$5,upperPos.line,upperPos.column,symTypeU,false);
+                                                                        Declaration *upper = new Declaration(*$5,upperPos.line,upperPos.column,symType,false);
 
                                                                         /* Se agregan los delimitadores del arreglo a una lista global para
                                                                          * luego ser agregados al alcance correspondiente. */

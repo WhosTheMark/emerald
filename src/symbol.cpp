@@ -42,9 +42,6 @@ public:
    };
 
    virtual ~Declaration() {
-
-      if(type != nullptr)
-         //delete(type);
    };
 };
 
