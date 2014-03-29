@@ -1,10 +1,14 @@
 Emerald
 =======
 
+Campos, M. & Salcedo, A.
+
+--- 
 
 ## Consideraciones Léxicas
 
-A continuación se presentan las palabras reservadas del lenguaje. Éstas no pueden ser utilizadas como identificadores ni redefinidas.
+A continuación se presentan las palabras reservadas del lenguaje. Éstas no pueden ser utilizadas como 
+identificadores ni redefinidas.
 
     boolbasaur    charizard    intmonchan    floatzel    voidporeon   onix    
     registeer     unown        true          false       const        var
@@ -12,32 +16,87 @@ A continuación se presentan las palabras reservadas del lenguaje. Éstas no pue
     if            elsif        else          read        print        println
     tag           BOOM         continue      switch      case         default
 
-Un identificador es una secuencia de caracteres alfanúmericos y el símbolo `_`, que empieza con una letra. Emerald es sensible a mayúsculas, 
-por lo tanto los identificadores `Ejem`, `ejem` y `eJEm` son diferentes.
+Un identificador es una secuencia de caracteres alfanúmericos o el símbolo _underscore_ `_`, que empieza con una letra.
+Los identificadores son sensibles a mayúsculas, por lo tanto `ident`, `Ident` y `IDent` son diferentes.
 
 Los enteros se representan con una secuencia de dígitos del `0` al `9`.
 
-Los floats empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
+Los floatantes empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
 Por ejemplo, `0.28`, `28.0` son números válidos pero `.28` y `28.` no.
 
 Las cadenas de caracteres son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
 
      "Emerald FTW"    "pokemon"    "Hola!"
 
-Un comentario simple (de una linea) son representados de la siguiente manera:
+Los comentarios simples (de una linea) son representados de la siguiente manera:
 
     # Hola, este comentario es de una linea.
 
-Un comentario de varias lineas se representa así: 
+El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo: 
 
     /* Este comentario es de varias
        lineas en el lenguaje Emerald.
        Es muy chevere. */
 
-      
+
+## Estructura del programa
+
+Un programa en Emerald consiste de una secuencia de definiciones de variables globales, 
+funciones y tipos definidos por el usuario (`registeer`s y `unowns`s).
+
+Todo programa debe al menos tener una función sin parametros denominada **`main`** que 
+retorna `voidporeon` (vacío).  
+
+## Reglas de Alcance
+
+Emerald tiene alcance estático. El alcance más externo corresponde a las declaraciones
+globales (variables, funciones y tipos definidos por el usuario). Después en cada bloque 
+se abre un alcance nuevo. También se abre un alcance cuando se declara la variable 
+de una instrucción `for`. 
+    
+Las funciones y los registros sólo se pueden declarar en el alcance global. No importa el
+orden de su definición, éstas son visibles entre sí. No se pueden definir funciones, 
+registros, uniones o variables globales con el mismo nombre.
+
+La declaración de variables en un bloque sólo se puede hacer al principio del mismo. 
+Por ejemplo:
+
+    # Valido
+    
+    voidporeon funcionValida {
+    
+        intmonchan int;
+        boolbasaur bool;
+        
+        <instrucciones>
+        ...
+    }
+    
+    # Invalido
+    
+    voidporeon funcionInvalida {
+    
+        intmonchan int;
+        
+        int := 1;
+        
+        boolbasaur bool;
+        
+        <instrucciones>
+        ...
+
+    }
+    
+
+Se pueden declarar variables con el mismo nombre tal que éstas no estén en el mismo 
+alcance y que no tengan el mismo nombre que una función, registro o unión ya definido. 
+Si una variable se declara en el alcance actual y ya existe una con el mismo nombre en 
+un alcance externo entonces la primera opaca a la segunda.
+
+
 ## Tipos
 
-Los tipos que se manejan en Emerald son los siguientes:
+Los tipos primitivos de Emerald son los siguientes:
 
 * **intmonchan**: Tipo entero.
 * **floatzel**:   Tipo punto flotante.
@@ -48,22 +107,32 @@ Los tipos que se manejan en Emerald son los siguientes:
 
 ### Arreglos
 
-Los arreglos son unidimensionales con índices arbitrarios. 
-Además son de tamaño fijo y constante a tiempo de compilación.
+* Los arreglos son unidimensionales con índices arbitrarios de cualquier tipo primitivo 
+* de Emerald menos `voidporeon`. 
+* Además son de tamaño fijo y constante a tiempo de compilación. Esto significa que una 
+vez declarados, el tamaño de un arreglo no se puede cambiar. 
+* Los índices de un arreglo deben ser de tipo entero.
+* Cuando se intenta de acceder a una posición fuera de los límites de un arreglo, 
+ocurre un error a tiempo de ejecución.
+
 
 Los arreglos son declarados de la siguiente manera:
 
     <tipo> <identificador> [ <número> .. <número> ]
 
-Por ejemplo:
+Ejemplo:
 
     intmonchan arreglo1[1..10]
-    floatzel   arreglo2[0..99]
+    floatzel   arreglo2[0..42]
     charizard  arreglo3[9..19]
 
 ### Tipos Estructurados
 
-Un registro, `registeer`, se declara de la siguiente manera:
+En Emerald se pueden crear tipos compuestos, los cuales consisten de una colección 
+de campos de tipos primitivos y tipos definidos por el usuario. 
+
+
+Los registros, `registeer`, se definen de la siguiente manera:
 
     registeer <identificador> {
     
@@ -84,28 +153,60 @@ Uniones, `unown`, se representan de la misma manera:
         <tipoN> <identificadorN> ;
     }
 
+Las declaraciones de variables de tipos compuestos se realizan de la siguiente manera:
+
+    registeer <nombreRegistro> <identificador1>;
+    unown     <nombreUnion>    <identificador2>;
+
+
 Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
 
-    registro.campo
+    <identificador>.<campo>
+
+Un campo de un tipo compuesto no puede contener el mismo tipo que está siendo declarado.
+Por ejemplo:
     
+    registeer unRegistro {
+    
+        intmonchan int;
+        registeer unRegistro reg;   # Esto es invalido.
+        ...
+    }
+    
+    unown unUnion {
+    
+        boolbasaur bool;
+        unown unaUnion un;   # Esto es invalido.
+        ...
+    }
 
-Ejemplo:
+A continuación se encuentra un ejemplo de cómo definir y utilizar tipos compuestos:
 
-    registeer persona {   
-        intmonchan cedula; 
-        onix nombre;
-        intmonchan edad;
+    registeer unRegistro {   
+        intmonchan campo1; 
+        floatzel   campo2;
+    }
+    
+    unown unaUnion {
+        intmonchan var1;
+        floatzel   var2;
+        boolbasaur var3;
     }
 
     voidporeon main () {
     
-       registeer persona p;
-       p.edad := 21;
+       registeer unRegistro reg;
+       unown     unaUnion   un;
        
+       reg.campo1 := 42;
+       unaUnion.var1 := 9;
     }
    
+## Funciones
+
+
     
-### Selector
+## Selector
 
     if <expresiónBooleana> {
         ...
