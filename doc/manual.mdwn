@@ -3,12 +3,12 @@ Emerald
 
 Campos, M. & Salcedo, A.
 
---- 
+***
 
 ## Consideraciones Léxicas
 
 A continuación se presentan las palabras reservadas del lenguaje. Éstas no pueden ser utilizadas como 
-identificadores ni redefinidas.
+identificadores ni ser redefinidas.
 
     boolbasaur    charizard    intmonchan    floatzel    voidporeon   onix    
     registeer     unown        true          false       const        var
@@ -24,9 +24,13 @@ Los enteros se representan con una secuencia de dígitos del `0` al `9`.
 Los floatantes empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
 Por ejemplo, `0.28`, `28.0` son números válidos pero `.28` y `28.` no.
 
+Los caracteres es un caracter entre comillas simples. Por ejemplo:
+
+    'E'   'm'   'e'   'r'   'a'   'l'   'd'
+   
 Las cadenas de caracteres son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
 
-     "Emerald FTW"    "pokemon"    "Hola!"
+    "Emerald FTW"    "pokemon"    "Hola!"
 
 Los comentarios simples (de una linea) son representados de la siguiente manera:
 
@@ -66,8 +70,7 @@ Por ejemplo:
     voidporeon funcionValida {
     
         intmonchan int;
-        boolbasaur bool;
-        
+        boolbasaur bool;        
         <instrucciones>
         ...
     }
@@ -76,18 +79,14 @@ Por ejemplo:
     
     voidporeon funcionInvalida {
     
-        intmonchan int;
-        
-        int := 1;
-        
+        intmonchan int;        
+        int := 1;        
         boolbasaur bool;  # Esto es invalido.
-        
         <instrucciones>
         ...
     }
     
-
-Se pueden declarar variables con el mismo nombre tal que éstas no estén en el mismo 
+Se pueden declarar variables con el mismo nombre tales que éstas no estén en el mismo 
 alcance y que no tengan el mismo nombre que una función, registro o unión ya definido. 
 Si una variable se declara en el alcance actual y ya existe una con el mismo nombre en 
 un alcance externo entonces la primera opaca a la segunda.
@@ -97,29 +96,28 @@ un alcance externo entonces la primera opaca a la segunda.
 
 ### Tipos Primitivos
 
-Los tipos primitivos de Emerald son los siguientes:
+Los tipos primitivos de Emerald son:
 
 * **intmonchan**: Tipo entero.
 * **floatzel**:   Tipo punto flotante.
 * **charizard**:  Tipo caracter ASCII.
 * **boolbasaur**: Tipo booleano (true, false).
 * **onix**:       Secuencia de caracteres ASCII inmutable.
-* **voidporeon**: El vacío. Utilizado solamente en funciones. 
+* **voidporeon**: El vacío. Utilizado solamente para el retorno de funciones. 
 
 ### Arreglos
 
 * Los arreglos son unidimensionales con índices arbitrarios de cualquier tipo primitivo 
-* de Emerald menos `voidporeon`. 
-* Además son de tamaño fijo y constante a tiempo de compilación. Esto significa que una 
+de Emerald menos `voidporeon`. 
+* Son de tamaño fijo y constante a tiempo de compilación. Esto significa que una 
 vez declarados, el tamaño de un arreglo no se puede cambiar. 
 * Los índices de un arreglo deben ser de tipo entero.
 * Cuando se intenta de acceder a una posición fuera de los límites de un arreglo, 
 ocurre un error a tiempo de ejecución.
 
-
 Sintaxis:
 
-    <tipo> <identificador> [ <número> .. <número> ]
+    <tipo> <identificador> [<número> .. <número>]
 
 Ejemplo:
 
@@ -127,12 +125,10 @@ Ejemplo:
     floatzel   arreglo2[0..42]
     charizard  arreglo3[9..19]
 
-
 ### Tipos Compuestos
 
 En Emerald se pueden crear tipos compuestos, los cuales consisten de una colección 
 de campos de tipos primitivos y tipos definidos por el usuario. 
-
 
 Los registros, `registeer`, se definen de la siguiente manera:
 
@@ -148,8 +144,7 @@ Uniones, `unown`, se representan de la misma manera:
 
     unown <identificador> {
         
-        <tipo1> <identificador1> ;
-    
+        <tipo1> <identificador1> ;    
         <tipo2> <identificador2> := <inicialización> ;
         ...
         <tipoN> <identificadorN> ;
@@ -178,7 +173,7 @@ Por ejemplo:
     unown unUnion {
     
         boolbasaur bool;
-        unown unaUnion un;   # Esto es invalido.
+        unown unaUnion un;   # Esto tambien es invalido.
         ...
     }
 
@@ -197,11 +192,14 @@ A continuación se encuentra un ejemplo de cómo definir y utilizar tipos compue
 
     voidporeon main () {
     
-       registeer unRegistro reg;
-       unown     unaUnion   un;
+       registeer  unRegistro reg;
+       unown      unaUnion   un;
+       intmonchan int;
        
        reg.campo1 := 42;
-       unaUnion.var1 := 9;
+       unaUnion.var1 := 3;
+       int := reg.campo1 / unaUnion.var1;
+       ...
     }
 
 ## Variables
@@ -215,15 +213,15 @@ tipos definidos por el usuario.
 * Las variables de tipo `onix` (string) siempre deben ser inicializadas.
 * El tipo de la expresión debe concidir con el tipo de la declaración. 
 * Se pueden hacer declaraciones e inicializaciones simultáneas.
-* Para declarar un variable por referencia, se utiliza la palabra reservada `var`.
 * Para declarar una constante, se utiliza la palabra reservada `const`.
 
 Ejemplo:
 
+    charizard   const A := 'A'          # Declaracion de una constante
     floatzel    a, b, c;                # Declaracion simultanea
     intmonchan  d, e, f := 1, 2, 3;     # Declaracion e inicializacion simultanea
     boolbasaur  g[1..42];               # Declaracion de un arreglo
-    onix        h := "FTW!";            # Declaracion e incializacion de un string
+    onix        h := "FTW!";            # Declaracion e incializacion de un string   
     registeer   unRegistro reg;         # Declaracion de un registro
     unown       unaUnion   un;          # Declaracion de una union
        
@@ -237,9 +235,9 @@ pueden ser pasados por valor o por referencia pero los tipos compuestos obligato
 son pasados por referencia. 
 * Para pasar un parámetro por referencia, se utiliza la palabra reservada `var`.
 * Los nombres de las variables locales pueden ser iguales a los 
-nombres de los parámetros _**but why would you do that?**_
+nombres de los parámetros pero _**why would you do that?**_
 
-![](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdAXwa3WVDHJEpUHwicNyThSo9yjC1VlHd3dHuram9xrGKrrH6)
+![why would you do that?](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdAXwa3WVDHJEpUHwicNyThSo9yjC1VlHd3dHuram9xrGKrrH6)
 
 * Los tipos de retorno sólo pueden ser tipos primitivos de Emerald.
 * La instrucción **`return`** es obligatoria cuando el tipo de retorno de la función 
@@ -272,10 +270,8 @@ Ejemplo:
     
         intmonchan i;
         floatzel   a[1..19];
-        registeer aRegister reg;
-        
-        ...
-        
+        registeer aRegister reg;        
+        ...        
         aFunction(i,a,reg);
         ...
     }
@@ -307,8 +303,10 @@ También se puede hacer asignación multiple:
 * La expresión del condicional debe ser de tipo `boolbasaur` (boolean).
 * Las cláusulas `if`, `elsif` o `else` pueden ser seguidas por una sola 
 instrucción o un bloque de instrucciones. 
-* Un `elsif` o un `else` obligatoriamente acompañan un `if`.
-* Se pueden omitir los `elsif` o los `else`.
+* Si se utiliza un `elsif` o un `else`, entonces obligatoriamente éstas son 
+acompañadas por un `if`.
+* Se puede utilizar solamente la instrucción `if`. Se pueden omitir 
+los `elsif` o los `else`.
 
 Sintaxis: 
 
@@ -326,7 +324,7 @@ Sintaxis:
 discreto (`intmonchan`, `boolbasaur` o `charizard`).
 * La variable de iteración sólo es visible en el cuerpo del `for`. Ésta no 
 puede ser utilizada como lvalue, es decir, no puede ser modificada por el usuario.
-* La variable de iteración incremetará por 1 al menos si el usuario especifica el salto
+* La variable de iteración incremetará por 1 al menos si el usuario especifica el salto,
 utilizando la palabra reservada `by`.
 
 Sintaxis:
@@ -357,9 +355,9 @@ Sintaxis:
 Cualquier iteración, sea acotada o indeterminada, puede ser etiquetada. Todas las etiquetas
 utilizadas deben tener nombres distintos.
 
-Para finalizar incondicionalmente una iteración se utiliza la instrucción `BOOM` (break). 
-Para saltar al siguiente ciclo de una iteración se utiliza la instrucción `continue`. 
-Estas dos instrucciones sólo pueden ser utilizadas en los bloques de interaciones.
+* Para finalizar incondicionalmente una iteración se utiliza la instrucción `BOOM` (break). 
+* Para saltar al siguiente ciclo de una iteración se utiliza la instrucción `continue`. 
+* Estas dos instrucciones sólo pueden ser utilizadas en los bloques de interaciones.
 
 Ejemplo:
 
@@ -380,7 +378,7 @@ Ejemplo:
     
         while true {
             ...
-            continue label; # Salta al siguiente ciclo de la iteración externa que esta etiquetada como label.
+            continue label; # Salta al siguiente ciclo de la iteración externa que esta etiquetada como label2.
             ...
             continue; # Salta al siguiente ciclo de la iteración interna.
         }
@@ -390,10 +388,10 @@ Ejemplo:
 ### Case
 
 El lenguaje Emerald maneja la instrucción case, la cual es denominada `switch`. 
-Éste se maneja como los case del lenguaje Pascal y no el switch de C.
+Ésta se maneja como los case del lenguaje Pascal y no el switch de C.
 
-Los rangos son disjuntos y valor default es opcional. Deben haber al menos
-dos case en el switch.
+Los `case` son disjuntos y el valor `default` es opcional. Deben haber al menos
+dos `case` en el switch.
 
 Sintaxis:
 
@@ -434,8 +432,6 @@ alguno de ellos para poder efectuar la multiplicación.
 
 De mayor a menor precedencia.
 
-
-
              Operador | Descripción
              -------- | -----------
     !    - unario     | Negación booleana y menos unario
@@ -465,8 +461,8 @@ Sintaxis:
 
 Emerald maneja la conversión explícita de tipos con las siguientes funciones:
 
-    charizard   intToCharizard(intmonchan int);      
-    floatzel    intToFloatzel(intmonchan int);    
-    intmonchan  charToIntmonchan(charizard char);   
-    intmonchan  floatToIntmonchan(floatzel float);
+    charizard   intToCharizard(intmonchan int);    # Conversion de entero a caracter   
+    floatzel    intToFloatzel(intmonchan int);     # Conversion de entero a flotante
+    intmonchan  charToIntmonchan(charizard char);  # Conversion de caracter a entero 
+    intmonchan  floatToIntmonchan(floatzel float); # Conversion de flotante a entero
     
