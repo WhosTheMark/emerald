@@ -19,6 +19,16 @@ public:
    SymTableNode(SymTableNode *p) : parent(p) {};
    SymTableNode() : parent(nullptr) {};
 
+   ~SymTableNode(){
+
+      vector<SymTableNode*>::iterator it = children.begin();
+      for(; it != children.end(); ++it)
+         delete(*it);
+
+      children.clear();
+   }
+
+
 };
 
 class TableTree {
@@ -104,6 +114,10 @@ public:
       printNode(0,root);
       cout << "\n";
    };
+
+   ~TableTree() {
+      delete(root);
+   }
 
 
 private:

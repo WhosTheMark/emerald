@@ -1,6 +1,6 @@
 
 
-intmonchan length (intmonchan[init..end] arr) {
+intmonchan length (intmonchan arr[init..end]) {
 
    intmonchan acc := 0;
 
@@ -11,7 +11,7 @@ intmonchan length (intmonchan[init..end] arr) {
 }
 
 
-boolbasaur palindrome (intmonchan[init..end] arr) {
+boolbasaur palindrome (intmonchan arr[init..end]) {
 
    intmonchan len := length(arr);
 

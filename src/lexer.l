@@ -82,27 +82,27 @@ false          {  return token::tk_false; }
 
 tag            {  return token::tk_tag; }
 
-"%"            {  yylval->strOp = yytext; return token::tk_mod; }
+"%"            {  return token::tk_mod; }
 
-"<"            {  yylval->strOp = yytext; return token::tk_lessThan; }
+"<"            {  return token::tk_lessThan; }
 
-"<="           {  yylval->strOp = yytext; return token::tk_lessEq; }
+"<="           {  return token::tk_lessEq; }
 
-">"            {  yylval->strOp = yytext; return token::tk_moreThan; }
+">"            {  return token::tk_moreThan; }
 
-">="           {  yylval->strOp = yytext; return token::tk_moreEq; }
+">="           {  return token::tk_moreEq; }
 
-"!="           {  yylval->strOp = yytext; return token::tk_notEqual; }
+"!="           {  return token::tk_notEqual; }
 
-"&&"           {  yylval->strOp = yytext; return token::tk_and; }
+"&&"           {  return token::tk_and; }
 
-"||"           {  yylval->strOp = yytext; return token::tk_or; }
+"||"           {  return token::tk_or; }
 
-":="           {  yylval->strOp = yytext; return token::tk_asignment; }
+":="           {  return token::tk_asignment; }
 
-".."           {  yylval->strOp = yytext; return token::tk_range; }
+".."           {  return token::tk_range; }
 
-"."            {  yylval->strOp = yytext; return token::tk_dot; }
+"."            {  return token::tk_dot; }
 
 ";"            {  return token::tk_semicolon; }
 

@@ -1,5 +1,5 @@
 
-boolbasaur ascendArray (intmonchan[init..end] a) {
+boolbasaur ascendArray (intmonchan a[init..end]) {
 
    boolbasaur ascending := true;
    intmonchan i := init;

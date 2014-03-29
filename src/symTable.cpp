@@ -64,4 +64,17 @@ public:
       for (int i=0; i < tabs ; ++i)
          cout << "    ";
    };
+
+   ~SymTable() {
+
+      map<string,Symbol*>::iterator it = table.begin();
+
+      for(; it != table.end(); ++it){
+         delete(it->second);
+      }
+
+      table.clear();
+
+   }
+
 };

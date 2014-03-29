@@ -7,8 +7,6 @@
 
 using namespace std;
 
-class Declaration;
-
 class Symbol {
 
 public:
@@ -18,7 +16,63 @@ public:
 
    Symbol(string n, int l, int c) : name(n), line(l), column(c) {};
    virtual void printSym(int tabs=0) {};
-   //virtual ~Symbol();
+   virtual ~Symbol() {};
+};
+
+/* Clase de declaracion de simbolos. */
+class Declaration : public Symbol {
+
+public:
+   pair<string,Symbol*> *type; //Tipo de la variable declarada.
+   bool constant;
+
+   Declaration(string n, int l, int c, pair<string,Symbol*> *p, bool con) :
+   Symbol(n,l,c), type(p), constant(con) {};
+
+   void printSym(int tabs=0) {
+
+      cout << "VARIABLE NAME: " << name << " TYPE: ";
+
+      if(type != nullptr)
+         cout << type-> first;
+      else
+         cout << "Not Defined";
+
+      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
+   };
+
+   virtual ~Declaration() {
+
+      if(type != nullptr)
+         //delete(type);
+   };
+};
+
+/* Clase de declaracion de arreglos.*/
+class ArrayDecl : public Declaration {
+
+public:
+   int lower; //Limite inferior del arreglo.
+   int upper; //Limite superior del arreglo.
+
+   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int u) :
+   Declaration(n,l,c,p,con), lower(low), upper(u) {};
+
+   //NOTE Imprimir lower y upper?
+   void printSym(int tabs=0) {
+
+      cout << "ARRAY NAME: " << name << " TYPE: ";
+
+      if(type != nullptr)
+         cout << type-> first;
+      else
+         cout << "Not Defined";
+
+      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
+   };
+
+   ~ArrayDecl() {};
+
 };
 
 /* Clase de simbolos utilizada para la definicion de tipos primitivos y
@@ -28,6 +82,7 @@ class Definition : public Symbol {
 
 public:
    Definition(string n, int l, int c) : Symbol(n,l,c) {};
+   virtual ~Definition() {};
 };
 
 /* Clase de tipos primitivos. */
@@ -42,6 +97,8 @@ public:
 
       cout << "PRIMITIVE TYPE: " << name << "\n" ;
    };
+
+   ~Basic() {};
 };
 
 /* Clase de definicion de funciones. */
@@ -72,6 +129,16 @@ public:
 
       cout << " LINE: " << line << " COLUMN: " << column << "\n";
    };
+
+   ~Function() {
+
+      vector<pair<string,Declaration*>*>::iterator it = arguments.begin();
+      for(; it != arguments.end(); ++it){
+            delete(*it);
+      }
+
+   };
+
 };
 
 /* Clase de definicion de registros. */
@@ -88,6 +155,9 @@ public:
 
       cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
+
+   ~Register() {};
+
 };
 
 /* Clase de definicion de uniones. */
@@ -104,53 +174,10 @@ public:
 
       cout << "UNION NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
+
+   ~Union() {};
+
 };
 
-/* Clase de declaracion de simbolos. */
-class Declaration : public Symbol {
-
-public:
-   pair<string,Symbol*> *type; //Tipo de la variable declarada.
-   bool constant;
-
-   Declaration(string n, int l, int c, pair<string,Symbol*> *p, bool con) :
-      Symbol(n,l,c), type(p), constant(con) {};
-
-   void printSym(int tabs=0) {
-
-      cout << "VARIABLE NAME: " << name << " TYPE: ";
-
-      if(type != nullptr)
-         cout << type-> first;
-      else
-         cout << "Not Defined";
-
-      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
-   };
-};
-
-/* Clase de declaracion de arreglos.*/
-class ArrayDecl : public Declaration {
-
-public:
-   int lower; //Limite inferior del arreglo.
-   int upper; //Limite superior del arreglo.
-
-   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int u) :
-      Declaration(n,l,c,p,con), lower(low), upper(u) {};
-
-   //NOTE Imprimir lower y upper?
-   void printSym(int tabs=0) {
-
-      cout << "ARRAY NAME: " << name << " TYPE: ";
-
-      if(type != nullptr)
-         cout << type-> first;
-      else
-         cout << "Not Defined";
-
-      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
-   };
-};
 
 #endif

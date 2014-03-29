@@ -42,6 +42,8 @@ void Driver::parse(const char *file) {
    else
       cout << errorCount << " error(s) found.\n";
 
+   delete(scopeTree);
+
 }
 
 /* Inicializacion del arbol de tablas con los tipos primitivos. */
