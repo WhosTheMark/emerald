@@ -43,6 +43,168 @@ El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo:
        Es muy chevere. */
 
 
+## Gramática
+
+    START ::= DEFLIST
+
+    DEFLIST  ::= DEFINITION
+    DEFLIST  ::= DEFINITION DEFLIST
+
+    DEFINITION  ::= FUNCDEF
+    DEFINITION  ::= REGISTER
+    DEFINITION  ::= UNION
+    DEFINITION  ::= DECLARATION
+
+    EXPR  ::= EXPR `+` EXPR
+    EXPR  ::= EXPR `-` EXPR
+    EXPR  ::= EXPR `*` EXPR
+    EXPR  ::= EXPR `/` EXPR
+    EXPR  ::= EXPR `^` EXPR
+    EXPR  ::= EXPR `=` EXPR
+    EXPR  ::= EXPR `[` EXPR `]`
+    EXPR  ::= EXPR `%` EXPR
+    EXPR  ::= EXPR `<` EXPR
+    EXPR  ::= EXPR `>` EXPR
+    EXPR  ::= EXPR `<=` EXPR
+    EXPR  ::= EXPR `>=` EXPR
+    EXPR  ::= EXPR `&&` EXPR
+    EXPR  ::= EXPR `||` EXPR
+    EXPR  ::= EXPR `!=` EXPR
+    EXPR  ::= EXPR `.` `identifier`
+    EXPR  ::= `(` EXPR `)`
+    EXPR  ::= `!` EXPR
+    EXPR  ::= `-` EXPR
+    EXPR  ::= CONST
+    EXPR  ::= FUNCCALL
+    EXPR  ::= `identifier`
+    EXPR  ::= `string`
+
+    CONST ::= NUMBER
+    CONST ::= BOOLEAN
+    CONST ::= `char`
+
+    NUMBER   ::= `int`
+    NUMBER   ::= `float`
+
+    BOOLEAN  ::= `true`
+    BOOLEAN  ::= `false`
+
+    ARGS  ::= λ
+    ARGS  ::= ARGSLIST
+
+    ARGSLIST ::= EXPR
+    ARGSLIST ::= ARGSLIST `,` EXPR
+
+    INST  ::= STMT
+    INST  ::= BLOCK
+
+    STMT  ::= IFSTMT
+    STMT  ::= ASIGNMENT
+    STMT  ::= WHILESTMT
+    STMT  ::= FORSTMT
+    STMT  ::= FUNCCALL
+    STMT  ::= BREAK
+    STMT  ::= CONTINUE
+    STMT  ::= LABEL
+    STMT  ::= RETURN
+    STMT  ::= SWITCHSTMT
+
+    BLOCK ::= `{` STMTLIST `}`
+    BLOCK ::= `{` DECLARELIST STMTLIST `}`
+
+    STMTLIST ::= STMT
+    STMTLIST ::= STMT `;` STMTLIST
+
+    ASIGNMENT   ::= ASIGNLIST `:=` ARGSLIST
+
+    ASIGNLIST   ::= `identifier` ARRDOT
+    ASIGNLIST   ::= `identifier` ARRDOT `,` ASIGNLIST
+
+    ARRDOT  ::= λ
+    ARRDOT  ::= `[` EXPR `]` ARRDOT
+    ARRDOT  ::=  `.` `identifier` ARRDOT
+
+    IFSTMT  ::= `if` EXPR INST
+    IFSTMT  ::= `if` EXPR INST IFLIST
+
+    IFLIST  ::= `else` INST
+    IFLIST  ::= `elsif` EXPR INST
+    IFLIST  ::= `elsif` EXPR INST IFLIST
+
+    WHILESTMT  ::= `while` EXPR INST
+
+    FORSTMT ::= `for` `identifier` `from` EXPR `to` EXPR `by` EXPR INST
+    FORSTMT ::= `for` `identifier` `from` EXPR `to` EXPR INST
+
+    FUNCCALL   ::= `identifier` `(` ARGS `)`
+
+    BREAK   ::= `break`
+    BREAK   ::= `break` `identifier`
+
+    CONTINUE   ::= `continue`
+    CONTINUE   ::= `continue` `identifier`
+
+    LABEL   ::= `tag` `:` `identifier`
+
+    RETURN  ::= `return`
+    RETURN  ::= `return` EXPR
+
+    SWITCHSTMT ::= `switch` EXPR `{` CASE `}`
+
+    CASE ::= `case` CONST `->` BLOCK
+    CASE ::= `case` CONST `->` BLOCK CASELIST
+
+    CASELIST   ::= `default` `->` BLOCK
+    CASELIST   ::= `case` CONST `->` BLOCK
+    CASELIST   ::= `case` CONST `->` BLOCK CASELIST
+
+    DECLARATION   ::= TYPE IDLIST INITLIST `;`
+    DECLARATION   ::= COMPLEXTYPE IDLIST INITLIST `;`
+
+    IDLIST  ::= `identifier` ARRAYDECL
+    IDLIST  ::= `identifier` ARRAYDECL `,` IDLIST
+    IDLIST  ::= `const` `identifier` ARRAYDECL
+    IDLIST  ::= `const` `identifier` ARRAYDECL `,` IDLIST
+
+    ARRAYDECL  ::= λ
+    ARRAYDECL  ::= `[` EXPR `..` EXPR `]`
+
+    DECLARELIST   ::= DECLARATION
+    DECLARELIST   ::= DECLARELIST DECLARATION
+
+    INITLIST   ::= λ
+    INITLIST   ::= `:=` ARGSLIST
+
+    TYPE ::= `intmonchan`
+    TYPE ::= `floatzel`
+    TYPE ::= `boolbasaur`
+    TYPE ::= `charizard`
+    TYPE ::= `onix`
+
+    COMPLEXTYPE   ::= `unown` `identifier`
+    COMPLEXTYPE   ::= `registeer` `identifier`
+
+    VAR  ::= λ
+    VAR  ::= `var`
+
+    REGISTER   ::= `registeer` `identifier` `{` DECLARELIST `}`
+
+    UNION   ::= `unown` `identifier` `{` DECLARELIST `}`
+
+    FUNCDEF ::= TYPE `identifier` `(` `)`
+    FUNCDEF ::= `voidporeon` `identifier` `(` `)`
+    FUNCDEF ::= TYPE `identifier` `(` ARGSDEF `)`
+    FUNCDEF ::= `voidporeon` `identifier` `(` ARGSDEF `)`
+
+    ARGSDEF ::= VAR TYPE ARG
+    ARGSDEF ::= VAR TYPE ARG `,` ARGSDEF
+    ARGSDEF ::= VAR COMPLEXTYPE ARG
+    ARGSDEF ::= VAR COMPLEXTYPE ARG `,` ARGSDEF
+
+    ARG  ::= `identifier`
+    ARG  ::= `identifier` `[` `identifier` `..` `identifier` `]`
+
+
 ## Estructura del programa
 
 Un programa en Emerald consiste de una secuencia de definiciones de variables globales, 
