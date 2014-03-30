@@ -501,7 +501,7 @@
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": The unown '" << *$2 << "' has not been defined.\n";
 
-                                       } else if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                       } else if (dynamic_cast<Union*>(symType->second) == 0){
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": you declared an unown but '" << *$2 << "' is not defined as an unown.\n";
@@ -517,7 +517,7 @@
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": The registeer '" << *$2 << "' has not been defined.\n";
 
-                                       } else if (symType != nullptr && dynamic_cast<Register*>(symType->second) == 0){
+                                       } else if (dynamic_cast<Register*>(symType->second) == 0){
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": you declared a registeer but '" << *$2 << "' is not defined as a registeer.\n";

@@ -7,10 +7,10 @@ Campos, M. & Salcedo, A.
 
 ## Consideraciones Léxicas
 
-A continuación se presentan las palabras reservadas del lenguaje. Éstas no pueden ser utilizadas como 
+A continuación se presentan las palabras reservadas del lenguaje. Éstas no pueden ser utilizadas como
 identificadores ni ser redefinidas.
 
-    boolbasaur    charizard    intmonchan    floatzel    voidporeon   onix    
+    boolbasaur    charizard    intmonchan    floatzel    voidporeon   onix
     registeer     unown        true          false       const        var
     for           from         to            by          while        return
     if            elsif        else          read        print        println
@@ -21,13 +21,13 @@ Los identificadores son sensibles a mayúsculas, por lo tanto `ident`, `Ident` y
 
 Los enteros se representan con una secuencia de dígitos del `0` al `9`.
 
-Los floatantes empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos. 
+Los floatantes empiezan con una secuencia de dígitos, luego seguida por un punto y termina con otra secuencia de dígitos.
 Por ejemplo, `0.28`, `28.0` son números válidos pero `.28` y `28.` no.
 
 Los caracteres es un caracter entre comillas simples. Por ejemplo:
 
     'E'   'm'   'e'   'r'   'a'   'l'   'd'
-   
+
 Las cadenas de caracteres son una secuencia de caracteres ASCII entre comillas dobles. Por ejemplo:
 
     "Emerald FTW"    "pokemon"    "Hola!"
@@ -36,7 +36,7 @@ Los comentarios simples (de una linea) son representados de la siguiente manera:
 
     # Hola, este comentario es de una linea.
 
-El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo: 
+El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo:
 
     /* Este comentario es de varias
        lineas en el lenguaje Emerald.
@@ -207,50 +207,50 @@ El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo:
 
 ## Estructura del programa
 
-Un programa en Emerald consiste de una secuencia de definiciones de variables globales, 
+Un programa en Emerald consiste de una secuencia de definiciones de variables globales,
 funciones y tipos definidos por el usuario (`registeer`s y `unowns`s).
 
-Todo programa debe al menos tener una función sin parametros denominada **`main`** que 
-retorna `voidporeon` (vacío).  
+Todo programa debe al menos tener una función sin parametros denominada **`main`** que
+retorna `voidporeon` (vacío).
 
 ## Reglas de Alcance
 
-Emerald tiene alcance estático. El alcance más externo corresponde a las definiciones de funciones 
-y tipos definidos por el usuario, y a la declaración de variables globales. Después en cada bloque 
-se abre un alcance nuevo. También se abre un alcance cuando se declara la variable 
-de una instrucción `for`. 
-    
+Emerald tiene alcance estático. El alcance más externo corresponde a las definiciones de funciones
+y tipos definidos por el usuario, y a la declaración de variables globales. Después en cada bloque
+se abre un alcance nuevo. También se abre un alcance cuando se declara la variable
+de una instrucción `for`.
+
 Las funciones, los registros y las uniones sólo pueden ser definidos en el alcance global. No importa el
-orden de su definición, éstas son visibles entre sí. No se pueden definir funciones, 
+orden de su definición, éstas son visibles entre sí. No se pueden definir funciones,
 registros, uniones o variables globales con el mismo nombre.
 
-La declaración de variables en un bloque sólo se puede hacer al principio del mismo. 
+La declaración de variables en un bloque sólo se puede hacer al principio del mismo.
 Por ejemplo:
 
     # Funcion valida
-    
+
     voidporeon funcionValida (){
-    
+
         intmonchan int;
-        boolbasaur bool;        
+        boolbasaur bool;
         <instrucciones>
         ...
     }
-    
+
     # Funcion invalida
-    
+
     voidporeon funcionInvalida (){
-    
-        intmonchan int;        
-        int := 1;        
+
+        intmonchan int;
+        int := 1;
         boolbasaur bool;  # Esto es invalido.
         <instrucciones>
         ...
     }
-    
-Se pueden declarar variables con el mismo nombre tal que éstas no estén en el mismo 
-alcance y que no tengan el mismo nombre de una función, registro o unión ya definido. 
-Si una variable se declara en el alcance actual y existe otra con el mismo nombre en 
+
+Se pueden declarar variables con el mismo nombre tal que éstas no estén en el mismo
+alcance y que no tengan el mismo nombre de una función, registro o unión ya definido.
+Si una variable se declara en el alcance actual y existe otra con el mismo nombre en
 un alcance externo entonces la primera opaca a la segunda.
 
 
@@ -265,16 +265,16 @@ Los tipos primitivos de Emerald son:
 * **charizard**:  Tipo caracter ASCII.
 * **boolbasaur**: Tipo booleano (true, false).
 * **onix**:       Secuencia de caracteres ASCII inmutable.
-* **voidporeon**: El vacío. Utilizado solamente para el retorno de funciones. 
+* **voidporeon**: El vacío. Utilizado solamente para el retorno de funciones.
 
 ### Arreglos
 
-* Los arreglos son unidimensionales con índices arbitrarios, puede ser de cualquier 
-tipo primitivo de Emerald menos `voidporeon` o de algún tipo declarado por el usuario. 
-* Son de tamaño fijo y constante a tiempo de compilación. Esto significa que una 
-vez declarados, el tamaño de un arreglo no se puede cambiar. 
+* Los arreglos son unidimensionales con índices arbitrarios, puede ser de cualquier
+tipo primitivo de Emerald menos `voidporeon` o de algún tipo declarado por el usuario.
+* Son de tamaño fijo y constante a tiempo de compilación. Esto significa que una
+vez declarados, el tamaño de un arreglo no se puede cambiar.
 * Los índices de un arreglo deben ser de tipo entero.
-* Cuando se intenta acceder a una posición fuera de los límites de un arreglo, 
+* Cuando se intenta acceder a una posición fuera de los límites de un arreglo,
 ocurre un error a tiempo de ejecución.
 
 Sintaxis:
@@ -290,24 +290,25 @@ Ejemplo:
 
 ### Tipos Compuestos
 
-En Emerald se pueden crear tipos compuestos, los cuales consisten de una colección 
-de campos de tipos primitivos y tipos definidos por el usuario. 
+En Emerald se pueden crear tipos compuestos, los cuales consisten de una colección
+de campos de tipos primitivos y tipos definidos por el usuario. Los tipos compuestos
+deben estar definidos al momento de declarar una variable con dicho tipo.
 
 Los registros, `registeer`, se definen de la siguiente manera:
 
     registeer <identificador> {
-    
+
         <tipo1> <identificador1> ;
         <tipo2> <identificador2> := <inicialización> ;
         ...
         <tipoN> <identificadorN> ;
     }
-    
+
 Uniones, `unown`, se representan de la misma manera:
 
     unown <identificador> {
-        
-        <tipo1> <identificador1> ;    
+
+        <tipo1> <identificador1> ;
         <tipo2> <identificador2> := <inicialización> ;
         ...
         <tipoN> <identificadorN> ;
@@ -325,34 +326,34 @@ Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
 
 Un campo de un tipo compuesto no puede contener el mismo tipo que está siendo declarado,
 directamente. Por ejemplo:
-    
+
     registeer unRegistro {
-    
+
         intmonchan int;
         registeer unRegistro reg;   # Esto es invalido.
         ...
     }
-    
+
     unown unUnion {
-    
+
         boolbasaur bool;
         unown unaUnion un;   # Esto tambien es invalido.
         ...
     }
-    
+
 O indirectamente, por ejemplo:
 
     # Todo el ejemplo es inválido
 
     registeer otroRegistro {
-    
+
         intmonchan int;
         unown unaUnion un;
         ...
     }
-    
+
     unown otroUnion {
-    
+
         boolbasaur bool;
         registeer unRegistro reg;
         ...
@@ -360,11 +361,11 @@ O indirectamente, por ejemplo:
 
 A continuación se encuentra un ejemplo de cómo definir y utilizar tipos compuestos:
 
-    registeer unRegistro {   
-        intmonchan campo1; 
+    registeer unRegistro {
+        intmonchan campo1;
         floatzel   campo2;
     }
-    
+
     unown unaUnion {
         intmonchan var1;
         floatzel   var2;
@@ -372,11 +373,11 @@ A continuación se encuentra un ejemplo de cómo definir y utilizar tipos compue
     }
 
     voidporeon main () {
-    
+
        registeer  unRegistro reg;
        unown      unaUnion   un;
        intmonchan int;
-       
+
        reg.campo1 := 42;
        unaUnion.var1 := 3;
        int := reg.campo1 / unaUnion.var1;
@@ -385,14 +386,14 @@ A continuación se encuentra un ejemplo de cómo definir y utilizar tipos compue
 
 ## Variables
 
-Las variables pueden ser declaradas de cualquier tipo excepto tipo `voidporeon`. 
+Las variables pueden ser declaradas de cualquier tipo excepto tipo `voidporeon`.
 
 ### Declaración e Inicialización de Variables
 
 * Las variables se pueden incializar al momento de declararlas, al menos si son arreglos o
 tipos definidos por el usuario.
 * Las variables de tipo `onix` (string) siempre deben ser inicializadas.
-* El tipo de la expresión debe concidir con el tipo de la declaración. 
+* El tipo de la expresión debe concidir con el tipo de la declaración.
 * Se pueden hacer declaraciones e inicializaciones simultáneas.
 * Para declarar una constante, se utiliza la palabra reservada `const`.
 * Las asignaciones en un bloque de declaraciones no se realiza ni en
@@ -405,27 +406,27 @@ Ejemplo:
     floatzel    a, b, c;                # Declaracion simultanea
     intmonchan  d, e, f := 1, 2, 3;     # Declaracion e inicializacion simultanea
     boolbasaur  g[1..42];               # Declaracion de un arreglo
-    onix        h := "FTW!";            # Declaracion e incializacion de un string   
+    onix        h := "FTW!";            # Declaracion e incializacion de un string
     registeer   unRegistro reg;         # Declaracion de un registro
     unown       unaUnion   un;          # Declaracion de una union
-    floatzel    const x, y, const z;    # Declaración de constantes y no constantes 
-       
+    floatzel    const x, y, const z;    # Declaración de constantes y no constantes
+
 ## Funciones
 
 * No se permiten funciones anidadas.
 * Los parámetros formales pueden ser de cualquier tipo distinto a `voidporeon`.
 * Los nombres de los parámetros deben ser distintos.
-* El pasaje de parámetros pueden ser por valor o por referencia. Los tipos primitivos 
-pueden ser pasados por valor o por referencia pero los tipos compuestos obligatoriamente 
-son pasados por referencia. 
+* El pasaje de parámetros pueden ser por valor o por referencia. Los tipos primitivos
+pueden ser pasados por valor o por referencia pero los tipos compuestos obligatoriamente
+son pasados por referencia.
 * Para pasar un parámetro por referencia, se utiliza la palabra reservada `var`.
 * Los tipos de retorno sólo pueden ser tipos primitivos de Emerald.
-* La instrucción **`return`** es obligatoria cuando el tipo de retorno de la función 
+* La instrucción **`return`** es obligatoria cuando el tipo de retorno de la función
 no es `voidporeon`.
-* Si una función tiene como retorno el vacío (`voidporeon`) y se utiliza la instrucción 
-`return` en el cuerpo de la misma entonces sólo se puede utilizar el retorno vacío. 
+* Si una función tiene como retorno el vacío (`voidporeon`) y se utiliza la instrucción
+`return` en el cuerpo de la misma entonces sólo se puede utilizar el retorno vacío.
 * Se permiten funciones recursivas directa o indirectamente.
-* Los nombres de las variables locales pueden ser iguales a los 
+* Los nombres de las variables locales pueden ser iguales a los
 nombres de los parámetros pero _**why would you do that?**_
 
 ![why would you do that?](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdAXwa3WVDHJEpUHwicNyThSo9yjC1VlHd3dHuram9xrGKrrH6)
@@ -433,38 +434,38 @@ nombres de los parámetros pero _**why would you do that?**_
 
 ### Invocación de Funciones
 
-* Los parámetros son evaluados de izquierda a derecha. 
-* Las funciones pueden ser llamadas en cualquier expresión tales que éstas no retornen 
-`voidporeon`. 
+* Los parámetros son evaluados de izquierda a derecha.
+* Las funciones pueden ser llamadas en cualquier expresión tales que éstas no retornen
+`voidporeon`.
 * Las funciones también pueden ser invocadas como si fueran una instrucción.
-* El número de argumentos pasados a una función al momento de ser llamada debe ser igual 
+* El número de argumentos pasados a una función al momento de ser llamada debe ser igual
 al número de parámetros formales.
 * Los tipos de los argumentos reales deben coincidir con los tipos de los argumentos formales.
 
 Ejemplo:
 
     voidporeon aFunction (intmonchan int, floatzel array[init..end], var registeer aRegister reg) {
-    
+
         <declaraciones>;
         <instrucciones>;
     }
-    
+
     registeer aRegister { ... }
-    
+
     voidporeon main () {
-    
+
         intmonchan i;
         floatzel   a[1..19];
-        registeer aRegister reg;        
-        ...        
+        registeer aRegister reg;
+        ...
         aFunction(i,a,reg);
         ...
     }
-    
+
 
 ## Equivalencia y Compatibilidad de Tipos
 
-Emerald es un lenguaje fuertemente tipado. 
+Emerald es un lenguaje fuertemente tipado.
 La equivalencia y compatibilidad de tipos es por nombre.
 
 ## Asignación
@@ -477,7 +478,7 @@ También se puede hacer asignación multiple:
 
     l1, l2, ..., ln := r1, r2, ..., rn;
 
-* Ambos lados de la asignación deben ser del mismo tipo y deben contener la 
+* Ambos lados de la asignación deben ser del mismo tipo y deben contener la
 misma cantidad de elementos.
 * No es permitido utilizar constantes como lvalue.
 
@@ -487,14 +488,14 @@ misma cantidad de elementos.
 
 * Una cláusula `else` o `elsif` siempre será asociada al `if` más cercano.
 * La expresión del condicional debe ser de tipo `boolbasaur` (boolean).
-* Las cláusulas `if`, `elsif` o `else` pueden ser seguidas por una sola 
-instrucción o un bloque de instrucciones. 
-* Si se utiliza un `elsif` o un `else`, entonces obligatoriamente éstas son 
+* Las cláusulas `if`, `elsif` o `else` pueden ser seguidas por una sola
+instrucción o un bloque de instrucciones.
+* Si se utiliza un `elsif` o un `else`, entonces obligatoriamente éstas son
 acompañadas por un `if`.
-* Se puede utilizar solamente la instrucción `if`. Se pueden omitir 
+* Se puede utilizar solamente la instrucción `if`. Se pueden omitir
 los `elsif` o los `else`.
 
-Sintaxis: 
+Sintaxis:
 
     if <expresiónBooleana> {
         ...
@@ -506,9 +507,9 @@ Sintaxis:
 
 ### Iteración Acotada
 
-* La variable de iteración del `for` sólo puede ser de un valor escalar 
+* La variable de iteración del `for` sólo puede ser de un valor escalar
 discreto (`intmonchan`, `boolbasaur` o `charizard`).
-* La variable de iteración sólo es visible en el cuerpo del `for`. Ésta no 
+* La variable de iteración sólo es visible en el cuerpo del `for`. Ésta no
 puede ser utilizada como lvalue, es decir, no puede ser modificada por el usuario.
 * La variable de iteración incremetará por 1 al menos si el usuario especifica el salto,
 utilizando la palabra reservada `by`.
@@ -522,10 +523,10 @@ Sintaxis:
     for <identificador> from <expresión> to <expresión> by <expresión> {
          ...
     }
-    
-    
+
+
 ### Interación Indeterminada
-    
+
 * La expresión de la iteración indeterminada debe ser de tipo `boolbasaur` (boolean).
 * La condición se chequea al principio de cada iteración.
 
@@ -541,15 +542,15 @@ Sintaxis:
 Cualquier iteración, sea acotada o indeterminada, puede ser etiquetada. Todas las etiquetas
 utilizadas deben tener nombres distintos.
 
-* Para finalizar incondicionalmente una iteración se utiliza la instrucción `BOOM` (break). 
-* Para saltar al siguiente ciclo de una iteración se utiliza la instrucción `continue`. 
+* Para finalizar incondicionalmente una iteración se utiliza la instrucción `BOOM` (break).
+* Para saltar al siguiente ciclo de una iteración se utiliza la instrucción `continue`.
 * Estas dos instrucciones sólo pueden ser utilizadas en los bloques de interaciones.
 
 Ejemplo:
 
     tag: label;
     for i from 0 to 100 by 2 {
-    
+
         while true {
             ...
             BOOM label; # Rompe la iteración externa que esta etiquetada como label.
@@ -558,10 +559,10 @@ Ejemplo:
         }
         ...
     }
-    
+
     tag: label2;
     for i from 0 to 42 by 2 {
-    
+
         while true {
             ...
             continue label; # Salta al siguiente ciclo de la iteración externa que esta etiquetada como label2.
@@ -573,7 +574,7 @@ Ejemplo:
 
 ### Case
 
-El lenguaje Emerald maneja la instrucción case, la cual es denominada `switch`. 
+El lenguaje Emerald maneja la instrucción case, la cual es denominada `switch`.
 Ésta se maneja como los case del lenguaje Pascal y no el switch de C.
 
 Los `case` son disjuntos y el valor `default` es opcional. Deben haber al menos
@@ -589,21 +590,21 @@ Sintaxis:
     }
 
 
-## Expresiones   
+## Expresiones
 
-* La conversión de tipos se debe hacer explícitamente. 
-* Los operadores de Emerald sólo se pueden utilizar entre objetos del mismo tipo. 
-Es decir, no se puede multiplicar un número entero con un punto flotante, se debe convertir 
-alguno de ellos para poder efectuar la multiplicación. 
+* La conversión de tipos se debe hacer explícitamente.
+* Los operadores de Emerald sólo se pueden utilizar entre objetos del mismo tipo.
+Es decir, no se puede multiplicar un número entero con un punto flotante, se debe convertir
+alguno de ellos para poder efectuar la multiplicación.
 
 ### Operadores
 
     Intmonchan / Float  | Charizard | Boolbasaur
     :----------------:  | :-------: | :--------:
-    -                   | >         |   !  
+    -                   | >         |   !
     ^                   | >=        |   =
     *                   | <         |   !=
-    /                   | <=        |   &&       
+    /                   | <=        |   &&
     %                   | =         |   &#124;&#124;
     +                   | !=        |
     -                   |           |
@@ -613,7 +614,7 @@ alguno de ellos para poder efectuar la multiplicación.
     <=                  |           |
     =                   |           |
     !=                  |           |
-    
+
 ### Precedencia de Operadores
 
 De mayor a menor precedencia.
@@ -631,7 +632,7 @@ De mayor a menor precedencia.
 
 
 ## Funciones de Librería
-    
+
 ### Entrada/Salida
 
 Las palabras reservadas para entreda y salida son `read`, `print` y `println`.
@@ -642,13 +643,13 @@ Sintaxis:
     print ("Ingrese su numero favorito: ");
     read(num);
     ...
-    
+
 ### Conversiones Explícitas
 
 Emerald maneja la conversión explícita de tipos con las siguientes funciones:
 
-    charizard   intToCharizard(intmonchan int);    # Conversion de entero a caracter   
+    charizard   intToCharizard(intmonchan int);    # Conversion de entero a caracter
     floatzel    intToFloatzel(intmonchan int);     # Conversion de entero a flotante
-    intmonchan  charToIntmonchan(charizard char);  # Conversion de caracter a entero 
+    intmonchan  charToIntmonchan(charizard char);  # Conversion de caracter a entero
     intmonchan  floatToIntmonchan(floatzel float); # Conversion de flotante a entero
-    
+
