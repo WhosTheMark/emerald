@@ -215,12 +215,12 @@ retorna `voidporeon` (vacío).
 
 ## Reglas de Alcance
 
-Emerald tiene alcance estático. El alcance más externo corresponde a las declaraciones
-globales (variables, funciones y tipos definidos por el usuario). Después en cada bloque 
+Emerald tiene alcance estático. El alcance más externo corresponde a las definiciones de funciones 
+y tipos definidos por el usuario, y a la declaración de variables globales. Después en cada bloque 
 se abre un alcance nuevo. También se abre un alcance cuando se declara la variable 
 de una instrucción `for`. 
     
-Las funciones y los registros sólo se pueden declarar en el alcance global. No importa el
+Las funciones, los registros y las uniones sólo pueden ser definidos en el alcance global. No importa el
 orden de su definición, éstas son visibles entre sí. No se pueden definir funciones, 
 registros, uniones o variables globales con el mismo nombre.
 
@@ -229,7 +229,7 @@ Por ejemplo:
 
     # Funcion valida
     
-    voidporeon funcionValida {
+    voidporeon funcionValida (){
     
         intmonchan int;
         boolbasaur bool;        
@@ -239,7 +239,7 @@ Por ejemplo:
     
     # Funcion invalida
     
-    voidporeon funcionInvalida {
+    voidporeon funcionInvalida (){
     
         intmonchan int;        
         int := 1;        
@@ -248,9 +248,9 @@ Por ejemplo:
         ...
     }
     
-Se pueden declarar variables con el mismo nombre tales que éstas no estén en el mismo 
-alcance y que no tengan el mismo nombre que una función, registro o unión ya definido. 
-Si una variable se declara en el alcance actual y ya existe una con el mismo nombre en 
+Se pueden declarar variables con el mismo nombre tal que éstas no estén en el mismo 
+alcance y que no tengan el mismo nombre de una función, registro o unión ya definido. 
+Si una variable se declara en el alcance actual y existe otra con el mismo nombre en 
 un alcance externo entonces la primera opaca a la segunda.
 
 
@@ -269,12 +269,12 @@ Los tipos primitivos de Emerald son:
 
 ### Arreglos
 
-* Los arreglos son unidimensionales con índices arbitrarios de cualquier tipo primitivo 
-de Emerald menos `voidporeon`. 
+* Los arreglos son unidimensionales con índices arbitrarios, puede ser de cualquier 
+tipo primitivo de Emerald menos `voidporeon` o de algún tipo declarado por el usuario. 
 * Son de tamaño fijo y constante a tiempo de compilación. Esto significa que una 
 vez declarados, el tamaño de un arreglo no se puede cambiar. 
 * Los índices de un arreglo deben ser de tipo entero.
-* Cuando se intenta de acceder a una posición fuera de los límites de un arreglo, 
+* Cuando se intenta acceder a una posición fuera de los límites de un arreglo, 
 ocurre un error a tiempo de ejecución.
 
 Sintaxis:
@@ -283,9 +283,10 @@ Sintaxis:
 
 Ejemplo:
 
-    intmonchan arreglo1[1..10]
-    floatzel   arreglo2[0..42]
-    charizard  arreglo3[9..19]
+    intmonchan        arreglo1[1..10]
+    floatzel          arreglo2[0..42]
+    charizard         arreglo3[9..19]
+    registeer persona arreglo4[-1..9]
 
 ### Tipos Compuestos
 
@@ -322,8 +323,8 @@ Para acceder a un atributo de un registro o unión, se utiliza el operador `.`.
 
     <identificador>.<campo>
 
-Un campo de un tipo compuesto no puede contener el mismo tipo que está siendo declarado.
-Por ejemplo:
+Un campo de un tipo compuesto no puede contener el mismo tipo que está siendo declarado,
+directamente. Por ejemplo:
     
     registeer unRegistro {
     
@@ -336,6 +337,24 @@ Por ejemplo:
     
         boolbasaur bool;
         unown unaUnion un;   # Esto tambien es invalido.
+        ...
+    }
+    
+O indirectamente, por ejemplo:
+
+    # Todo el ejemplo es inválido
+
+    registeer otroRegistro {
+    
+        intmonchan int;
+        unown unaUnion un;
+        ...
+    }
+    
+    unown otroUnion {
+    
+        boolbasaur bool;
+        registeer unRegistro reg;
         ...
     }
 
@@ -376,6 +395,9 @@ tipos definidos por el usuario.
 * El tipo de la expresión debe concidir con el tipo de la declaración. 
 * Se pueden hacer declaraciones e inicializaciones simultáneas.
 * Para declarar una constante, se utiliza la palabra reservada `const`.
+* Las asignaciones en un bloque de declaraciones no se realiza ni en
+secuencia ni en paralelo. Si se usa alguna variable para la inicialización,
+ésta debe existir en algún alcance externo.
 
 Ejemplo:
 
@@ -386,6 +408,7 @@ Ejemplo:
     onix        h := "FTW!";            # Declaracion e incializacion de un string   
     registeer   unRegistro reg;         # Declaracion de un registro
     unown       unaUnion   un;          # Declaracion de una union
+    floatzel    const x, y, const z;    # Declaración de constantes y no constantes 
        
 ## Funciones
 
@@ -396,17 +419,17 @@ Ejemplo:
 pueden ser pasados por valor o por referencia pero los tipos compuestos obligatoriamente 
 son pasados por referencia. 
 * Para pasar un parámetro por referencia, se utiliza la palabra reservada `var`.
-* Los nombres de las variables locales pueden ser iguales a los 
-nombres de los parámetros pero _**why would you do that?**_
-
-![why would you do that?](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdAXwa3WVDHJEpUHwicNyThSo9yjC1VlHd3dHuram9xrGKrrH6)
-
 * Los tipos de retorno sólo pueden ser tipos primitivos de Emerald.
 * La instrucción **`return`** es obligatoria cuando el tipo de retorno de la función 
 no es `voidporeon`.
 * Si una función tiene como retorno el vacío (`voidporeon`) y se utiliza la instrucción 
 `return` en el cuerpo de la misma entonces sólo se puede utilizar el retorno vacío. 
 * Se permiten funciones recursivas directa o indirectamente.
+* Los nombres de las variables locales pueden ser iguales a los 
+nombres de los parámetros pero _**why would you do that?**_
+
+![why would you do that?](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTdAXwa3WVDHJEpUHwicNyThSo9yjC1VlHd3dHuram9xrGKrrH6)
+
 
 ### Invocación de Funciones
 
@@ -454,7 +477,8 @@ También se puede hacer asignación multiple:
 
     l1, l2, ..., ln := r1, r2, ..., rn;
 
-* Ambos lados de la asignación deben ser del mismo tipo.
+* Ambos lados de la asignación deben ser del mismo tipo y deben contener la 
+misma cantidad de elementos.
 * No es permitido utilizar constantes como lvalue.
 
 ## Estructuras de Control
