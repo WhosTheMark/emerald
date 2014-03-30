@@ -9,5 +9,5 @@ se ejecutará de la siguiente forma:
 
     $ ./emerald <archivo>
 
-La documentación se encuntra en la carpeta doc/, mientras
-que los archivos de pruebas se encuentra en la carpeta pruebas/.
+La documentación se encuentra en la carpeta doc/, mientras
+que los archivos de pruebas se encuentran en la carpeta pruebas/.
