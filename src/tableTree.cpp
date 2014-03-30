@@ -27,8 +27,6 @@ public:
 
       children.clear();
    }
-
-
 };
 
 class TableTree {
@@ -80,7 +78,7 @@ public:
 
             ++errorCount;
             pair<string,Symbol*> *reDef = this->lookup(sym->name);
-            cout << "The variable " << sym->name << " at line: " << sym->line << ", column: ";
+            cout << "The variable '" << sym->name << "' at line: " << sym->line << ", column: ";
             cout << sym->column << " has already been defined at line: " << reDef->second->line;
             cout << ", column: " << reDef->second->column << ".\n";
 
@@ -88,7 +86,6 @@ public:
             return true;
       }
       return false;
-
    };
 
    /* Busca el simbolo dado su nombre en el arbol de tablas.*/
@@ -118,7 +115,6 @@ public:
    ~TableTree() {
       delete(root);
    }
-
 
 private:
 

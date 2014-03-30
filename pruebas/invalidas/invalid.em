@@ -1,8 +1,13 @@
 
-/* Invalid program to test invalid symbols, 
+/* Invalid program to test invalid symbols,
    undeclared variables and redefined variables */
 
 intmonchan int;
+
+registeer register {
+
+   intmonchan a, b;
+}
 
 floatzel plusTwo (floatzel f) {
 
@@ -16,18 +21,19 @@ intmonchan plusTwo (intmonchan i) {
    return l + 2      # ERROR: undeclared variable
 }
 
-~ # ERROR: invalid symbol  
+~ # ERROR: invalid symbol
 
 voidporeon main() {
 
    intmonchan int := 3;
-   
-   int := @int * 9 + 1;     # ERROR: invalid symbol
-   
+   unown register a;       # ERROR: declared as a register but used as unown type
+
+   int := @int * 9 + 1;    # ERROR: invalid symbol
+
    for I from 1 to 10
-      float := i + 19;      # ERROR: undeclared variables
-      
-   println(float)           # ERROR: undeclared variable
+      float := i + 19;     # ERROR: two undeclared variables
+
+   println(float)          # ERROR: undeclared variable
 
 
 }

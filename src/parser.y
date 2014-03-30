@@ -242,7 +242,6 @@
 
                                                    delete($1); //NOTE puede que esto se use despues.
                                                 }
-
       | tk_identifier ARRDOT tk_comma ASIGNLIST {  pair<string,Symbol*> *id = scopeTree.lookup(*$1);
                                                    if (id == nullptr){
                                                       ++errorCount;
@@ -259,7 +258,7 @@
    ARRDOT
       : /* empty */
       | '[' EXPR ']' ARRDOT
-      | tk_dot tk_identifier ARRDOT { delete($2); } //NOTE puede que esto se use despues.
+      | tk_dot tk_identifier ARRDOT { delete($2); /*NOTE puede que esto se use despues.*/ }
 
       | '[' error ']'               {  ++errorCount;
                                        cout << "Invalid expression in array asignment at line: ";
@@ -279,7 +278,6 @@
                                           cout << ".\n";
                                           yyerrok;
                                        }
-
       | tk_if error INST IFLIST        {  ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
@@ -344,21 +342,21 @@
       ;
 
    FUNCCALL
-      : tk_identifier '(' ARGS ')' { delete($1); /*NOTE puede que esto se use despues.*/ }
+      : tk_identifier '(' ARGS ')'     { delete($1); /*NOTE puede que esto se use despues.*/ }
       ;
 
    BREAK
       : tk_break
-      | tk_break tk_identifier { delete($2); /*NOTE puede que esto se use despues.*/ }
+      | tk_break tk_identifier         { delete($2); /*NOTE puede que esto se use despues.*/ }
       ;
 
    CONTINUE
       : tk_continue
-      | tk_continue tk_identifier { delete($2); /*NOTE puede que esto se use despues.*/ }
+      | tk_continue tk_identifier      { delete($2); /*NOTE puede que esto se use despues.*/ }
       ;
 
    LABEL
-      : tk_tag tk_colon tk_identifier { delete($3); /*NOTE puede que esto se use despues.*/ }
+      : tk_tag tk_colon tk_identifier  { delete($3); /*NOTE puede que esto se use despues.*/ }
       ;
 
    RETURN
@@ -395,7 +393,6 @@
                                                             delete((*it)->first);
                                                             delete(*it);
                                                          }
-
                                                       delete($2);
                                                       delete($1);
                                                    }
@@ -410,7 +407,6 @@
                                                          delete((*it)->first);
                                                          delete(*it);
                                                       }
-
                                                       delete($2);
                                                       delete($1);
 
@@ -421,7 +417,6 @@
                                                       yyerrok;
                                                       delete($1);
                                                    }
-
       | COMPLEXTYPE error tk_semicolon             {  ++errorCount;
                                                       cout << "Error in declaration at line: " << @2.begin.line;
                                                       cout << ", column: " << @2.begin.column << ".\n";
@@ -501,24 +496,32 @@
    COMPLEXTYPE
       : tk_unionType tk_identifier  {  pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
 
-                                       if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                       if (symType == nullptr) {
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
-                                          cout << ": you declared an unown but '" << *$2 << "' is a registeer type.\n";
-                                       }
+                                          cout << ": The unown '" << *$2 << "' has not been defined.\n";
 
+                                       } else if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                          ++errorCount;
+                                          cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                          cout << ": you declared an unown but '" << *$2 << "' is not defined as an unown.\n";
+                                       }
+                                       $$ = new pair<string,string>(*$1,*$2);
                                        delete($1);
                                        delete($2);
-                                       $$ = new pair<string,string>(*$1,*$2);
                                     }
       | tk_structType tk_identifier {  pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
 
-                                       if (symType != nullptr && dynamic_cast<Union*>(symType->second) == 0){
+                                       if (symType == nullptr) {
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
-                                                         cout << ": you declared a registeer but '" << *$2 << "' is an unown type.\n";
-                                       }
+                                          cout << ": The registeer '" << *$2 << "' has not been defined.\n";
 
+                                       } else if (symType != nullptr && dynamic_cast<Register*>(symType->second) == 0){
+                                          ++errorCount;
+                                          cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                          cout << ": you declared a registeer but '" << *$2 << "' is not defined as a registeer.\n";
+                                       }
                                        $$ = new pair<string,string>(*$1,*$2);
                                        delete($1);
                                        delete($2);
@@ -606,7 +609,6 @@
                                                       delete($4);
                                                       delete($1);
                                                       delete($2);
-
                                                    }
                                              BLOCK {  scopeTree.exitScope(); }
 

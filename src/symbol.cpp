@@ -41,8 +41,7 @@ public:
       cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
    };
 
-   virtual ~Declaration() {
-   };
+   virtual ~Declaration() { };
 };
 
 /* Clase de declaracion de arreglos.*/
@@ -69,7 +68,6 @@ public:
    };
 
    ~ArrayDecl() {};
-
 };
 
 /* Clase de simbolos utilizada para la definicion de tipos primitivos y
@@ -133,9 +131,7 @@ public:
       for(; it != arguments.end(); ++it){
             delete(*it);
       }
-
    };
-
 };
 
 /* Clase de definicion de registros. */
@@ -154,7 +150,6 @@ public:
    };
 
    ~Register() {};
-
 };
 
 /* Clase de definicion de uniones. */
@@ -173,7 +168,6 @@ public:
    };
 
    ~Union() {};
-
 };
 
 

@@ -1,5 +1,4 @@
 
-
 voidporeon main() {
 
    intmonchan a;
@@ -15,13 +14,13 @@ voidporeon main() {
       case 1 -> { println("Cats are the best!") }
       case 2 -> { println("Dogs are adorable!") }
       case 3 -> { println("YAY!!!") }
-      case 4 -> { 
-                  println("That is just sad. :("); 
-                  println("Here's an infinite loop");
-   
-                  while (true)  
+      case 4 -> {
+                  println("That is just sad. :(");
+                  println("Here's an infinite loop.");
+
+                  while (true)
                      println("Why would you hate them?")
-                  
+
                 }
    }
 }

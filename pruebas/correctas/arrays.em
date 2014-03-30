@@ -1,5 +1,4 @@
 
-
 intmonchan length (intmonchan arr[init..end]) {
 
    intmonchan acc := 0;
@@ -10,20 +9,18 @@ intmonchan length (intmonchan arr[init..end]) {
    return acc
 }
 
-
 boolbasaur palindrome (intmonchan arr[init..end]) {
 
    intmonchan len := length(arr);
 
-   for i from init to end {
+   for i from init to len / 2 + init {
 
-      if (arr[i] != arr[len-i])
+      if (arr[i] != arr[end-i+init])
          return false
    };
 
    return true
 }
-
 
 voidporeon main() {
 

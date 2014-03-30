@@ -1,4 +1,6 @@
 
+# Test for nested if statements
+
 voidporeon main() {
 
    intmonchan a, if2 := 1, 2;
@@ -12,7 +14,6 @@ voidporeon main() {
       if (if1 % 3 = 0)
 
          if (if1 * if2 > 100) {
-
             charizard if3;
             if1 := 100
 
@@ -23,8 +24,5 @@ voidporeon main() {
          if1 := if1 + 19;
 
       println(if1)
-
-
    }
-
 }

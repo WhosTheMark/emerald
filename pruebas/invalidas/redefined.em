@@ -2,10 +2,9 @@
 /* Invalid program to test redefinition errors */
 
 charizard redefined := 'a';
-onix redefined := "redefined";   # ERROR: Redefined global variable
+onix redefined := "redefined";      # ERROR: Redefined global variable
 
-
-# ERROR: Already declared
+# ERROR: Has already been declared
 
 intmonchan redefined () {
 
@@ -15,16 +14,16 @@ intmonchan redefined () {
 voidporeon main() {
 
    intmonchan a := 1;
-   floatzel a;                   # ERROR: Redefined variable
+   floatzel a;                      # ERROR: Redefined variable
 
    a := a + 1;
-   
+
    for i from 1 to 10 {
-   
-      floatzel b := 0.0;
-      boolbasaur b := true;      # ERROR: Redefined variable
-      
+
+      floatzel a, b := 1.0, 0.0;
+      boolbasaur b := true;         # ERROR: Redefined variable
+
       b := intToFloatzel(a) * i;
-      println(b)   
-   }   
+      println(b)
+   }
 }

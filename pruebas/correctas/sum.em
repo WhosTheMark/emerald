@@ -1,5 +1,4 @@
 
-
 voidporeon main() {
 
    intmonchan const INIT, const END := 0, 10;
@@ -14,5 +13,4 @@ voidporeon main() {
       sum := sum + arr[i];
 
    print(sum)
-
 }

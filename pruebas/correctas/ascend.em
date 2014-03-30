@@ -8,7 +8,6 @@ boolbasaur ascendArray (intmonchan a[init..end]) {
       ascending := a[i] <= a[i+1];
       i := i + 1
    };
-
    return ascending
 }
 
@@ -22,12 +21,4 @@ voidporeon main() {
       arr[i] := i * 28 % 20;
 
    println(ascendArray(arr))
-
-
-
-
-
-
-
-
 }

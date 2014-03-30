@@ -74,7 +74,5 @@ public:
       }
 
       table.clear();
-
    }
-
 };

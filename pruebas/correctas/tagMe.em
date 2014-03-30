@@ -1,5 +1,4 @@
 
-
 voidporeon main() {
 
    tag: me;
@@ -13,12 +12,11 @@ voidporeon main() {
          print("Enter a number: ");
          read(n);
 
-         if (n % 28 = 0)            
+         if (n % 28 = 0)
             BOOM me
       };
-
       println("Keep trying!")
    };
 
-   println("You win!")
+   println("The end.")
 }

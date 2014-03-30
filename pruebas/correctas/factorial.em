@@ -1,25 +1,25 @@
 
-# Factorial iterativo
+# Iterative factorial
 
 intmonchan factorial (intmonchan n) {
 
    intmonchan acc:= 1;
 
-   for i from 1 to n   
-      acc:= acc * i        
+   for i from 1 to n
+      acc:= acc * i
 }
 
-# Factorial recursivo
+# Recursive factorial
 
 intmonchan factRec1 (intmonchan n) {
 
-   if (n = 0) 
+   if (n = 0)
       return 1
    else
       return factRec1(n-1) * n
 }
 
-# Factorial con recursion de cola
+# Factorial with tail recursion
 
 intmonchan factRec2 (intmonchan n) {
 
@@ -36,19 +36,19 @@ intmonchan factHelper (intmonchan n, intmonchan acc) {
 
 voidporeon main() {
 
-   intmonchan n;   
-   intmonchan f; 
-   
-   print("Ingrese un numero para calcular su factorial: ");
+   intmonchan n;
+   intmonchan f;
+
+   print("Enter a number to calculate its factorial: ");
    read(n);
-   
-   f := factorial(n);   
+
+   f := factorial(n);
    println(f);
 
    f := factRec1(n);
    println(f);
 
    f := factRec2(n);
-   println(f) 
+   println(f)
 
 }
