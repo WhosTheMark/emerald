@@ -1,5 +1,5 @@
 %skeleton "lalr1.cc"
-%require "2.7"
+%require "2.5"
 %debug
 %defines
 %locations
