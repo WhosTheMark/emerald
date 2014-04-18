@@ -71,7 +71,9 @@ public:
          vector<SymTableNode*>::iterator it = root->children.begin();
 
          /* Si el simbolo es una funcion o tipo definido por el usuario
-          * o esta en el alcance actual entonces no se agrega.*/
+          * o esta en el alcance actual entonces no se agrega.
+          * Para cuando tratas de declarar una variable que ya
+          * esta definida como una funcion, registro o union. */
          if ((it != root->children.end() && root->children.front()->table.contains(sym)
             && dynamic_cast<Declaration*>((root->children.front()->table.lookup(sym->name))->second) == 0)
             || !currentScope->table.insert(sym)) {

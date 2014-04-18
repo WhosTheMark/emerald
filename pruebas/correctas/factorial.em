@@ -19,14 +19,16 @@ intmonchan factRec1 (intmonchan n) {
       return factRec1(n-1) * n
 }
 
+intmonchan factHelper(intmonchan n, intmonchan acc);
+
 # Factorial with tail recursion
 
 intmonchan factRec2 (intmonchan n) {
 
-   return factAux(n,1)
+   return factHelper(n,1)
 }
 
-intmonchan factHelper (intmonchan n, intmonchan acc) {
+intmonchan factHelper(intmonchan n, intmonchan acc) {
 
    if (n = 0)
       return acc

@@ -29,6 +29,16 @@ public:
    Declaration(string n, int l, int c, pair<string,Symbol*> *p, bool con) :
    Symbol(n,l,c), type(p), constant(con) {};
 
+   bool operator==(Declaration d) {
+
+      return (this->name == d.name && this->type->second == d.type->second);
+   }
+
+   bool operator!=(Declaration d) {
+
+      return !(*this == d);
+   }
+
    void printSym(int tabs=0) {
 
       cout << "VARIABLE NAME: " << name << " TYPE: ";
@@ -103,6 +113,7 @@ public:
    Basic *returnType; //Tipo de retorno de la funcion.
    vector<pair<string,Declaration*>*> arguments; //Lista de los argumentos de la funcion.
    int numArgs; //Numero de argumentos de la funcion.
+   bool fwdDecl = false; //Flag para determinar si es un forward declaration de una funcion.
    //TODO body
 
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args) :
@@ -122,7 +133,9 @@ public:
       else
          cout << "Not Defined";
 
-      cout << " LINE: " << line << " COLUMN: " << column << "\n";
+      if (line >= 0 || column >= 0)
+         cout << " LINE: " << line << " COLUMN: " << column;
+      cout << "\n";
    };
 
    ~Function() {

@@ -38,6 +38,7 @@
    typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
    vector<Declaration*> declList;
+   Function *funcAux;
 }
 
 %union{
@@ -55,6 +56,7 @@
    std::vector<std::pair<std::string,Declaration*>*> *vecFunction;
    std::pair<std::string,std::string> *complex;
    Declaration *declr;
+   Function *funct;
 }
 
 %type <idsList> IDLIST
@@ -64,6 +66,7 @@
 %type <boolean> VAR
 %type <vecFunction> ARGSDEF
 %type <declr> ARG
+%type <funct> FUNC
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -342,7 +345,16 @@
       ;
 
    FUNCCALL
-      : tk_identifier '(' ARGS ')'     { delete($1); /*NOTE puede que esto se use despues.*/ }
+      : tk_identifier '(' ARGS ')'     {  pair<string,Symbol*> *sym = scopeTree.lookup(*$1);
+
+                                          if (sym == nullptr) {
+                                             ++errorCount;
+                                             yy::position pos = @1.begin;
+                                             cout << "The function '" << *$1 << "' at line: " << pos.line;
+                                             cout << ", column: " << pos.column << " has not been declared.\n";
+                                          }
+
+                                          delete($1); /*NOTE puede que esto se use despues.*/ }
       ;
 
    BREAK
@@ -556,95 +568,148 @@
                                           }
       ;
 
+
    FUNCDEF
-      : TYPE tk_identifier '(' ')'                 {  yy::position pos = @1.begin;
-                                                      pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                                                      Basic *symType = (Basic*) type->second;
-                                                      Function *func = new Function(*$2,pos.line,pos.column,symType);
-                                                      scopeTree.insert(func);
-                                                      delete(type);
-                                                      delete($2);
-                                                      delete($1);
-                                                   }
-                                          BLOCK
+      : TYPE FUNC          {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
+                              Basic *symType = (Basic*) type->second;
+                              $2->returnType = symType;
+                              funcAux = $2;
+                              delete(type);
+                              delete($1);
+                           }
 
-      | tk_voidType tk_identifier '(' ')'          {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                                                      Basic *symType = (Basic*) type->second;
-                                                      yy::position pos = @1.begin;
-                                                      Function *func = new Function(*$2,pos.line,pos.column,symType);
-                                                      scopeTree.insert(func);
-                                                      delete(type);
-                                                      delete($2);
-                                                      delete($1);
-                                                   }
-                                          BLOCK
+                  FUNCBODY
 
-      | TYPE tk_identifier '(' ARGSDEF ')'         {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                                                      Basic *symType = (Basic*) type->second;
-                                                      vecFunc args;
-                                                      vecFunc::reverse_iterator it = $4->rbegin();
+      | tk_voidType FUNC   {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
+                              Basic *symType = (Basic*) type->second;
+                              $2->returnType = symType;
+                              funcAux = $2;
+                              delete(type);
+                              delete($1);
+                           }
+                  FUNCBODY
+      ;
 
-                                                      /* Invierte la lista de argumentos para agregarla a la declaracion. */
-                                                      for(; it != $4->rend(); ++it)
-                                                         args.push_back(*it);
+   FUNCBODY
+      : tk_semicolon {  funcAux->fwdDecl = true;
+                        pair<string,Symbol*> *func = scopeTree.lookup(funcAux->name);
+                        if (func != nullptr) {
+                           ++errorCount;
+                           cout << "Error at line: " << funcAux->line << ", column: " << funcAux->column;
+                           cout << ". This name has already been used at line: " << func->second->line;
+                           cout << ", column: " << func->second->column << ".\n";
+                           delete(func);
+                        } else
+                           scopeTree.insert(funcAux);
+                        funcAux = nullptr;
+                        declList.clear();
+                     }
 
-                                                      yy::position pos = @1.begin;
-                                                      Function *func = new Function(*$2,pos.line,pos.column,symType,args);
-                                                      scopeTree.insert(func);
+      |              {  pair<string,Symbol*> *funcPair = scopeTree.lookup(funcAux->name);
+                        Function *func = nullptr;
 
-                                                      /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
-                                                      scopeTree.enterScope();
+                        if (funcPair != nullptr)
+                           func = dynamic_cast<Function*>(funcPair->second);
 
-                                                      for(it = $4->rbegin(); it != $4->rend(); ++it)
-                                                         scopeTree.insert((*it)->second);
 
-                                                      /* Si hay arreglos en los argumentos entonces se agregan
-                                                       * las variables asociadas a sus delimitadores. */
-                                                      vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
-                                                      for(;declIt != declList.rend(); ++declIt)
-                                                         scopeTree.insert(*declIt);
+                        vector<pair<string,Declaration*>*>::iterator args2 = funcAux->arguments.begin();
 
-                                                      declList.clear(); //Vacia la lista.
-                                                      delete(type);
-                                                      delete($4);
-                                                      delete($1);
-                                                      delete($2);
-                                                   }
-                                             BLOCK {  scopeTree.exitScope(); }
+                        if (func != nullptr && func != 0 && func->fwdDecl) {
 
-      | tk_voidType tk_identifier '(' ARGSDEF ')'  {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                                                      Basic *symType = (Basic*) type->second;
-                                                      vecFunc args;
-                                                      vecFunc::reverse_iterator it = $4->rbegin();
+                           if (func->returnType != funcAux->returnType) {
+                              ++errorCount;
+                              cout << "Error at line: " << funcAux->line << ", column: " << funcAux->column;
+                              cout << ". The return type of the function '" << funcAux->name << "' does not match ";
+                              cout << "with its forward declaration at line: "<< func->line;
+                              cout << ", column: " << func->column << ".\n";
 
-                                                      /* Invierte la lista de argumentos para agregarla a la declaracion. */
-                                                      for(; it != $4->rend(); ++it)
-                                                         args.push_back(*it);
+                           }
 
-                                                      yy::position pos = @1.begin;
-                                                      Function *func = new Function(*$2,pos.line,pos.column,symType,args);
-                                                      scopeTree.insert(func);
+                           if (func->arguments.size() == funcAux->arguments.size()) {
 
-                                                      /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
-                                                      scopeTree.enterScope();
+                              vector<pair<string,Declaration*>*>::iterator args1 = func->arguments.begin();
 
-                                                      for(it = $4->rbegin(); it != $4->rend(); ++it)
-                                                         scopeTree.insert((*it)->second);
+                              int argPos = 1;
 
-                                                      vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
+                              for (; args1 != func->arguments.end(); ++args1) {
 
-                                                      /* Si hay arreglos en los argumentos entonces se agregan
-                                                       * las variables asociadas a sus delimitadores. */
-                                                      for(;declIt != declList.rend(); ++declIt)
-                                                         scopeTree.insert(*declIt);
+                                 if (*((*args1)->second) != *((*args2)->second)) {
 
-                                                      declList.clear(); //Vacia la lista.
-                                                      delete(type);
-                                                      delete($4);
-                                                      delete($1);
-                                                      delete($2);
-                                                   }
-                                             BLOCK { scopeTree.exitScope(); }
+                                    ++errorCount;
+                                    cout << "Error at line: " << funcAux->line << ", column: " << funcAux->column;
+                                    cout << ". The parameter #" << argPos << " of the function '" << funcAux->name;
+                                    cout << "' does not match with its forward declaration at line: "<< func->line;
+                                    cout << ", column: " << func->column << ".\n";
+
+
+                                 }
+                                 ++argPos;
+                                 ++args2;
+                              }
+                              func->fwdDecl = false;
+
+                           } else {
+                              ++errorCount;
+                              cout << "Error at line: " << funcAux->line << ", column: " << funcAux->column;
+                              cout << ". The number of parameters of the function '" << funcAux->name << "' do not match ";
+                              cout << "with number of parameters of its forward declaration at line: "<< func->line;
+                              cout << ", column: " << func->column << ".\n";
+
+                           }
+
+                           delete(funcPair);
+
+                        } else
+                           scopeTree.insert(funcAux);
+
+                        if (funcAux->arguments.size() != 0) {
+
+                           /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
+                           scopeTree.enterScope();
+
+                           for(args2 = funcAux->arguments.begin(); args2 != funcAux->arguments.end(); ++args2)
+                              scopeTree.insert((*args2)->second);
+
+                           /* Si hay arreglos en los argumentos entonces se agregan
+                            * las variables asociadas a sus delimitadores. */
+
+                           vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
+                           for(;declIt != declList.rend(); ++declIt)
+                              scopeTree.insert(*declIt);
+
+                           declList.clear(); //Vacia la lista.
+
+                           //NOTE agregar el body
+                        }
+                     }
+
+               BLOCK {  if (funcAux->arguments.size() != 0)
+                           scopeTree.exitScope();
+                        funcAux = nullptr;
+                     }
+      ;
+
+   FUNC
+      : tk_identifier '(' ')'          {  yy::position pos = @1.begin;
+                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr);
+                                          $$ = func;
+                                          delete($1);
+                                       }
+
+
+     | tk_identifier '(' ARGSDEF ')'   {  yy::position pos = @1.begin;
+                                          vecFunc args;
+                                          vecFunc::reverse_iterator it = $3->rbegin();
+
+                                          /* Invierte la lista de argumentos para agregarla a la declaracion. */
+                                          for(; it != $3->rend(); ++it)
+                                             args.push_back(*it);
+
+                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr,args);
+                                          $$ = func;
+
+                                          delete($1);
+                                       }
       ;
 
    ARGSDEF
