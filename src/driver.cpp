@@ -3,10 +3,7 @@
 #include "driver.hpp"
 
 extern int errorCount;
-const int INT_SIZE = 32;
-const int CHAR_SIZE = 8;
-const int FLOAT_SIZE = 32;
-const int BOOL_SIZE = 1;
+
 
 Driver::~Driver() {
    delete(scanner);
@@ -55,12 +52,12 @@ void Driver::initializeTree(TableTree *scopeTree) {
 
    // Tipos basicos.
 
-   Basic *basicInt = new Basic("intmonchan",-1,-1,INT_SIZE);
-   Basic *basicChar = new Basic("charizard",-1,-1,CHAR_SIZE);
-   Basic *basicFloat = new Basic("floatzel",-1,-1,FLOAT_SIZE);
-   Basic *basicBool = new Basic("boolbasaur",-1,-1,BOOL_SIZE);
-   Basic *basicStr = new Basic("onix",-1,-1,0);
-   Basic *basicVoid = new Basic("voidporeon",-1,-1,0);
+   Basic *basicInt = new Integer();
+   Basic *basicChar = new Character();
+   Basic *basicFloat = new Float();
+   Basic *basicBool = new Boolean();
+   Basic *basicStr = new String();
+   Basic *basicVoid = new Void();
 
    // Funciones predefinidas
 
@@ -76,6 +73,8 @@ void Driver::initializeTree(TableTree *scopeTree) {
    n = new Declaration("int",-1,-1,sym,false);
    argument = new pair<string,Declaration*>("int",n);
    args.push_back(argument);
+
+
 
    Function *intToChar = new Function("intToCharizard",-1,-1,basicChar,args);
 

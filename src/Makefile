@@ -10,11 +10,11 @@ CXXDEBUG = -g -Wall
 CSTD = -std=c99
 CXXSTD = -std=c++11
 
-CFLAGS = -O0  $(CDEBUG) $(CSTD) 
+CFLAGS = -O0  $(CDEBUG) $(CSTD)
 CXXFLAGS = -O0  $(CXXDEBUG) $(CXXSTD)
 
 
-CPPOBJ = main driver symbol symTable tableTree
+CPPOBJ = main driver symbol symTable tableTree type
 SOBJ =  parser lexer
 
 FILES = $(addsuffix .cpp, $(CPPOBJ))

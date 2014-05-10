@@ -513,7 +513,7 @@
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": The unown '" << *$2 << "' has not been defined.\n";
 
-                                       } else if (dynamic_cast<Union*>(symType->second) == 0){
+                                       } else if (dynamic_cast<Union_Type*>(symType->second) == 0){
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": you declared an unown but '" << *$2 << "' is not defined as an unown.\n";
@@ -529,7 +529,7 @@
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": The registeer '" << *$2 << "' has not been defined.\n";
 
-                                       } else if (dynamic_cast<Register*>(symType->second) == 0){
+                                       } else if (dynamic_cast<Register_Type*>(symType->second) == 0){
                                           ++errorCount;
                                           cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                           cout << ": you declared a registeer but '" << *$2 << "' is not defined as a registeer.\n";
@@ -550,7 +550,8 @@
 
                         DECLARELIST '}'   {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             Register *reg = new Register(*$2,pos.line,pos.column,0);
+                                             vector<pair<string,Type*>*> fields;
+                                             Definition *reg = new Register_Type(*$2,pos.line,pos.column,0,fields);
                                              scopeTree.insert(reg);
                                              delete($2);
                                              delete($1);
@@ -561,7 +562,8 @@
       : tk_unionType tk_identifier '{'    {  scopeTree.enterScope(); }
                        DECLARELIST '}'    {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             Union *un = new Union(*$2,pos.line,pos.column,0);
+                                             vector<pair<string,Type*>*> fields;
+                                             Definition *un = new Union_Type(*$2,pos.line,pos.column,0,fields);
                                              scopeTree.insert(un);
                                              delete($2);
                                              delete($1);
@@ -571,8 +573,8 @@
 
    FUNCDEF
       : TYPE FUNC          {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                              Basic *symType = (Basic*) type->second;
-                              $2->returnType = symType;
+                              Type *symType = (Type*) type->second;
+                              $2->type->returnType = symType;
                               funcAux = $2;
                               delete(type);
                               delete($1);
@@ -581,8 +583,8 @@
                   FUNCBODY
 
       | tk_voidType FUNC   {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                              Basic *symType = (Basic*) type->second;
-                              $2->returnType = symType;
+                              Type *symType = (Type*) type->second;
+                              $2->type->returnType = symType;
                               funcAux = $2;
                               delete(type);
                               delete($1);
@@ -616,7 +618,7 @@
 
                         if (func != nullptr && func != 0 && func->fwdDecl) {
 
-                           if (func->returnType != funcAux->returnType) {
+                           if (func->type->returnType != funcAux->type->returnType) {
                               ++errorCount;
                               cout << "Error at line: " << funcAux->line << ", column: " << funcAux->column;
                               cout << ". The return type of the function '" << funcAux->name << "' does not match ";

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "type.hpp"
 
 using namespace std;
 
@@ -110,26 +111,33 @@ public:
 class Function : public Definition {
 
 public:
-   Basic *returnType; //Tipo de retorno de la funcion.
+   Function_Type *type;
    vector<pair<string,Declaration*>*> arguments; //Lista de los argumentos de la funcion.
    int numArgs; //Numero de argumentos de la funcion.
    bool fwdDecl = false; //Flag para determinar si es un forward declaration de una funcion.
    //TODO body
 
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args) :
-         Definition(n,l,c), returnType(r), arguments(args) {
-              numArgs = arguments.size();
+         Definition(n,l,c), arguments(args) {
+
+            type = new Function_Type(dynamic_cast<Type*>(r),nullptr);
+            numArgs = arguments.size();
    };
 
-   Function(string n, int l, int c, Basic *r) :
-            Definition(n,l,c), returnType(r), numArgs(0) {};
+   Function(string n, int l, int c, Basic *r) : Definition(n,l,c), numArgs(0) {
+
+
+
+      type = new Function_Type(dynamic_cast<Type*>(r),nullptr);
+
+   };
 
    void printSym(int tabs=0) {
 
       cout << "FUNCTION NAME: " << name << " RETURN TYPE: ";
 
-      if (returnType != nullptr)
-         cout << returnType->name;
+      if (type->returnType != nullptr)
+         cout << ""; //TODO type->returnType->name;
       else
          cout << "Not Defined";
 
@@ -146,42 +154,5 @@ public:
       }
    };
 };
-
-/* Clase de definicion de registros. */
-class Register : public Definition {
-
-public:
-   int size;
-   //TODO table
-
-   Register(string n, int l, int c, int s): Definition(n,l,c), size(s) {};
-
-   void printSym(int tabs=0) {
-      //TODO imprimir la tabla del registro
-
-      cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
-   };
-
-   ~Register() {};
-};
-
-/* Clase de definicion de uniones. */
-class Union : public Definition {
-
-public:
-   int size;
-   //TODO table
-
-   Union(string n, int l, int c, int s): Definition(n,l,c), size(s) {};
-
-   void printSym(int tabs=0) {
-      //TODO imprimir la tabla del union
-
-      cout << "UNION NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
-   };
-
-   ~Union() {};
-};
-
 
 #endif
