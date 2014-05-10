@@ -21,14 +21,23 @@ class Type_Error;
 class Tuple;
 class Register_Type;
 class Union_Type;
-class Array_Type;
+class Array_Type : public Type {
+
+public:
+   int lower;
+   int upper;
+   Type *elemType;
+
+   Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
+
+};
 class Function_Type : public Type {
 
 public:
    Type *returnType;
-   Tuple *arguments;
+   Type *arguments;
 
-   Function_Type(Type *r, Tuple *a) : Type(), returnType(r), arguments(a) {};
+   Function_Type(Type *r, Type *a) : Type(), returnType(r), arguments(a) {};
 
 };
 

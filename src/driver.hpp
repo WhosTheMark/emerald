@@ -9,7 +9,7 @@
 
 class Driver {
 public:
-   Driver() : parser(nullptr), scanner(nullptr), scopeTree(nullptr) {};
+   Driver() : parser(nullptr), scanner(nullptr), scopeTree(nullptr), tupleFactory(nullptr) {};
    virtual ~Driver();
 
    void parse(const char *file);
@@ -20,6 +20,7 @@ private:
    yy::Parser *parser;
    Scanner *scanner;
    TableTree *scopeTree;
+   TupleFactory *tupleFactory;
 };
 
 #endif

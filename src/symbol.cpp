@@ -59,20 +59,31 @@ public:
 class ArrayDecl : public Declaration {
 
 public:
-   int lower; //Limite inferior del arreglo.
-   int upper; //Limite superior del arreglo.
+   Array_Type *type;
+   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int up) :
+   Declaration(n,l,c,p,con) {
 
-   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int u) :
-   Declaration(n,l,c,p,con), lower(low), upper(u) {};
+      Type *arrType;
+
+      if (p != nullptr)
+         arrType = dynamic_cast<Type*>(p->second);
+      else
+         arrType = nullptr;
+
+      type = new Array_Type(low,up,arrType);
+
+   };
 
    //NOTE Imprimir lower y upper?
    void printSym(int tabs=0) {
 
       cout << "ARRAY NAME: " << name << " TYPE: ";
 
-      if(type != nullptr)
-         cout << type-> first;
-      else
+      if(type != nullptr) {
+
+         Symbol *sym = (Symbol*) type->elemType;
+         cout << sym->name;
+      } else
          cout << "Not Defined";
 
       cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
@@ -117,10 +128,10 @@ public:
    bool fwdDecl = false; //Flag para determinar si es un forward declaration de una funcion.
    //TODO body
 
-   Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args) :
+   Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args,Type *argsType) :
          Definition(n,l,c), arguments(args) {
 
-            type = new Function_Type(dynamic_cast<Type*>(r),nullptr);
+            type = new Function_Type(dynamic_cast<Type*>(r),argsType);
             numArgs = arguments.size();
    };
 

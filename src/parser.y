@@ -23,6 +23,9 @@
 %lex-param { TableTree &scopeTree }
 %parse-param { TableTree &scopeTree }
 
+%lex-param { TupleFactory &tupleFactory }
+%parse-param { TupleFactory &tupleFactory }
+
 %code{
 
    #include <iostream>
@@ -34,11 +37,12 @@
    #include <string>
 
    static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc,
-   Scanner &scanner, Driver &driver, TableTree &scopeTree);
+   Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory);
    typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
    vector<Declaration*> declList;
    Function *funcAux;
+   vector<pair<string,Type*>*> fields;
 }
 
 %union{
@@ -57,6 +61,7 @@
    std::pair<std::string,std::string> *complex;
    Declaration *declr;
    Function *funct;
+   std::vector<std::pair<std::string,Type*>*> *vecFields;
 }
 
 %type <idsList> IDLIST
@@ -67,6 +72,7 @@
 %type <vecFunction> ARGSDEF
 %type <declr> ARG
 %type <funct> FUNC
+%type <vecFields> FIELD FIELDS
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -545,14 +551,77 @@
       | tk_var       {  $$ = true;  }
       ;
 
+   FIELDS
+      : FIELD
+      | FIELDS FIELD
+      ;
+
+
+   FIELD
+      : TYPE IDLIST tk_semicolon          {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
+                                             vecString::reverse_iterator it = $2->rbegin();
+                                             pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
+
+                                             if (symType == nullptr || dynamic_cast<Definition*>(symType->second) != 0)
+
+                                                for(; it != $2->rend(); ++it) {
+                                                   Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
+                                                                                       (**it).second.column,symType,false);
+                                                   scopeTree.insert(decl);
+
+                                                   Type *type = dynamic_cast<Type*>(symType->second);
+                                                   fields.push_back(new pair<string,Type*>(*((**it).first),type));
+
+                                                   delete((*it)->first);
+                                                   delete(*it);
+                                                }
+
+
+                                             delete($2);
+                                             delete($1);
+                                          }
+      | COMPLEXTYPE IDLIST tk_semicolon   {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
+                                             vecString::reverse_iterator it = $2->rbegin();
+                                             pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
+
+                                             for (; it != $2->rend(); ++it) {
+                                                Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
+                                                                                    (**it).second.column,symType,false);
+
+                                                Type *type = dynamic_cast<Type*>(symType->second);
+                                                fields.push_back(new pair<string,Type*>(*((**it).first),type));
+
+                                                scopeTree.insert(decl);
+                                                delete((*it)->first);
+                                                delete(*it);
+                                             }
+                                             delete($2);
+                                             delete($1);
+
+                                          }
+      | TYPE error tk_semicolon           {  ++errorCount;
+                                             cout << "Error in declaration at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ".\n";
+                                             yyerrok;
+                                             delete($1);
+                                          }
+      | COMPLEXTYPE error tk_semicolon    {  ++errorCount;
+                                             cout << "Error in declaration at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ".\n";
+                                             yyerrok;
+                                             delete($1);
+                                          }
+      ;
+
+
    REGISTER
       : tk_structType tk_identifier '{'   {  scopeTree.enterScope(); }
 
-                        DECLARELIST '}'   {  scopeTree.exitScope();
+                             FIELDS '}'   {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             vector<pair<string,Type*>*> fields;
                                              Definition *reg = new Register_Type(*$2,pos.line,pos.column,0,fields);
                                              scopeTree.insert(reg);
+                                             fields.clear();
                                              delete($2);
                                              delete($1);
                                           }
@@ -560,11 +629,12 @@
 
    UNION
       : tk_unionType tk_identifier '{'    {  scopeTree.enterScope(); }
-                       DECLARELIST '}'    {  scopeTree.exitScope();
+
+                            FIELDS '}'    {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             vector<pair<string,Type*>*> fields;
                                              Definition *un = new Union_Type(*$2,pos.line,pos.column,0,fields);
                                              scopeTree.insert(un);
+                                             fields.clear();
                                              delete($2);
                                              delete($1);
                                           }
@@ -702,12 +772,21 @@
      | tk_identifier '(' ARGSDEF ')'   {  yy::position pos = @1.begin;
                                           vecFunc args;
                                           vecFunc::reverse_iterator it = $3->rbegin();
+                                          vecFunc::iterator it2 = $3->begin();
+                                          Type *type = dynamic_cast<Type*>((*it2)->second->type->second);
+                                          ++it2;
 
                                           /* Invierte la lista de argumentos para agregarla a la declaracion. */
                                           for(; it != $3->rend(); ++it)
                                              args.push_back(*it);
 
-                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr,args);
+                                          for(; it2 != $3->end(); ++it2) {
+                                             Type *type2 = dynamic_cast<Type*>((*it2)->second->type->second);
+                                             type = tupleFactory.buildTuple(type2,type);
+
+                                          }
+
+                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr,args,type);
                                           $$ = func;
 
                                           delete($1);
@@ -804,6 +883,6 @@ void yy::Parser::error(const yy::Parser::location_type &l, const std::string &er
 
 #include "scanner.hpp"
 static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc,
-                 Scanner &scanner, Driver &driver, TableTree &scopeTree) {
+                 Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory) {
    return scanner.yylex(yylval,yylloc);
 }

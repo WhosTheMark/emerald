@@ -101,16 +101,7 @@ public:
 
 };
 
-class Array_Type : public Type {
 
-public:
-   int lower;
-   int upper;
-   Type *elemType;
-
-   Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
-
-};
 
 
 

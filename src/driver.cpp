@@ -30,7 +30,9 @@ void Driver::parse(const char *file) {
    parser = nullptr;
    scopeTree = new TableTree;
    initializeTree(scopeTree);
-   parser = new yy::Parser(*scanner,*this,*scopeTree);
+
+   tupleFactory = new TupleFactory();
+   parser = new yy::Parser(*scanner,*this,*scopeTree,*tupleFactory);
 
    assert(parser != nullptr);
 
@@ -76,13 +78,13 @@ void Driver::initializeTree(TableTree *scopeTree) {
 
 
 
-   Function *intToChar = new Function("intToCharizard",-1,-1,basicChar,args);
+   Function *intToChar = new Function("intToCharizard",-1,-1,basicChar,args,dynamic_cast<Type*>(basicInt));
 
    args.clear();
    argument = new pair<string,Declaration*>(*argument);
    args.push_back(argument);
 
-   Function *intToFloat = new Function("intToFloatzel",-1,-1,basicFloat,args);
+   Function *intToFloat = new Function("intToFloatzel",-1,-1,basicFloat,args,dynamic_cast<Type*>(basicInt));
 
    args.clear();
 
@@ -91,7 +93,7 @@ void Driver::initializeTree(TableTree *scopeTree) {
    argument = new pair<string,Declaration*>("char",n);
    args.push_back(argument);
 
-   Function *charToInt = new Function("charToIntmonchan",-1,-1,basicInt,args);
+   Function *charToInt = new Function("charToIntmonchan",-1,-1,basicInt,args,dynamic_cast<Type*>(basicChar));
 
    args.clear();
 
@@ -100,7 +102,7 @@ void Driver::initializeTree(TableTree *scopeTree) {
    argument = new pair<string,Declaration*>("float",n);
    args.push_back(argument);
 
-   Function *floatToInt = new Function("floatToIntmonchan",-1,-1,basicInt,args);
+   Function *floatToInt = new Function("floatToIntmonchan",-1,-1,basicInt,args,dynamic_cast<Type*>(basicFloat));
 
    args.clear();
 
