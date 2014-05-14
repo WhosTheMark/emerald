@@ -14,7 +14,7 @@ boolbasaur ascendArray (intmonchan a[init..end]) {
 voidporeon main() {
 
    intmonchan const INIT, const END := 0, 10;
-   intmonchan arr[INIT..END];
+   intmonchan arr[0..10];
    boolbasaur ascend;
 
    for i from INIT to END

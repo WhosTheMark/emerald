@@ -59,7 +59,7 @@ public:
 class ArrayDecl : public Declaration {
 
 public:
-   Array_Type *type;
+   Array_Type *arr_type;
    ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int up) :
    Declaration(n,l,c,p,con) {
 
@@ -70,7 +70,7 @@ public:
       else
          arrType = nullptr;
 
-      type = new Array_Type(low,up,arrType);
+      arr_type = new Array_Type(low,up,arrType);
 
    };
 
@@ -81,8 +81,9 @@ public:
 
       if(type != nullptr) {
 
-         Symbol *sym = (Symbol*) type->elemType;
-         cout << sym->name;
+         Symbol *sym = (Symbol*) arr_type->elemType;
+         if(sym != nullptr) //TODO EXPLOTAA
+            cout << sym->name;
       } else
          cout << "Not Defined";
 

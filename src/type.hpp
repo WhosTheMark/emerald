@@ -21,6 +21,7 @@ class Type_Error;
 class Tuple;
 class Register_Type;
 class Union_Type;
+
 class Array_Type : public Type {
 
 public:
@@ -31,6 +32,7 @@ public:
    Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
 
 };
+
 class Function_Type : public Type {
 
 public:

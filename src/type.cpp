@@ -102,9 +102,6 @@ public:
 };
 
 
-
-
-
 class TupleFactory {
 
    map<Type*,map<Type*,Tuple*>> tuples;
@@ -143,9 +140,6 @@ public:
    }
 
 };
-
-
-
 
 
 

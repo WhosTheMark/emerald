@@ -55,13 +55,14 @@
    char* strOp;
    int token;
    std::string* ids;
-   std::vector<std::pair<std::string*,yy::position>*> *idsList;
+   std::vector<Declaration*> *idsList;
    bool boolean;
    std::vector<std::pair<std::string,Declaration*>*> *vecFunction;
    std::pair<std::string,std::string> *complex;
    Declaration *declr;
    Function *funct;
    std::vector<std::pair<std::string,Type*>*> *vecFields;
+   std::pair<int,int> *range;
 }
 
 %type <idsList> IDLIST
@@ -73,6 +74,8 @@
 %type <declr> ARG
 %type <funct> FUNC
 %type <vecFields> FIELD FIELDS
+%type <range> ARRAYDECL
+%type <intNum> tk_int
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -124,11 +127,11 @@
       | EXPR '/' EXPR
       | EXPR '^' EXPR
       | EXPR '=' EXPR
-      | EXPR '=''=' EXPR            {  ++errorCount;
+      | EXPR '=''=' EXPR            {  ++errorCount; 
                                        cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
                                     }
-      | EXPR '[' EXPR ']'
+      | EXPR '[' EXPR ']' 
       | EXPR tk_mod EXPR
       | EXPR tk_and EXPR
       | EXPR tk_or EXPR
@@ -399,32 +402,43 @@
 
    DECLARATION
       : TYPE IDLIST INITLIST tk_semicolon          {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
-                                                      vecString::reverse_iterator it = $2->rbegin();
+                                                      vector<Declaration*>::reverse_iterator it = $2->rbegin();
                                                       pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
 
+                                                      //Por si acaso el usuario usa variable declarada como tipo
                                                       if (symType == nullptr || dynamic_cast<Definition*>(symType->second) != 0)
 
-                                                         for(; it != $2->rend(); ++it) {
-                                                            Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                                (**it).second.column,symType,false);
-                                                            scopeTree.insert(decl);
-                                                            delete((*it)->first);
-                                                            delete(*it);
-                                                         }
+                                                      for(; it != $2->rend(); ++it) {
+                                                         Declaration *decl = *it;
+                                                         decl->type = symType;
+                                                         
+                                                         /* Asigna la expresion de tipos a los arreglos */
+                                                         ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
+                                                         if(array != nullptr)
+                                                            array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                         
+                                                         scopeTree.insert(decl);
+                                                      }
+                                                         
                                                       delete($2);
                                                       delete($1);
                                                    }
       | COMPLEXTYPE IDLIST INITLIST tk_semicolon   {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
-                                                      vecString::reverse_iterator it = $2->rbegin();
+                                                      vector<Declaration*>::reverse_iterator it = $2->rbegin();
                                                       pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
 
-                                                      for (; it != $2->rend(); ++it) {
-                                                         Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                             (**it).second.column,symType,false);
+                                                      for(; it != $2->rend(); ++it) {
+                                                         Declaration *decl = *it;
+                                                         decl->type = symType;
+                                                         
+                                                         /* Asigna la expresion de tipos a los arreglos */
+                                                         ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
+                                                         if(array != nullptr)
+                                                            array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                         
                                                          scopeTree.insert(decl);
-                                                         delete((*it)->first);
-                                                         delete(*it);
                                                       }
+                                                      
                                                       delete($2);
                                                       delete($1);
 
@@ -446,29 +460,60 @@
    IDLIST
       : tk_identifier ARRAYDECL                          {  /* Se crea una nueva lista de strings para los identificadores
                                                              * y se agrega el identificador actual.*/
-                                                            vecString *idList = new vecString;
-                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
-                                                            idList->push_back(idPos);
+                                                            vector<Declaration*> *idList = new vector<Declaration*>;                                                            
+                                                            Declaration *newDecl;
+                                                            
+                                                            if ($2 == nullptr)
+                                                               newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
+                                                            else {
+                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
+                                                               delete($2);
+                                                            }
+                                                            
+                                                            idList->push_back(newDecl);
                                                             $$ = idList;
                                                          }
       | tk_identifier ARRAYDECL tk_comma IDLIST          {  /* Se agrega el identificador actual a la lista ya creada.*/
-                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($1,@1.begin);
-                                                            $4->push_back(idPos);
+                                                            Declaration *newDecl;
+                                                            
+                                                            if ($2 == nullptr)
+                                                               newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
+                                                            else {
+                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
+                                                               delete($2);
+                                                            }
+                                                              
+                                                            $4->push_back(newDecl);
                                                             $$ = $4;
                                                          }
       | tk_const tk_identifier ARRAYDECL                 {  /* Se crea una nueva lista de strings para los identificadores
                                                              * y se agrega el identificador actual.*/
-                                                            vecString *idList = new vecString;
-                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
-                                                            idList->push_back(idPos);
+                                                            vector<Declaration*> *idList = new vector<Declaration*>;  
+                                                            Declaration *newDecl;
+                                                            
+                                                            if ($3 == nullptr)
+                                                               newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
+                                                            else {
+                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
+                                                               delete($3);
+                                                            }
+                                                            
+                                                            idList->push_back(newDecl);
                                                             $$ = idList;
-                                                            /*TODO Falta poner si es una constante*/
                                                          }
       | tk_const tk_identifier ARRAYDECL tk_comma IDLIST {  /* Se agrega el identificador actual a la lista ya creada.*/
-                                                            pair<string*,yy::position> *idPos = new pair<string*,yy::position>($2,@2.begin);
-                                                            $5->push_back(idPos);
+      
+                                                            Declaration *newDecl;
+                                                            
+                                                            if ($3 == nullptr)
+                                                               newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
+                                                            else {
+                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
+                                                               delete($3);
+                                                            }
+      
+                                                            $5->push_back(newDecl);
                                                             $$ = $5;
-                                                            /*TODO Falta poner si es una constante*/
                                                          }
       | error tk_comma IDLIST                            {  ++errorCount;
                                                             cout << "Error in declaration at line: " << @1.begin.line;
@@ -479,14 +524,14 @@
       ;
 
    ARRAYDECL
-      : /* empty */
-      | '[' EXPR tk_range EXPR ']'
-      | '[' error ']'   {  ++errorCount;
-                           cout << "Invalid expression in array declaration at line: ";
-                           cout << @2.begin.line << ", column: " << @2.begin.column;
-                           cout << ".\n";
-                           yyerrok;
-                        }
+      : /* empty */                    {  $$ = nullptr; }
+      | '[' tk_int tk_range tk_int ']' {  $$ = new pair<int,int>($2,$4); }
+      | '[' error ']'                  {  ++errorCount;
+                                          cout << "Invalid expression in array declaration at line: ";
+                                          cout << @2.begin.line << ", column: " << @2.begin.column;
+                                          cout << ".\n";
+                                          yyerrok;
+                                       }
       ;
 
 
@@ -559,42 +604,43 @@
 
    FIELD
       : TYPE IDLIST tk_semicolon          {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
-                                             vecString::reverse_iterator it = $2->rbegin();
+                                             vector<Declaration*>::reverse_iterator it = $2->rbegin();
                                              pair<string,Symbol*> *symType = scopeTree.lookup(*$1);
 
+                                             //Por si acaso el usuario usa variable declarada como tipo
                                              if (symType == nullptr || dynamic_cast<Definition*>(symType->second) != 0)
 
-                                                for(; it != $2->rend(); ++it) {
-                                                   Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                       (**it).second.column,symType,false);
-                                                   scopeTree.insert(decl);
-
-                                                   Type *type = dynamic_cast<Type*>(symType->second);
-                                                   fields.push_back(new pair<string,Type*>(*((**it).first),type));
-
-                                                   delete((*it)->first);
-                                                   delete(*it);
-                                                }
-
-
+                                             for(; it != $2->rend(); ++it) {
+                                                Declaration *decl = *it;
+                                                decl->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                
+                                                scopeTree.insert(decl);
+                                             }
+                                                
                                              delete($2);
                                              delete($1);
                                           }
       | COMPLEXTYPE IDLIST tk_semicolon   {  /* Toma una lista de identificadores y los inserta a tabla de simbolos con su tipo. */
-                                             vecString::reverse_iterator it = $2->rbegin();
+                                             vector<Declaration*>::reverse_iterator it = $2->rbegin();
                                              pair<string,Symbol*> *symType = scopeTree.lookup($1->second);
 
-                                             for (; it != $2->rend(); ++it) {
-                                                Declaration *decl = new Declaration(*((**it).first),(**it).second.line,
-                                                                                    (**it).second.column,symType,false);
-
-                                                Type *type = dynamic_cast<Type*>(symType->second);
-                                                fields.push_back(new pair<string,Type*>(*((**it).first),type));
-
+                                             for(; it != $2->rend(); ++it) {
+                                                Declaration *decl = *it;
+                                                decl->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                
                                                 scopeTree.insert(decl);
-                                                delete((*it)->first);
-                                                delete(*it);
                                              }
+                                             
                                              delete($2);
                                              delete($1);
 
@@ -797,9 +843,15 @@
       :  VAR TYPE ARG                        {  /* Se crea una nueva lista para los argumentos de las funciones y
                                                  * se agrega el argumento actual. */
                                                 vecFunc *args = new vecFunc;
-                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
+                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2); 
                                                 $3->constant = !$1;
                                                 $3->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                   
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 args->push_back(arg);
                                                 delete($2);
@@ -809,6 +861,12 @@
                                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                                                                   
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 delete($2);
@@ -820,6 +878,12 @@
                                                 pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                                                                   
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 args->push_back(arg);
                                                 delete($2);
@@ -829,6 +893,12 @@
                                                 pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
                                                 $3->type = symType;
+                                                
+                                                /* Asigna la expresion de tipos a los arreglos */
+                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
+                                                if(array != nullptr)
+                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
+                                                                                                   
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 delete($2);

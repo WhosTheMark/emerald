@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for FILE in ../pruebas/invalidas/*
+do	
+	echo -e "\n\nRunning...\n$FILE \n"
+	./emerald $FILE
+done
