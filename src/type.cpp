@@ -57,8 +57,9 @@ class Type_Error : public Type {
 
 public:
    Type_Error() : Type() {};
-};
 
+
+};
 
 class Tuple : public Type {
 

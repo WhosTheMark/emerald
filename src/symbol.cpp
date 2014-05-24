@@ -40,6 +40,19 @@ public:
       return !(*this == d);
    }
 
+   void setType(pair<string,Symbol*> *t) {
+
+      type = t;
+   };
+
+   Type* getType() {
+
+      if (type != nullptr)
+         return dynamic_cast<Type*>(type->second);
+      else
+         return nullptr;
+   };
+
    void printSym(int tabs=0) {
 
       cout << "VARIABLE NAME: " << name << " TYPE: ";
@@ -71,6 +84,13 @@ public:
          arrType = nullptr;
 
       arr_type = new Array_Type(low,up,arrType);
+
+   };
+
+   void setType(pair<string,Symbol*> *t) {
+
+      type = t;
+      arr_type->elemType = dynamic_cast<Type*>(t->second);
 
    };
 
@@ -138,9 +158,13 @@ public:
 
    Function(string n, int l, int c, Basic *r) : Definition(n,l,c), numArgs(0) {
 
-
-
       type = new Function_Type(dynamic_cast<Type*>(r),nullptr);
+
+   };
+
+   Type* getType() {
+
+      return type->returnType;
 
    };
 
@@ -148,9 +172,11 @@ public:
 
       cout << "FUNCTION NAME: " << name << " RETURN TYPE: ";
 
-      if (type->returnType != nullptr)
-         cout << ""; //TODO type->returnType->name;
-      else
+      if (type->returnType != nullptr) {
+
+         Basic *b = (Basic*) type->returnType;
+         cout << b->name; //TODO type->returnType->name;
+      } else
          cout << "Not Defined";
 
       if (line >= 0 || column >= 0)

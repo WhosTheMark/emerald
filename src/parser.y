@@ -43,6 +43,7 @@
    vector<Declaration*> declList;
    Function *funcAux;
    vector<pair<string,Type*>*> fields;
+   Type_Error *typeError = new Type_Error();
 }
 
 %union{
@@ -63,6 +64,7 @@
    Function *funct;
    std::vector<std::pair<std::string,Type*>*> *vecFields;
    std::pair<int,int> *range;
+   Type *typeCheck;
 }
 
 %type <idsList> IDLIST
@@ -76,6 +78,7 @@
 %type <vecFields> FIELD FIELDS
 %type <range> ARRAYDECL
 %type <intNum> tk_int
+%type <typeCheck> EXPR CONST NUMBER BOOLEAN FUNCCALL
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -121,29 +124,351 @@
       ;
 
    EXPR
-      : EXPR '+' EXPR
-      | EXPR '-' EXPR
-      | EXPR '*' EXPR
-      | EXPR '/' EXPR
-      | EXPR '^' EXPR
-      | EXPR '=' EXPR
-      | EXPR '=''=' EXPR            {  ++errorCount; 
+      : EXPR '+' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          Basic *b2 = (Basic*)$3;
+
+                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '+' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '+' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                             ++errorCount;
+                                             cout << "Type Error using operator '+' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The types of the ";
+                                             cout << "expressions do not match.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+
+      | EXPR '-' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          Basic *b2 = (Basic*)$3;
+
+                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '-' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '-' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                             ++errorCount;
+                                             cout << "Type Error using operator '-' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The types of the ";
+                                             cout << "expressions do not match.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+      | EXPR '*' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          Basic *b2 = (Basic*)$3;
+
+                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '*' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '*' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                             ++errorCount;
+                                             cout << "Type Error using operator '*' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The types of the ";
+                                             cout << "expressions do not match.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+      | EXPR '/' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          Basic *b2 = (Basic*)$3;
+
+                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '/' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '/' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                             ++errorCount;
+                                             cout << "Type Error using operator '/' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The types of the ";
+                                             cout << "expressions do not match.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+      | EXPR '^' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b2 = (Basic*)$3;
+                                       if (((b1 == symInt || b1 == symFloat) && b2 == symInt) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '^' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          if ($3 != typeError && b2 != symInt) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '^' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan type.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+      | EXPR '=' EXPR               {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '=' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+
+                                    }
+      | EXPR '=''=' EXPR            {  ++errorCount;
                                        cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
                                     }
-      | EXPR '[' EXPR ']' 
-      | EXPR tk_mod EXPR
-      | EXPR tk_and EXPR
-      | EXPR tk_or EXPR
-      | EXPR tk_lessEq EXPR
-      | EXPR tk_moreEq EXPR
-      | EXPR tk_lessThan EXPR
-      | EXPR tk_moreThan EXPR
-      | EXPR tk_notEqual EXPR
-      | EXPR tk_dot tk_identifier   { delete($3); /*NOTE puede que esto se use despues*/ }
-      | '!' EXPR
-      | '-' EXPR %prec UMINUS
-      | '(' EXPR ')'
+      | EXPR '[' EXPR ']'
+      | EXPR tk_mod EXPR            {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Basic *b1 = (Basic*)$1;
+                                       if (($1 == $3 && b1 == symInt) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          Basic *b2 = (Basic*)$3;
+
+                                          if ($1 != typeError && b1 != symInt) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '%' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not intmonchan type.\n";
+                                          }
+
+                                          if ($3 != typeError && b2 != symInt) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '%' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not intmonchan or floatzel type.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+
+                                    }
+      | EXPR tk_and EXPR            {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
+                                       bool isBoolType1 = sym == ((Basic*)$1);
+                                       bool isBoolType2 = sym == ((Basic*)$3);
+                                       if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          if ($1 != typeError && !isBoolType1) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '&&' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not boolbasaur type.\n";
+                                          }
+
+                                          if ($3 != typeError && !isBoolType2) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '&&' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not boolbasaur type.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+                                    }
+      | EXPR tk_or EXPR             {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
+                                       bool isBoolType1 = sym == ((Basic*)$1);
+                                       bool isBoolType2 = sym == ((Basic*)$3);
+                                       if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
+                                          $$ = $1;
+                                       else {
+
+                                          if ($1 != typeError && !isBoolType1) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '||' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not boolbasaur type.\n";
+                                          }
+
+                                          if ($3 != typeError && !isBoolType2) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '||' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The right expression is ";
+                                             cout << "not boolbasaur type.\n";
+                                          }
+
+                                          $$ = typeError;
+                                       }
+                                    }
+      | EXPR tk_lessEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '<=' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+                                    }
+      | EXPR tk_moreEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '>=' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+                                    }
+      | EXPR tk_lessThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '<' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+                                    }
+      | EXPR tk_moreThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '>' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+                                    }
+      | EXPR tk_notEqual EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
+                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+
+                                       else if ($1 != typeError && $3 != typeError) {
+                                          ++errorCount;
+                                          cout << "Type Error using operator '!=' at line: " << @2.begin.line;
+                                          cout << ", column: " << @2.begin.column << ". The types of the ";
+                                          cout << "expressions do not match.\n";
+                                          $$ = typeError;
+                                       } else
+                                          $$ = typeError;
+                                    }
+      | EXPR tk_dot tk_identifier   {  delete($3); /*NOTE puede que esto se use despues*/ }
+      | '!' EXPR                    {  if (((scopeTree.lookup("boolbasaur"))->second == ((Basic*)$2)) || ($2 == typeError))
+                                          $$ = $2;
+                                       else {
+                                          ++errorCount;
+                                          cout << "Type error using operator '!' at line: " << @1.begin.line;
+                                          cout << ", column: " << @1.begin.column << ". The expression is ";
+                                          cout << "not boolbasaur type.\n";
+                                          $$ = typeError;
+                                       }
+                                    }
+      | '-' EXPR %prec UMINUS       {  if (scopeTree.lookup("intmonchan")->second == ((Basic*)$2) ||
+                                           scopeTree.lookup("floatzel")->second == ((Basic*)$2) ||
+                                           ($2 == typeError))
+                                           $$ = $2;
+                                       else {
+                                          ++errorCount;
+                                          cout << "Type error using operator unary '-' at line: " << @1.begin.line;
+                                          cout << ", column: " << @1.begin.column << ". The expression is ";
+                                          cout << "not intmonchan or floatzel type.\n";
+                                          $$ = typeError;
+                                       }
+                                    }
+      | '(' EXPR ')'                {  $$ = $2; }
       | '(' error ')'               {  ++errorCount;
                                        cout << "Error in expression at line: " << @2.begin.line;
                                        cout << ", column: " << @2.begin.column << ".\n";
@@ -162,26 +487,42 @@
                                           yy::position pos = @1.begin;
                                           cout << "The variable '" << *$1 << "' at line: " << pos.line;
                                           cout << ", column: " << pos.column << " has not been declared.\n";
-                                       } else
-                                          delete(id);
+                                       } else {
 
-                                        delete($1); //NOTE puede que esto se use despues
+
+                                          Declaration *decl = dynamic_cast<Declaration*>(id->second);
+
+                                          /* NOTE Las varibles de los for todavia no tienen tipos */
+
+                                          Type *t = decl->getType();
+
+                                          if (t == nullptr)
+                                             t = typeError;
+
+                                          $$ = t;
+                                          delete(id);
+                                       }
+
+                                       delete($1); //NOTE puede que esto se use despues
                                     }
-      | tk_string
+      | tk_string                   {  $$ = (String*)(scopeTree.lookup("onix")->second); }
       ;
 
    CONST
       : NUMBER
       | BOOLEAN
-      | tk_char ;
+      | tk_char   {  $$ = (Character*)(scopeTree.lookup("charizard")->second); }
+      ;
 
    NUMBER
-      : tk_int
-      | tk_float ;
+      : tk_int    {  $$ = (Integer*)(scopeTree.lookup("intmonchan")->second); }
+      | tk_float  {  $$ = (Float*)(scopeTree.lookup("floatzel")->second); }
+      ;
 
    BOOLEAN
-      : tk_true
-      | tk_false ;
+      : tk_true   {  $$ = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
+      | tk_false  {  $$ = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
+      ;
 
    ARGS
       : /* empty */
@@ -189,7 +530,8 @@
 
    ARGSLIST
       : EXPR
-      | ARGSLIST tk_comma EXPR ;
+      | ARGSLIST tk_comma EXPR
+      ;
 
    INST
       : STMT
@@ -363,6 +705,17 @@
                                              cout << ", column: " << pos.column << " has not been declared.\n";
                                           }
 
+                                          Function *func = dynamic_cast<Function*>(sym->second);
+
+                                          if (func != 0)
+                                             $$ = func->getType();
+                                          else {
+                                             $$ = typeError;
+
+
+                                          }
+
+
                                           delete($1); /*NOTE puede que esto se use despues.*/ }
       ;
 
@@ -410,16 +763,11 @@
 
                                                       for(; it != $2->rend(); ++it) {
                                                          Declaration *decl = *it;
-                                                         decl->type = symType;
-                                                         
-                                                         /* Asigna la expresion de tipos a los arreglos */
-                                                         ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
-                                                         if(array != nullptr)
-                                                            array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                         
+                                                         decl->setType(symType);
+
                                                          scopeTree.insert(decl);
                                                       }
-                                                         
+
                                                       delete($2);
                                                       delete($1);
                                                    }
@@ -429,16 +777,11 @@
 
                                                       for(; it != $2->rend(); ++it) {
                                                          Declaration *decl = *it;
-                                                         decl->type = symType;
-                                                         
-                                                         /* Asigna la expresion de tipos a los arreglos */
-                                                         ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
-                                                         if(array != nullptr)
-                                                            array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                         
+                                                         decl->setType(symType);
+
                                                          scopeTree.insert(decl);
                                                       }
-                                                      
+
                                                       delete($2);
                                                       delete($1);
 
@@ -460,58 +803,58 @@
    IDLIST
       : tk_identifier ARRAYDECL                          {  /* Se crea una nueva lista de strings para los identificadores
                                                              * y se agrega el identificador actual.*/
-                                                            vector<Declaration*> *idList = new vector<Declaration*>;                                                            
+                                                            vector<Declaration*> *idList = new vector<Declaration*>;
                                                             Declaration *newDecl;
-                                                            
+
                                                             if ($2 == nullptr)
                                                                newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
                                                             else {
                                                                newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
                                                                delete($2);
                                                             }
-                                                            
+
                                                             idList->push_back(newDecl);
                                                             $$ = idList;
                                                          }
       | tk_identifier ARRAYDECL tk_comma IDLIST          {  /* Se agrega el identificador actual a la lista ya creada.*/
                                                             Declaration *newDecl;
-                                                            
+
                                                             if ($2 == nullptr)
                                                                newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
                                                             else {
                                                                newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
                                                                delete($2);
                                                             }
-                                                              
+
                                                             $4->push_back(newDecl);
                                                             $$ = $4;
                                                          }
       | tk_const tk_identifier ARRAYDECL                 {  /* Se crea una nueva lista de strings para los identificadores
                                                              * y se agrega el identificador actual.*/
-                                                            vector<Declaration*> *idList = new vector<Declaration*>;  
+                                                            vector<Declaration*> *idList = new vector<Declaration*>;
                                                             Declaration *newDecl;
-                                                            
+
                                                             if ($3 == nullptr)
                                                                newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
                                                             else {
                                                                newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
                                                                delete($3);
                                                             }
-                                                            
+
                                                             idList->push_back(newDecl);
                                                             $$ = idList;
                                                          }
       | tk_const tk_identifier ARRAYDECL tk_comma IDLIST {  /* Se agrega el identificador actual a la lista ya creada.*/
-      
+
                                                             Declaration *newDecl;
-                                                            
+
                                                             if ($3 == nullptr)
                                                                newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
                                                             else {
                                                                newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
                                                                delete($3);
                                                             }
-      
+
                                                             $5->push_back(newDecl);
                                                             $$ = $5;
                                                          }
@@ -610,18 +953,12 @@
                                              //Por si acaso el usuario usa variable declarada como tipo
                                              if (symType == nullptr || dynamic_cast<Definition*>(symType->second) != 0)
 
-                                             for(; it != $2->rend(); ++it) {
-                                                Declaration *decl = *it;
-                                                decl->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                
-                                                scopeTree.insert(decl);
-                                             }
-                                                
+                                                for(; it != $2->rend(); ++it) {
+                                                   Declaration *decl = *it;
+                                                   decl->setType(symType);
+                                                   scopeTree.insert(decl);
+                                                }
+
                                              delete($2);
                                              delete($1);
                                           }
@@ -631,16 +968,10 @@
 
                                              for(; it != $2->rend(); ++it) {
                                                 Declaration *decl = *it;
-                                                decl->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>(*it); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                
+                                                decl->setType(symType);
                                                 scopeTree.insert(decl);
                                              }
-                                             
+
                                              delete($2);
                                              delete($1);
 
@@ -723,7 +1054,7 @@
                         declList.clear();
                      }
 
-      |              {  pair<string,Symbol*> *funcPair = scopeTree.lookup(funcAux->name);
+      | /* empty */  {  pair<string,Symbol*> *funcPair = scopeTree.lookup(funcAux->name);
                         Function *func = nullptr;
 
                         if (funcPair != nullptr)
@@ -843,15 +1174,10 @@
       :  VAR TYPE ARG                        {  /* Se crea una nueva lista para los argumentos de las funciones y
                                                  * se agrega el argumento actual. */
                                                 vecFunc *args = new vecFunc;
-                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2); 
+                                                pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
-                                                $3->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                   
+                                                $3->setType(symType);
+
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 args->push_back(arg);
                                                 delete($2);
@@ -860,13 +1186,8 @@
       | VAR TYPE ARG tk_comma ARGSDEF        {  /* Se agrega el argumento actual a la lista de argumentos de la funcion. */
                                                 pair<string,Symbol*> *symType = scopeTree.lookup(*$2);
                                                 $3->constant = !$1;
-                                                $3->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                                                                   
+                                                $3->setType(symType);
+
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 delete($2);
@@ -877,13 +1198,8 @@
                                                 vecFunc *args = new vecFunc;
                                                 pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
-                                                $3->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                                                                   
+                                                $3->setType(symType);
+
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 args->push_back(arg);
                                                 delete($2);
@@ -892,13 +1208,8 @@
       | VAR COMPLEXTYPE ARG tk_comma ARGSDEF {  /* Se agrega el argumento actual a la lista de argumentos de la funcion. */
                                                 pair<string,Symbol*> *symType = scopeTree.lookup($2->second);
                                                 $3->constant = !$1;
-                                                $3->type = symType;
-                                                
-                                                /* Asigna la expresion de tipos a los arreglos */
-                                                ArrayDecl *array = dynamic_cast<ArrayDecl*>($3); 
-                                                if(array != nullptr)
-                                                   array->arr_type->elemType = dynamic_cast<Type*>(symType->second);
-                                                                                                   
+                                                $3->setType(symType);
+
                                                 pair<string,Declaration*> *arg = new pair<string,Declaration*>($3->name,$3);
                                                 $5->push_back(arg);
                                                 delete($2);
