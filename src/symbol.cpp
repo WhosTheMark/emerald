@@ -94,6 +94,12 @@ public:
 
    };
 
+   Type* getType() {
+
+      return arr_type;
+   };
+
+
    //NOTE Imprimir lower y upper?
    void printSym(int tabs=0) {
 

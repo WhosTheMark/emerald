@@ -8,6 +8,7 @@ class Type {
 
 public:
    Type() {};
+   virtual ~Type() {};
 
 };
 

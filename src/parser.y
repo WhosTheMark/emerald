@@ -305,7 +305,30 @@
                                        cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
                                     }
-      | EXPR '[' EXPR ']'
+      | EXPR '[' EXPR ']'           {  Array_Type *array = dynamic_cast<Array_Type*>($1);
+                                       Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
+                                       Basic *b = (Basic*)$3;
+                                       if (array != 0 && b == symInt){
+                                          $$ = array->elemType;
+                                       } else {
+
+                                          if ($1 != typeError && array == nullptr) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '[]' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The left expression is ";
+                                             cout << "not array type.\n";
+                                          }
+
+                                          if ($3 != typeError && b != symInt) {
+                                             ++errorCount;
+                                             cout << "Type error using operator '[]' at line: " << @2.begin.line;
+                                             cout << ", column: " << @2.begin.column << ". The expression inside '[]' ";
+                                             cout << "is not intmonchan type.\n";
+
+                                          }
+                                          $$ = typeError;
+                                       }
+                                    }
       | EXPR tk_mod EXPR            {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Basic *b1 = (Basic*)$1;
                                        if (($1 == $3 && b1 == symInt) || ($1 == typeError && $3 == typeError))
@@ -487,6 +510,7 @@
                                           yy::position pos = @1.begin;
                                           cout << "The variable '" << *$1 << "' at line: " << pos.line;
                                           cout << ", column: " << pos.column << " has not been declared.\n";
+                                          $$ = typeError;
                                        } else {
 
 
