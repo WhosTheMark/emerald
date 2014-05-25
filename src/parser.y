@@ -288,7 +288,7 @@
 
                                     }
       | EXPR '=' EXPR               {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -308,12 +308,12 @@
                                     }
       | EXPR '[' EXPR ']'           {  Array_Type *array = dynamic_cast<Array_Type*>($1);
                                        Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
-                                       Basic *b = (Basic*)$3;
+                                       Basic *b = dynamic_cast<Basic*>($3);
                                        if (array != 0 && b == symInt){
                                           $$ = array->elemType;
                                        } else {
 
-                                          if ($1 != typeError && array == nullptr) {
+                                          if ($1 != typeError && array == 0) {
                                              ++errorCount;
                                              cout << "Type error using operator '[]' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
@@ -508,7 +508,7 @@
 
                                        delete($3); /*NOTE puede que esto se use despues*/
                                     }
-      | '!' EXPR                    {  if (((scopeTree.lookup("boolbasaur"))->second == ((Basic*)$2)) || ($2 == typeError))
+      | '!' EXPR                    {  if (((scopeTree.lookup("boolbasaur"))->second == (dynamic_cast<Basic*>($2))) || ($2 == typeError))
                                           $$ = $2;
                                        else {
                                           ++errorCount;
@@ -518,8 +518,8 @@
                                           $$ = typeError;
                                        }
                                     }
-      | '-' EXPR %prec UMINUS       {  if (scopeTree.lookup("intmonchan")->second == ((Basic*)$2) ||
-                                           scopeTree.lookup("floatzel")->second == ((Basic*)$2) ||
+      | '-' EXPR %prec UMINUS       {  if (scopeTree.lookup("intmonchan")->second == (dynamic_cast<Basic*>($2)) ||
+                                           scopeTree.lookup("floatzel")->second == (dynamic_cast<Basic*>($2)) ||
                                            ($2 == typeError))
                                            $$ = $2;
                                        else {
@@ -560,7 +560,6 @@
                                           /* NOTE Las varibles de los for todavia no tienen tipos */
 
                                           Type *t = decl->getType();
-
                                           if (t == nullptr)
                                              t = typeError;
 
@@ -1021,7 +1020,7 @@
                                                    Declaration *decl = *it;
                                                    decl->setType(symType);
                                                    scopeTree.insert(decl);
-                                                   //fields.insert(pair<string,Type*>(decl->name,decl->getType()));
+                                                   fields.insert(pair<string,Type*>(decl->name,decl->getType()));
                                                 }
 
                                              delete($2);
@@ -1035,7 +1034,7 @@
                                                 Declaration *decl = *it;
                                                 decl->setType(symType);
                                                 scopeTree.insert(decl);
-                                                //fields.insert(pair<string,Type*>(decl->name,decl->getType()));
+                                                fields.insert(pair<string,Type*>(decl->name,decl->getType()));
                                              }
 
                                              delete($2);

@@ -114,7 +114,7 @@ voidporeon main() {
             onix str := "You are semi-special";
             println(str);
 
-            if (!reg.field3[2] || float < 1000) {
+            if (!reg.field3[2] || float < 1000.0) {
                floatzel whoopsie := float / 10.0;
 
                for i from whoopsie to 200 by 3
@@ -122,7 +122,7 @@ voidporeon main() {
             }
          }
 
-         elsif (float / 19.0 > int)
+         elsif (float / 19.0 > intToFloatzel(int))
             num := floatToIntmonchan(float+28.0)
 
 

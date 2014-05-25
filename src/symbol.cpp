@@ -40,12 +40,12 @@ public:
       return !(*this == d);
    }
 
-   void setType(pair<string,Symbol*> *t) {
+   virtual void setType(pair<string,Symbol*> *t) {
 
       type = t;
    };
 
-   Type* getType() {
+   virtual Type* getType() {
 
       if (type != nullptr)
          return dynamic_cast<Type*>(type->second);
@@ -95,7 +95,6 @@ public:
    };
 
    Type* getType() {
-
       return arr_type;
    };
 
@@ -107,9 +106,8 @@ public:
 
       if(type != nullptr) {
 
-         Symbol *sym = (Symbol*) arr_type->elemType;
-         if(sym != nullptr) //TODO EXPLOTAA
-            cout << sym->name;
+         if(type != nullptr && type->second != nullptr)
+            cout << type->second->name;
       } else
          cout << "Not Defined";
 
