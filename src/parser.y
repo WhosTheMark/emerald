@@ -81,7 +81,7 @@
 %type <vecFields> FIELD FIELDS
 %type <range> ARRAYDECL
 %type <intNum> tk_int
-%type <typeCheck> EXPR CONST NUMBER BOOLEAN FUNCCALL
+%type <typeCheck> EXPR CONST NUMBER BOOLEAN FUNCCALL SWITCHSTMT CASELIST CASE
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -696,8 +696,20 @@
       ;
 
    IFSTMT
-      : tk_if EXPR INST %prec IFPREC
-      | tk_if EXPR INST IFLIST
+      : tk_if EXPR INST %prec IFPREC   {  if (dynamic_cast<Boolean*>($2) == 0) {
+                                             ++errorCount;
+                                             cout << "Error at line: " << @2.begin.line << ", column: ";
+                                             cout << @2.begin.column << ". If condition is not a ";
+                                             cout << "boolbasaur type.\n";
+                                          }
+                                       }
+      | tk_if EXPR INST IFLIST         {  if (dynamic_cast<Boolean*>($2) == 0) {
+                                             ++errorCount;
+                                             cout << "Error at line: " << @2.begin.line << ", column: ";
+                                             cout << @2.begin.column << ". If condition is not a ";
+                                             cout << "boolbasaur type.\n";
+                                          }
+                                       }
       | tk_if error INST %prec IFPREC  {  ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
@@ -719,7 +731,13 @@
       ;
 
    IFHELPER
-      : EXPR INST
+      : EXPR INST    {  if (dynamic_cast<Boolean*>($1) == 0) {
+                           ++errorCount;
+                           cout << "Error at line: " << @1.begin.line << ", column: ";
+                           cout << @1.begin.column << ". Elsif condition is not a ";
+                           cout << "boolbasaur type.\n";
+                        }
+                     }
       | error INST   {  ++errorCount;
                         cout << "Invalid expression in elsif condition at line: ";
                         cout << @1.begin.line << ", column: " << @1.begin.column;
@@ -729,7 +747,13 @@
       ;
 
    WHILESTMT
-      : tk_while EXPR INST
+      : tk_while EXPR INST    {  if (dynamic_cast<Boolean*>($2) == 0) {
+                                    ++errorCount;
+                                    cout << "Error at line: " << @2.begin.line << ", column: ";
+                                    cout << @2.begin.column << ". While condition is not a ";
+                                    cout << "boolbasaur type.\n";
+                                 }
+                              }
       | tk_while error INST   {  ++errorCount;
                                  cout << "Invalid expression in while condition at line: ";
                                  cout << @2.begin.line << ", column: " << @2.begin.column;
@@ -936,18 +960,44 @@
       ;
 
    SWITCHSTMT
-      : tk_switch EXPR '{' CASE '}'
+      : tk_switch EXPR '{' CASE '}'    {  if ($2 != $4 && $2 != typeError && $4 != typeError) {
+                                             ++errorCount;
+                                             cout << "Error at line: " << @2.begin.line << ", column: ";
+                                             cout << @2.begin.column << ". Switch condition does not match ";
+                                             cout << "with switch guards.\n";
+                                          }
+                                       }
       ;
 
    CASE
-      : tk_case CONST tk_arrow BLOCK
-      | tk_case CONST tk_arrow BLOCK CASELIST
+      : tk_case CONST tk_arrow BLOCK            {  $$ = $2; }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2 == $5 || $5 == typeError)
+                                                      $$ = $5;
+                                                   else if ($5 == nullptr)
+                                                      $$ = $2;
+                                                   else {
+                                                      ++errorCount;
+                                                      cout << "Error at line: " << @2.begin.line << ", column: ";
+                                                      cout << @2.begin.column << ". Switch guards' types do not match.\n";
+                                                      $$ = typeError;
+                                                   }
+                                                }
       ;
 
    CASELIST
-      : tk_default tk_arrow BLOCK
-      | tk_case CONST tk_arrow BLOCK
-      | tk_case CONST tk_arrow BLOCK CASELIST
+      : tk_default tk_arrow BLOCK               {  $$ = nullptr; }
+      | tk_case CONST tk_arrow BLOCK            {  $$ = $2; }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2 == $5 || $5 == typeError)
+                                                      $$ = $5;
+                                                   else if ($5 == nullptr)
+                                                      $$ = $2;
+                                                   else {
+                                                      ++errorCount;
+                                                      cout << "Error at line: " << @2.begin.line << ", column: ";
+                                                      cout << @2.begin.column << ". Switch guards' types do not match.\n";
+                                                      $$ = typeError;
+                                                   }
+                                                }
       ;
 
    DECLARATION
