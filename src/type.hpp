@@ -4,6 +4,10 @@
 #include <iostream>
 #include <map>
 
+using namespace std;
+
+
+
 class Type {
 
 public:
@@ -30,11 +34,9 @@ class Union_Type;
 class Array_Type : public Type {
 
 public:
-   int lower;
-   int upper;
    Type *elemType;
 
-   Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
+   Array_Type(Type *e) : Type(), elemType(e) {};
 
   // ~Array_Type() {};
 
@@ -54,4 +56,31 @@ public:
 
 class TupleFactory;
 
+typedef map<Type*,Array_Type*>::iterator arraysMapIt;
+
+class ArrayFactory{
+
+   map<Type*,Array_Type*> arrays;
+
+public:
+
+   ArrayFactory(){};
+
+   Array_Type *buildArray(Type *t){
+
+      arraysMapIt it = arrays.find(t);
+
+      if (it != arrays.end()){
+         return it->second;
+
+      } else {
+
+         Array_Type *newArray = new Array_Type(t);
+         arrays.insert(pair<Type*,Array_Type*>(t,newArray));
+         return newArray;
+      }
+
+   }
+
+};
 #endif

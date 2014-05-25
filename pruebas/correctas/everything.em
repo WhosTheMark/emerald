@@ -117,7 +117,7 @@ voidporeon main() {
             if (!reg.field3[2] || float < 1000.0) {
                floatzel whoopsie := float / 10.0;
 
-               for i from whoopsie to 200 by 3
+               for i from whoopsie to 200.0 by 3.0
                   println("Fun fun fun!")
             }
          }

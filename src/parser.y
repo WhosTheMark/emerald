@@ -45,6 +45,8 @@
    map<string,Type*> fields;
    Type_Error *typeError = new Type_Error();
    vector<Type*> typeList;
+   ArrayFactory *arrayFactory = new ArrayFactory();
+
 }
 
 %union{
@@ -561,6 +563,7 @@
                                           /* NOTE Las varibles de los for todavia no tienen tipos */
 
                                           Type *t = decl->getType();
+
                                           if (t == nullptr)
                                              t = typeError;
 
@@ -741,6 +744,54 @@
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
+
+                                                                     Integer *basicInt = dynamic_cast<Integer*>($4);
+                                                                     Float *basicFloat = dynamic_cast<Float*>($4);
+                                                                     Character *basicChar = dynamic_cast<Character*>($4);
+
+                                                                     if ($4 == $6 && $6 == $8 && $4 != typeError) {
+
+                                                                        pair<string,Symbol*> *sym = nullptr;
+
+                                                                        if (basicInt != 0)
+                                                                           sym = scopeTree.lookup(basicInt->name);
+                                                                        else if (basicFloat != 0)
+                                                                           sym = scopeTree.lookup(basicFloat->name);
+                                                                        else if (basicChar != 0)
+                                                                           sym = scopeTree.lookup(basicChar->name);
+                                                                        else {
+
+                                                                           ++errorCount;
+                                                                           cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
+                                                                           cout << ". Expressions in for statement must be intmonchan, floatzel or charizard.\n";
+
+                                                                        }
+
+
+                                                                        decl->setType(sym);
+
+                                                                     } else if ($4 != $6 && $6 == $8 && $6 != typeError) {
+
+                                                                        ++errorCount;
+                                                                        cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
+                                                                        cout << ". Lower bound expression type does not match with upper bound and step";
+                                                                        cout << " expression types.\n";
+
+                                                                     } else if ($6 != $4 && $4 == $8 && $4 != typeError) {
+
+                                                                        ++errorCount;
+                                                                        cout << "Error at line: " << @6.begin.line << ", column: " << @6.begin.column;
+                                                                        cout << ". Upper bound expression type does not match with lower bound and step";
+                                                                        cout << " expression types.\n";
+
+                                                                     } else if ($8 != $6 && $6 == $4 && $6 != typeError) {
+                                                                        ++errorCount;
+                                                                        cout << "Error at line: " << @8.begin.line << ", column: " << @8.begin.column;
+                                                                        cout << ". Step expression type does not match with lower bound and upper bound";
+                                                                        cout << " expression types.\n";
+
+                                                                     }
+
                                                                      scopeTree.insert(decl);
                                                                      delete($2);
                                                                   }
@@ -751,6 +802,42 @@
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
+
+                                                                     Integer *basicInt = dynamic_cast<Integer*>($4);
+                                                                     Float *basicFloat = dynamic_cast<Float*>($4);
+                                                                     Character *basicChar = dynamic_cast<Character*>($4);
+
+                                                                     if ($4 == $6 && $4 != typeError) {
+
+                                                                        pair<string,Symbol*> *sym = nullptr;
+
+                                                                        if (basicInt != 0)
+                                                                           sym = scopeTree.lookup(basicInt->name);
+                                                                        else if (basicFloat != 0)
+                                                                           sym = scopeTree.lookup(basicFloat->name);
+                                                                        else if (basicChar != 0)
+                                                                           sym = scopeTree.lookup(basicChar->name);
+                                                                        else {
+
+                                                                           ++errorCount;
+                                                                           cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
+                                                                           cout << ". Expressions in for statement must be intmonchan, floatzel or charizard.\n";
+
+                                                                        }
+
+
+                                                                        decl->setType(sym);
+
+                                                                     } else if ($4 != $6 && $6 != typeError) {
+
+                                                                        ++errorCount;
+                                                                        cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
+                                                                        cout << ". Lower bound expression type does not match with upper bound";
+                                                                        cout << " expression type.\n";
+
+                                                                     }
+
+
                                                                      scopeTree.insert(decl);
                                                                      delete($2);
                                                                   }
@@ -788,7 +875,7 @@
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @3.begin.line << ", column: " << @3.begin.column;
-                                                      cout << ". Arguments of the function '" << *$1 << "' must be of basic types.\n";
+                                                      cout << ". Arguments of the function '" << *$1 << "' must be one of the basic types.\n";
                                                       $$ = typeError;
                                                    }
 
@@ -806,6 +893,7 @@
                                                    //VER SI CUADRAN
                                                    if (type == func->type->arguments){
                                                       $$ = func->getType();
+
                                                    } else {
                                                       ++errorCount;
                                                       cout << "Error at line: "<< @3.begin.line << ", column: " << @3.begin.column;
@@ -918,7 +1006,7 @@
                                                             if ($2 == nullptr)
                                                                newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
                                                             else {
-                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
+                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second,arrayFactory);
                                                                delete($2);
                                                             }
 
@@ -931,7 +1019,7 @@
                                                             if ($2 == nullptr)
                                                                newDecl = new Declaration(*$1,@1.begin.line,@1.begin.column,nullptr,false);
                                                             else {
-                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second);
+                                                               newDecl = new ArrayDecl(*$1,@1.begin.line,@1.begin.column,nullptr,false,$2->first,$2->second,arrayFactory);
                                                                delete($2);
                                                             }
 
@@ -946,7 +1034,7 @@
                                                             if ($3 == nullptr)
                                                                newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
                                                             else {
-                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
+                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second,arrayFactory);
                                                                delete($3);
                                                             }
 
@@ -960,7 +1048,7 @@
                                                             if ($3 == nullptr)
                                                                newDecl = new Declaration(*$2,@2.begin.line,@2.begin.column,nullptr,true);
                                                             else {
-                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second);
+                                                               newDecl = new ArrayDecl(*$2,@2.begin.line,@2.begin.column,nullptr,true,$3->first,$3->second,arrayFactory);
                                                                delete($3);
                                                             }
 
@@ -1264,7 +1352,7 @@
                                           vecFunc args;
                                           vecFunc::reverse_iterator it = $3->rbegin();
                                           vecFunc::iterator it2 = $3->begin();
-                                          Type *type = dynamic_cast<Type*>((*it2)->second->type->second);
+                                          Type *type = dynamic_cast<Type*>((*it2)->second->getType());
                                           ++it2;
 
                                           /* Invierte la lista de argumentos para agregarla a la declaracion. */
@@ -1272,7 +1360,7 @@
                                              args.push_back(*it);
 
                                           for(; it2 != $3->end(); ++it2) {
-                                             Type *type2 = dynamic_cast<Type*>((*it2)->second->type->second);
+                                             Type *type2 = dynamic_cast<Type*>((*it2)->second->getType());
                                              type = tupleFactory.buildTuple(type2,type);
 
                                           }
@@ -1362,7 +1450,7 @@
                                                                         declList.push_back(upper);
 
                                                                         yy::position pos = @1.begin;
-                                                                        $$ = new ArrayDecl(*$1,pos.line,pos.column,nullptr,false,-1,-1);
+                                                                        $$ = new ArrayDecl(*$1,pos.line,pos.column,nullptr,false,-1,-1,arrayFactory);
                                                                         delete($1);
                                                                         delete($3);
                                                                         delete($5);

@@ -72,25 +72,26 @@ public:
 class ArrayDecl : public Declaration {
 
 public:
+   ArrayFactory *factory;
    Array_Type *arr_type;
-   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low, int up) :
-   Declaration(n,l,c,p,con) {
+   ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low,
+             int up, ArrayFactory *f) : Declaration(n,l,c,p,con), factory(f) {
 
       Type *arrType;
 
-      if (p != nullptr)
+      if (p != nullptr) {
          arrType = dynamic_cast<Type*>(p->second);
-      else
-         arrType = nullptr;
+         arr_type = factory->buildArray(arrType);
 
-      arr_type = new Array_Type(low,up,arrType);
+      } else
+         arr_type = nullptr;
 
    };
 
    void setType(pair<string,Symbol*> *t) {
 
       type = t;
-      arr_type->elemType = dynamic_cast<Type*>(t->second);
+      arr_type = factory->buildArray(dynamic_cast<Type*>(t->second));
 
    };
 
@@ -156,8 +157,8 @@ public:
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args,Type *argsType) :
          Definition(n,l,c), arguments(args) {
 
-            type = new Function_Type(dynamic_cast<Type*>(r),argsType);
-            numArgs = arguments.size();
+      type = new Function_Type(dynamic_cast<Type*>(r),argsType);
+      numArgs = arguments.size();
    };
 
    Function(string n, int l, int c, Basic *r, Type *arg) : Definition(n,l,c), numArgs(0) {
