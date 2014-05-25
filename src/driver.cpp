@@ -60,6 +60,7 @@ void Driver::initializeTree(TableTree *scopeTree) {
    Boolean *basicBool = new Boolean();
    String *basicStr = new String();
    Void *basicVoid = new Void();
+   Ditto *basicDitto = new Ditto();
 
    // Funciones predefinidas
 
@@ -67,9 +68,9 @@ void Driver::initializeTree(TableTree *scopeTree) {
    pair<string,Declaration*> *argument;
    Declaration *n;
 
-   Function *read = new Function("read",-1,-1,basicVoid);
-   Function *print = new Function("print",-1,-1,basicVoid);
-   Function *println = new Function("println",-1,-1,basicVoid);
+   Function *read = new Function("read",-1,-1,basicVoid,basicDitto);
+   Function *print = new Function("print",-1,-1,basicVoid,basicDitto);
+   Function *println = new Function("println",-1,-1,basicVoid,basicDitto);
 
    pair<string,Symbol*> *sym = new pair<string,Symbol*>("intmonchan",basicInt);
    n = new Declaration("int",-1,-1,sym,false);

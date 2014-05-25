@@ -11,8 +11,6 @@ public:
    //~Type() {};
    virtual void hola(){
 
-      std::cout << "Hola\n";
-
    };
 
 };
@@ -23,6 +21,7 @@ class Character;
 class Float;
 class String;
 class Void;
+class Ditto;
 class Type_Error;
 class Tuple;
 class Register_Type;
@@ -38,12 +37,6 @@ public:
    Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
 
   // ~Array_Type() {};
-
-   virtual void hola(){
-
-      std::cout << "HOLAA\n";
-
-   };
 
 
 };

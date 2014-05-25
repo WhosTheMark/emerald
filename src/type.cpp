@@ -59,6 +59,12 @@ public:
    //~Void() {};
 };
 
+class Ditto : public Type, public Basic {
+
+public:
+   Ditto(): Type(), Basic("ditto",-1,-1,0) {};
+};
+
 class Type_Error : public Type {
 
 public:

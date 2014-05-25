@@ -44,6 +44,7 @@
    Function *funcAux;
    map<string,Type*> fields;
    Type_Error *typeError = new Type_Error();
+   vector<Type*> typeList;
 }
 
 %union{
@@ -589,12 +590,15 @@
       ;
 
    ARGS
-      : /* empty */
-      | ARGSLIST ;
-
+      : /* empty */  {  pair<string,Symbol*> *sym = scopeTree.lookup("voidporeon");
+                        Type *type = dynamic_cast<Type*>(sym->second);
+                        typeList.push_back(type);
+                     }
+      | ARGSLIST
+      ;
    ARGSLIST
-      : EXPR
-      | ARGSLIST tk_comma EXPR
+      : EXPR                     {  typeList.push_back($1); }
+      | ARGSLIST tk_comma EXPR   {  typeList.push_back($3); }
       ;
 
    INST
@@ -641,11 +645,12 @@
      ;
 
    ASIGNMENT
-      : ASIGNLIST tk_asignment ARGSLIST
-      | ASIGNLIST '=' ARGSLIST       {  ++errorCount;
-                                        cout << "Error: Perhaps you meant \":=\" instead of \"=\" at line: ";
-                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
-                                     }
+      : ASIGNLIST tk_asignment ARGSLIST   {  typeList.clear(); }
+      | ASIGNLIST '=' ARGSLIST            {  typeList.clear();
+                                             ++errorCount;
+                                             cout << "Error: Perhaps you meant \":=\" instead of \"=\" at line: ";
+                                             cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
+                                          }
       ;
 
    ASIGNLIST
@@ -770,15 +775,56 @@
                                              $$ = typeError;
                                           } else {
 
+
                                              Function *func = dynamic_cast<Function*>(sym->second);
 
-                                             if (func != 0)
-                                                $$ = func->getType();
-                                             else
+                                             if (func != 0) {
+
+                                                if (dynamic_cast<Ditto*>(func->type->arguments) != 0) {
+
+
+                                                   if (dynamic_cast<Basic*>(typeList[0]) != 0 && typeList.size() == 1)
+                                                      $$ = func->getType();
+                                                   else {
+                                                      ++errorCount;
+                                                      cout << "Error at line: " << @3.begin.line << ", column: " << @3.begin.column;
+                                                      cout << ". Arguments of the function '" << *$1 << "' must be of basic types.\n";
+                                                      $$ = typeError;
+                                                   }
+
+                                               } else {
+
+                                                   vector<Type*>::reverse_iterator it = typeList.rbegin();
+                                                   Type *type = *it;
+                                                   ++it;
+
+                                                   for(; it != typeList.rend(); ++it){
+                                                      Type *type2 = *it;
+                                                      type = tupleFactory.buildTuple(type2,type);
+                                                   }
+
+                                                   //VER SI CUADRAN
+                                                   if (type == func->type->arguments){
+                                                      $$ = func->getType();
+                                                   } else {
+                                                      ++errorCount;
+                                                      cout << "Error at line: "<< @3.begin.line << ", column: " << @3.begin.column;
+                                                      cout << ". Arguments of the function '" << *$1 << "' do not match.\n";
+                                                      $$ = typeError;
+                                                   }
+                                              }
+
+                                             } else{
+                                                ++errorCount;
+                                                cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
+                                                cout << ". '" << *$1 << "' is not a function.\n";
                                                 $$ = typeError;
+
+
+                                             }
                                           }
 
-
+                                          typeList.clear();
                                           delete($1); /*NOTE puede que esto se use despues.*/ }
       ;
 
@@ -947,8 +993,9 @@
 
    INITLIST
       : /* empty */
-      | tk_asignment ARGSLIST
-      | '=' ARGSLIST          {  ++errorCount;
+      | tk_asignment ARGSLIST { typeList.clear(); }
+      | '=' ARGSLIST          {  typeList.clear();
+                                 ++errorCount;
                                  cout << "Error: Perhaps you meant \":=\" instead of \"=\" at line: ";
                                  cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
                               }
@@ -1205,7 +1252,9 @@
 
    FUNC
       : tk_identifier '(' ')'          {  yy::position pos = @1.begin;
-                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr);
+                                          pair<string,Symbol*> *sym = scopeTree.lookup("voidporeon");
+                                          Type *type = dynamic_cast<Type*>(sym->second);
+                                          Function *func = new Function(*$1,pos.line,pos.column,nullptr,type);
                                           $$ = func;
                                           delete($1);
                                        }

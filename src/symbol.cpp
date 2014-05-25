@@ -160,9 +160,9 @@ public:
             numArgs = arguments.size();
    };
 
-   Function(string n, int l, int c, Basic *r) : Definition(n,l,c), numArgs(0) {
+   Function(string n, int l, int c, Basic *r, Type *arg) : Definition(n,l,c), numArgs(0) {
 
-      type = new Function_Type(dynamic_cast<Type*>(r),nullptr);
+      type = new Function_Type(dynamic_cast<Type*>(r),arg);
 
    };
 

@@ -89,7 +89,7 @@ voidporeon main() {
 
                      for i from -5 to 5 {
                         array[i] := num * i;
-                        println(array[i])
+                        println(1)
                      }
                    }
 
