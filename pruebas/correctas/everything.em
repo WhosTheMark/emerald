@@ -31,8 +31,8 @@ floatzel aFunction (floatzel parameter) {
 
    floatzel result;
 
-   result := parameter * 2 + 1;
-   result := result ^ 2 / 4;
+   result := parameter * 2.0 + 1.0;
+   result := result ^ 2 / 4.0;
 
    return result
 }
@@ -115,15 +115,15 @@ voidporeon main() {
             println(str);
 
             if (!reg.field3[2] || float < 1000) {
-               floatzel whoopsie := float / 10;
+               floatzel whoopsie := float / 10.0;
 
                for i from whoopsie to 200 by 3
                   println("Fun fun fun!")
             }
          }
 
-         elsif (float / 19 > int)
-            num := floatToIntmonchan(float+28)
+         elsif (float / 19.0 > int)
+            num := floatToIntmonchan(float+28.0)
 
 
    } elsif int <= 4  {

@@ -54,12 +54,12 @@ void Driver::initializeTree(TableTree *scopeTree) {
 
    // Tipos basicos.
 
-   Basic *basicInt = new Integer();
-   Basic *basicChar = new Character();
-   Basic *basicFloat = new Float();
-   Basic *basicBool = new Boolean();
-   Basic *basicStr = new String();
-   Basic *basicVoid = new Void();
+   Integer *basicInt = new Integer();
+   Character *basicChar = new Character();
+   Float *basicFloat = new Float();
+   Boolean *basicBool = new Boolean();
+   String *basicStr = new String();
+   Void *basicVoid = new Void();
 
    // Funciones predefinidas
 
@@ -76,15 +76,13 @@ void Driver::initializeTree(TableTree *scopeTree) {
    argument = new pair<string,Declaration*>("int",n);
    args.push_back(argument);
 
-
-
-   Function *intToChar = new Function("intToCharizard",-1,-1,basicChar,args,dynamic_cast<Type*>(basicInt));
+   Function *intToChar = new Function("intToCharizard",-1,-1,basicChar,args,basicInt);
 
    args.clear();
    argument = new pair<string,Declaration*>(*argument);
    args.push_back(argument);
 
-   Function *intToFloat = new Function("intToFloatzel",-1,-1,basicFloat,args,dynamic_cast<Type*>(basicInt));
+   Function *intToFloat = new Function("intToFloatzel",-1,-1,basicFloat,args,basicInt);
 
    args.clear();
 
@@ -93,7 +91,7 @@ void Driver::initializeTree(TableTree *scopeTree) {
    argument = new pair<string,Declaration*>("char",n);
    args.push_back(argument);
 
-   Function *charToInt = new Function("charToIntmonchan",-1,-1,basicInt,args,dynamic_cast<Type*>(basicChar));
+   Function *charToInt = new Function("charToIntmonchan",-1,-1,basicInt,args,basicChar);
 
    args.clear();
 
@@ -102,7 +100,7 @@ void Driver::initializeTree(TableTree *scopeTree) {
    argument = new pair<string,Declaration*>("float",n);
    args.push_back(argument);
 
-   Function *floatToInt = new Function("floatToIntmonchan",-1,-1,basicInt,args,dynamic_cast<Type*>(basicFloat));
+   Function *floatToInt = new Function("floatToIntmonchan",-1,-1,basicInt,args,basicFloat);
 
    args.clear();
 

@@ -174,14 +174,21 @@ public:
 
    };
 
+   void setType(Type *t) {
+
+      type->returnType = t;
+
+   };
+
    void printSym(int tabs=0) {
 
       cout << "FUNCTION NAME: " << name << " RETURN TYPE: ";
 
-      if (type->returnType != nullptr) {
+      if (type != nullptr && type->returnType != nullptr) {
 
-         Basic *b = (Basic*) type->returnType;
-         cout << b->name; //TODO type->returnType->name;
+         Basic *b = dynamic_cast<Basic*>(type->returnType);
+         if (b != 0)
+            cout << b->name;
       } else
          cout << "Not Defined";
 

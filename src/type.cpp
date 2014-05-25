@@ -21,44 +21,49 @@ class Integer : public Type, public Basic {
 
 public:
    Integer(): Type(), Basic("intmonchan",-1,-1,INT_SIZE) {};
+   //~Integer() {};
 };
 
 class Boolean : public Type, public Basic {
 
 public:
    Boolean(): Type(), Basic("boolbasaur",-1,-1,BOOL_SIZE) {};
+   //~Boolean() {};
 };
 
 class Character : public Type, public Basic {
 
 public:
    Character(): Type(), Basic("charizard",-1,-1,CHAR_SIZE) {};
+   //~Character() {};
 };
 
 class Float : public Type, public Basic {
 
 public:
    Float(): Type(), Basic("floatzel",-1,-1,FLOAT_SIZE) {};
+   //~Float() {};
 };
 
 class String : public Type, public Basic {
 
 public:
    String(): Type(), Basic("onix",-1,-1,0) {};
+   //~String() {};
 };
 
 class Void : public Type, public Basic {
 
 public:
    Void(): Type(), Basic("voidporeon",-1,-1,0) {};
+   //~Void() {};
 };
 
 class Type_Error : public Type {
 
 public:
    Type_Error() : Type() {};
-
-
+   //~Type_Error() {};
 };
 
 class Tuple : public Type {
@@ -68,15 +73,15 @@ public:
    Type *second;
 
    Tuple(Type *f, Type *s) : Type(), first(f), second(s) {};
-
+   //~Tuple() {};
 };
 
 class Register_Type : public Type, public Definition {
 
 public:
    int size;
-   vector<pair<string,Type*>*> fields;
-   Register_Type(string n, int l, int c, int s, vector<pair<string,Type*>*> f) :
+   map<string,Type*> fields;
+   Register_Type(string n, int l, int c, int s, map<string,Type*> f) :
       Type(), Definition(n, l, c), size(s), fields(f) {};
 
    void printSym(int tabs=0) {
@@ -84,14 +89,16 @@ public:
 
       cout << "REGISTER NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
+
+   //~Register_Type() {};
 };
 
 class Union_Type : public Type, public Definition {
 
 public:
    int size;
-   vector<pair<string,Type*>*> fields;
-   Union_Type(string n, int l, int c, int s, vector<pair<string,Type*>*> f) :
+   map<string,Type*> fields;
+   Union_Type(string n, int l, int c, int s, map<string,Type*> f) :
       Type(), Definition(n,l,c), size(s), fields(f) {};
 
    void printSym(int tabs=0) {
@@ -100,6 +107,7 @@ public:
       cout << "UNION NAME: " << name << " LINE: " << line << " COLUMN: " << column << "\n";
    };
 
+   //~Union_Type() {};
 };
 
 

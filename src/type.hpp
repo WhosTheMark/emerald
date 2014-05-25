@@ -8,7 +8,8 @@ class Type {
 
 public:
    Type() {};
-   virtual ~Type() {};
+   //~Type() {};
+   virtual void hola(){};
 
 };
 
@@ -32,6 +33,8 @@ public:
 
    Array_Type(int l, int u, Type *e) : Type(), lower(l), upper(u), elemType(e) {};
 
+  // ~Array_Type() {};
+
 };
 
 class Function_Type : public Type {
@@ -42,6 +45,7 @@ public:
 
    Function_Type(Type *r, Type *a) : Type(), returnType(r), arguments(a) {};
 
+   //~Function_Type() {};
 };
 
 class TupleFactory;

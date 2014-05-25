@@ -54,7 +54,9 @@ public:
       for(TableIt it = table.begin(); it != table.end(); ++it) {
 
          printTabs(tabs);
-         it->second->printSym();
+
+         if (it->second != nullptr)
+            it->second->printSym();
       }
    };
 

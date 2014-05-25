@@ -42,7 +42,7 @@
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
    vector<Declaration*> declList;
    Function *funcAux;
-   vector<pair<string,Type*>*> fields;
+   map<string,Type*> fields;
    Type_Error *typeError = new Type_Error();
 }
 
@@ -126,12 +126,12 @@
    EXPR
       : EXPR '+' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
                                        if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
 
-                                          Basic *b2 = (Basic*)$3;
+                                          Basic *b2 = dynamic_cast<Basic*>($3);
 
                                           if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
@@ -161,12 +161,12 @@
 
       | EXPR '-' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
                                        if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
 
-                                          Basic *b2 = (Basic*)$3;
+                                          Basic *b2 = dynamic_cast<Basic*>($3);
 
                                           if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
@@ -195,12 +195,12 @@
                                     }
       | EXPR '*' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
                                        if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
 
-                                          Basic *b2 = (Basic*)$3;
+                                          Basic *b2 = dynamic_cast<Basic*>($3);
 
                                           if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
@@ -229,12 +229,12 @@
                                     }
       | EXPR '/' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
                                        if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
 
-                                          Basic *b2 = (Basic*)$3;
+                                          Basic *b2 = dynamic_cast<Basic*>($3);
 
                                           if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
@@ -263,8 +263,8 @@
                                     }
       | EXPR '^' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = (Basic*)$1;
-                                       Basic *b2 = (Basic*)$3;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
+                                       Basic *b2 = dynamic_cast<Basic*>($3);
                                        if (((b1 == symInt || b1 == symFloat) && b2 == symInt) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
@@ -304,6 +304,7 @@
       | EXPR '=''=' EXPR            {  ++errorCount;
                                        cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
+                                       $$ = typeError;
                                     }
       | EXPR '[' EXPR ']'           {  Array_Type *array = dynamic_cast<Array_Type*>($1);
                                        Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
@@ -330,12 +331,12 @@
                                        }
                                     }
       | EXPR tk_mod EXPR            {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
-                                       Basic *b1 = (Basic*)$1;
+                                       Basic *b1 = dynamic_cast<Basic*>($1);
                                        if (($1 == $3 && b1 == symInt) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
 
-                                          Basic *b2 = (Basic*)$3;
+                                          Basic *b2 = dynamic_cast<Basic*>($3);
 
                                           if ($1 != typeError && b1 != symInt) {
                                              ++errorCount;
@@ -356,8 +357,8 @@
 
                                     }
       | EXPR tk_and EXPR            {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
-                                       bool isBoolType1 = sym == ((Basic*)$1);
-                                       bool isBoolType2 = sym == ((Basic*)$3);
+                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1));
+                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3));
                                        if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
@@ -380,8 +381,8 @@
                                        }
                                     }
       | EXPR tk_or EXPR             {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
-                                       bool isBoolType1 = sym == ((Basic*)$1);
-                                       bool isBoolType2 = sym == ((Basic*)$3);
+                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1));
+                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3));
                                        if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
                                           $$ = $1;
                                        else {
@@ -404,7 +405,7 @@
                                        }
                                     }
       | EXPR tk_lessEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -417,7 +418,7 @@
                                           $$ = typeError;
                                     }
       | EXPR tk_moreEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -430,7 +431,7 @@
                                           $$ = typeError;
                                     }
       | EXPR tk_lessThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -443,7 +444,7 @@
                                           $$ = typeError;
                                     }
       | EXPR tk_moreThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -456,7 +457,7 @@
                                           $$ = typeError;
                                     }
       | EXPR tk_notEqual EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != ((Basic*)$1))
+                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
                                           $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
                                        else if ($1 != typeError && $3 != typeError) {
@@ -468,7 +469,45 @@
                                        } else
                                           $$ = typeError;
                                     }
-      | EXPR tk_dot tk_identifier   {  delete($3); /*NOTE puede que esto se use despues*/ }
+      | EXPR tk_dot tk_identifier   {  Register_Type *reg = dynamic_cast<Register_Type*>($1);
+                                       Union_Type *un = dynamic_cast<Union_Type*>($1);
+
+                                       if (reg != 0) {
+
+                                          map<string,Type*>::iterator it = reg->fields.find(*$3);
+
+                                          if (reg->fields.end() != it)
+                                             $$ = it->second;
+                                          else {
+                                             ++errorCount;
+                                             cout << "Error at line: " << @3.begin.line << ", column: ";
+                                             cout << @3.begin.column << ". '" << *$3 << "' is not a field of registeer '";
+                                             cout << reg->name << "'.\n";
+                                             $$ = typeError;
+                                          }
+                                       } else if (un != 0) {
+
+                                          map<string,Type*>::iterator it = un->fields.find(*$3);
+
+                                          if (un->fields.end() != it)
+                                             $$ = it->second;
+                                          else {
+                                             ++errorCount;
+                                             cout << "Error at line: " << @3.begin.line << ", column: ";
+                                             cout << @3.begin.column << ". '" << *$3 << "' is not a field of unown '";
+                                             cout << reg->name << "'.\n";
+                                             $$ = typeError;
+                                          }
+                                       } else {
+                                          ++errorCount;
+                                          cout << "Error using operator '.' at line: " << @2.begin.line << ", column: ";
+                                          cout << @3.begin.column << ". The left expression is not a registeer type ";
+                                          cout << "or unown type.\n";
+                                          $$ = typeError;
+                                       }
+
+                                       delete($3); /*NOTE puede que esto se use despues*/
+                                    }
       | '!' EXPR                    {  if (((scopeTree.lookup("boolbasaur"))->second == ((Basic*)$2)) || ($2 == typeError))
                                           $$ = $2;
                                        else {
@@ -495,11 +534,13 @@
       | '(' error ')'               {  ++errorCount;
                                        cout << "Error in expression at line: " << @2.begin.line;
                                        cout << ", column: " << @2.begin.column << ".\n";
+                                       $$ = typeError;
                                     }
       | '(' ')'                     {  ++errorCount;
                                        cout << "Error at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column;
                                        cout << ": parenthesis must contain an expression.\n";
+                                       $$ = typeError;
                                     }
       | CONST
       | FUNCCALL
@@ -727,16 +768,15 @@
                                              yy::position pos = @1.begin;
                                              cout << "The function '" << *$1 << "' at line: " << pos.line;
                                              cout << ", column: " << pos.column << " has not been declared.\n";
-                                          }
-
-                                          Function *func = dynamic_cast<Function*>(sym->second);
-
-                                          if (func != 0)
-                                             $$ = func->getType();
-                                          else {
                                              $$ = typeError;
+                                          } else {
 
+                                             Function *func = dynamic_cast<Function*>(sym->second);
 
+                                             if (func != 0)
+                                                $$ = func->getType();
+                                             else
+                                                $$ = typeError;
                                           }
 
 
@@ -981,6 +1021,7 @@
                                                    Declaration *decl = *it;
                                                    decl->setType(symType);
                                                    scopeTree.insert(decl);
+                                                   //fields.insert(pair<string,Type*>(decl->name,decl->getType()));
                                                 }
 
                                              delete($2);
@@ -994,6 +1035,7 @@
                                                 Declaration *decl = *it;
                                                 decl->setType(symType);
                                                 scopeTree.insert(decl);
+                                                //fields.insert(pair<string,Type*>(decl->name,decl->getType()));
                                              }
 
                                              delete($2);
@@ -1044,8 +1086,8 @@
 
    FUNCDEF
       : TYPE FUNC          {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                              Type *symType = (Type*) type->second;
-                              $2->type->returnType = symType;
+                              Type *symType = dynamic_cast<Type*>(type->second);
+                              $2->setType(symType);
                               funcAux = $2;
                               delete(type);
                               delete($1);
@@ -1054,8 +1096,8 @@
                   FUNCBODY
 
       | tk_voidType FUNC   {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
-                              Type *symType = (Type*) type->second;
-                              $2->type->returnType = symType;
+                              Type *symType = dynamic_cast<Type*>(type->second);
+                              $2->setType(symType);
                               funcAux = $2;
                               delete(type);
                               delete($1);
