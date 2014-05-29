@@ -187,14 +187,24 @@ El lenguaje Emerald maneja comentarios de varias líneas. Por ejemplo:
     VAR  ::= λ
     VAR  ::= `var`
 
-    REGISTER   ::= `registeer` `identifier` `{` DECLARELIST `}`
+    REGISTER   ::= `registeer` `identifier` `{` FIELDS `}`
 
-    UNION   ::= `unown` `identifier` `{` DECLARELIST `}`
+    UNION   ::= `unown` `identifier` `{` FIELDS `}`
+    
+    FIELDS  ::= FIELD
+    FIELDS  ::= FIELDS FIELD
+    
+    FIELD  ::= TYPE IDLIST `;`
+    FIELD  ::= COMPLEXTYPE IDLIST `;`
 
-    FUNCDEF ::= TYPE `identifier` `(` `)`
-    FUNCDEF ::= `voidporeon` `identifier` `(` `)`
-    FUNCDEF ::= TYPE `identifier` `(` ARGSDEF `)`
-    FUNCDEF ::= `voidporeon` `identifier` `(` ARGSDEF `)`
+    FUNCDEF ::= TYPE FUNC FUNCBODY
+    FUNCDEF ::= `voidporeon` FUNC FUNCBODY
+    
+    FUNCBODY ::= `;` 
+    FUNCBODY ::= BLOCK
+    
+    FUNC ::= `identifier` `(` `)`
+    FUNC ::= `identifier` `(` ARGSDEF `)`
 
     ARGSDEF ::= VAR TYPE ARG
     ARGSDEF ::= VAR TYPE ARG `,` ARGSDEF
