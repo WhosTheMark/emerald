@@ -8,6 +8,7 @@
 
 %code requires{
    #include "symbol.cpp"
+   #include "expressions.cpp"
    class Driver;
    class Scanner;
    class TableTree;
@@ -71,6 +72,7 @@
    std::vector<std::pair<std::string,Type*>*> *vecFields;
    std::pair<int,int> *range;
    Type *typeCheck;
+   Expression *expr;
 }
 
 %type <idsList> IDLIST
@@ -84,7 +86,11 @@
 %type <vecFields> FIELD FIELDS
 %type <range> ARRAYDECL
 %type <intNum> tk_int
-%type <typeCheck> EXPR CONST NUMBER BOOLEAN FUNCCALL SWITCHSTMT CASELIST CASE
+%type <floatNum> tk_float
+%type <chars> tk_char
+%type <str> tk_string
+%type <typeCheck> SWITCHSTMT CASELIST CASE
+%type <expr> EXPR CONST NUMBER BOOLEAN FUNCCALL
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -132,432 +138,466 @@
    EXPR
       : EXPR '+' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("+",$1,$3);
+                                       
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                          ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          Basic *b2 = dynamic_cast<Basic*>($3);
+                                          Basic *b2 = dynamic_cast<Basic*>($3->type);
 
-                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                          if ($1->type != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '+' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                          if ($3->type != typeError && (b2 != symInt && b2 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '+' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                          if ($1->type != $3->type && $1->type != typeError && $3->type != typeError) {
                                              ++errorCount;
                                              cout << "Type Error using operator '+' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The types of the ";
                                              cout << "expressions do not match.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
 
       | EXPR '-' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("-",$1,$3);
+                                       
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                          ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          Basic *b2 = dynamic_cast<Basic*>($3);
+                                          Basic *b2 = dynamic_cast<Basic*>($3->type);
 
-                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                          if ($1->type != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '-' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                          if ($3->type != typeError && (b2 != symInt && b2 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '-' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                          if ($1->type != $3->type && $1->type != typeError && $3->type != typeError) {
                                              ++errorCount;
                                              cout << "Type Error using operator '-' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The types of the ";
                                              cout << "expressions do not match.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
       | EXPR '*' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("*",$1,$3);
+                                       
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                          ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          Basic *b2 = dynamic_cast<Basic*>($3);
+                                          Basic *b2 = dynamic_cast<Basic*>($3->type);
 
-                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                          if ($1->type != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '*' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                          if ($3->type != typeError && (b2 != symInt && b2 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '*' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                          if ($1->type != $3->type && $1->type != typeError && $3->type != typeError) {
                                              ++errorCount;
                                              cout << "Type Error using operator '*' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The types of the ";
                                              cout << "expressions do not match.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
       | EXPR '/' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       if (($1 == $3 && (b1 == symInt || b1 == symFloat)) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("/",$1,$3);
+                                       
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                          ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          Basic *b2 = dynamic_cast<Basic*>($3);
+                                          Basic *b2 = dynamic_cast<Basic*>($3->type);
 
-                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                          if ($1->type != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '/' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($3 != typeError && (b2 != symInt && b2 != symFloat)) {
+                                          if ($3->type != typeError && (b2 != symInt && b2 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '/' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($1 != $3 && $1 != typeError && $3 != typeError) {
+                                          if ($1->type != $3->type && $1->type != typeError && $3->type != typeError) {
                                              ++errorCount;
                                              cout << "Type Error using operator '/' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The types of the ";
                                              cout << "expressions do not match.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
       | EXPR '^' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       Basic *b2 = dynamic_cast<Basic*>($3);
-                                       if (((b1 == symInt || b1 == symFloat) && b2 == symInt) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("^",$1,$3);                                       
+                                       
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       Basic *b2 = dynamic_cast<Basic*>($3->type);
+                                       if (((b1 == symInt || b1 == symFloat) && b2 == symInt) || ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          if ($1 != typeError && (b1 != symInt && b1 != symFloat)) {
+                                          if ($1->type != typeError && (b1 != symInt && b1 != symFloat)) {
                                              ++errorCount;
                                              cout << "Type error using operator '^' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          if ($3 != typeError && b2 != symInt) {
+                                          if ($3->type != typeError && b2 != symInt) {
                                              ++errorCount;
                                              cout << "Type error using operator '^' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan type.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
       | EXPR '=' EXPR               {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr("=",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '=' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
 
                                     }
-      | EXPR '=''=' EXPR            {  ++errorCount;
+      | EXPR '=''=' EXPR            {  $$ = new BinExpr("=",$1,$4);
+                                       ++errorCount;
                                        cout << "Error: Perhaps you meant \"=\" instead of \"==\" at line: ";
                                        cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
-                                       $$ = typeError;
+                                       $$->type = typeError;
                                     }
-      | EXPR '[' EXPR ']'           {  Array_Type *array = dynamic_cast<Array_Type*>($1);
+      | EXPR '[' EXPR ']'           {  $$ = new BinExpr("[]",$1,$3);
+                                       Array_Type *array = dynamic_cast<Array_Type*>($1->type);
                                        Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
-                                       Basic *b = dynamic_cast<Basic*>($3);
+                                       Basic *b = dynamic_cast<Basic*>($3->type);
                                        if (array != 0 && b == symInt){
-                                          $$ = array->elemType;
+                                          $$->type = array->elemType;
                                        } else {
 
-                                          if ($1 != typeError && array == 0) {
+                                          if ($1->type != typeError && array == 0) {
                                              ++errorCount;
                                              cout << "Type error using operator '[]' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not array type.\n";
                                           }
 
-                                          if ($3 != typeError && b != symInt) {
+                                          if ($3->type != typeError && b != symInt) {
                                              ++errorCount;
                                              cout << "Type error using operator '[]' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The expression inside '[]' ";
                                              cout << "is not intmonchan type.\n";
 
                                           }
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
                                     }
       | EXPR tk_mod EXPR            {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
-                                       Basic *b1 = dynamic_cast<Basic*>($1);
-                                       if (($1 == $3 && b1 == symInt) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("%",$1,$3);
+      
+                                       Basic *b1 = dynamic_cast<Basic*>($1->type);
+                                       if (($1->type == $3->type && b1 == symInt) || 
+                                          ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          Basic *b2 = dynamic_cast<Basic*>($3);
+                                          Basic *b2 = dynamic_cast<Basic*>($3->type);
 
-                                          if ($1 != typeError && b1 != symInt) {
+                                          if ($1->type != typeError && b1 != symInt) {
                                              ++errorCount;
                                              cout << "Type error using operator '%' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not intmonchan type.\n";
                                           }
 
-                                          if ($3 != typeError && b2 != symInt) {
+                                          if ($3->type != typeError && b2 != symInt) {
                                              ++errorCount;
                                              cout << "Type error using operator '%' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not intmonchan or floatzel type.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                     }
       | EXPR tk_and EXPR            {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
-                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1));
-                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3));
-                                       if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("&&",$1,$3);
+                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1->type));
+                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3->type));
+                                       if ((isBoolType1 && isBoolType2) || ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          if ($1 != typeError && !isBoolType1) {
+                                          if ($1->type != typeError && !isBoolType1) {
                                              ++errorCount;
                                              cout << "Type error using operator '&&' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not boolbasaur type.\n";
                                           }
 
-                                          if ($3 != typeError && !isBoolType2) {
+                                          if ($3->type != typeError && !isBoolType2) {
                                              ++errorCount;
                                              cout << "Type error using operator '&&' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not boolbasaur type.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
                                     }
       | EXPR tk_or EXPR             {  Symbol *sym = (scopeTree.lookup("boolbasaur"))->second;
-                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1));
-                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3));
-                                       if ((isBoolType1 && isBoolType2) || ($1 == typeError && $3 == typeError))
-                                          $$ = $1;
+                                       $$ = new BinExpr("||",$1,$3);
+                                       bool isBoolType1 = sym == (dynamic_cast<Basic*>($1->type));
+                                       bool isBoolType2 = sym == (dynamic_cast<Basic*>($3->type));
+                                       if ((isBoolType1 && isBoolType2) || ($1->type == typeError && $3->type == typeError))
+                                          $$->type = $1->type;
                                        else {
 
-                                          if ($1 != typeError && !isBoolType1) {
+                                          if ($1->type != typeError && !isBoolType1) {
                                              ++errorCount;
                                              cout << "Type error using operator '||' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The left expression is ";
                                              cout << "not boolbasaur type.\n";
                                           }
 
-                                          if ($3 != typeError && !isBoolType2) {
+                                          if ($3->type != typeError && !isBoolType2) {
                                              ++errorCount;
                                              cout << "Type error using operator '||' at line: " << @2.begin.line;
                                              cout << ", column: " << @2.begin.column << ". The right expression is ";
                                              cout << "not boolbasaur type.\n";
                                           }
 
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
                                     }
       | EXPR tk_lessEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr("<=",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '<=' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                     }
       | EXPR tk_moreEq EXPR         {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr(">=",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '>=' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                     }
       | EXPR tk_lessThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr("<",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '<' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                     }
       | EXPR tk_moreThan EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr(">",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '>' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                     }
       | EXPR tk_notEqual EXPR       {  Symbol *sym = (scopeTree.lookup("voidporeon"))->second;
-                                       if ($1 == $3 && $1 != typeError && sym != (dynamic_cast<Basic*>($1)))
-                                          $$ = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
+                                       $$ = new BinExpr("!=",$1,$3);
+                                       if ($1->type == $3->type && $1->type != typeError && sym != (dynamic_cast<Basic*>($1->type)))
+                                          $$->type = (Boolean*)((scopeTree.lookup("boolbasaur"))->second);
 
-                                       else if ($1 != typeError && $3 != typeError) {
+                                       else if ($1->type != typeError && $3->type != typeError) {
                                           ++errorCount;
                                           cout << "Type Error using operator '!=' at line: " << @2.begin.line;
                                           cout << ", column: " << @2.begin.column << ". The types of the ";
                                           cout << "expressions do not match.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                     }
-      | EXPR tk_dot tk_identifier   {  Register_Type *reg = dynamic_cast<Register_Type*>($1);
-                                       Union_Type *un = dynamic_cast<Union_Type*>($1);
+      | EXPR tk_dot tk_identifier   {  Register_Type *reg = dynamic_cast<Register_Type*>($1->type);
+                                       Union_Type *un = dynamic_cast<Union_Type*>($1->type);
+                                       $$ = new DotExpression($1,*$3);
 
                                        if (reg != 0) {
 
                                           map<string,Type*>::iterator it = reg->fields.find(*$3);
 
                                           if (reg->fields.end() != it)
-                                             $$ = it->second;
+                                             $$->type = it->second;
                                           else {
                                              ++errorCount;
                                              cout << "Error at line: " << @3.begin.line << ", column: ";
                                              cout << @3.begin.column << ". '" << *$3 << "' is not a field of registeer '";
                                              cout << reg->name << "'.\n";
-                                             $$ = typeError;
+                                             $$->type = typeError;
                                           }
                                        } else if (un != 0) {
 
                                           map<string,Type*>::iterator it = un->fields.find(*$3);
 
                                           if (un->fields.end() != it)
-                                             $$ = it->second;
+                                             $$->type = it->second;
                                           else {
                                              ++errorCount;
                                              cout << "Error at line: " << @3.begin.line << ", column: ";
                                              cout << @3.begin.column << ". '" << *$3 << "' is not a field of unown '";
                                              cout << reg->name << "'.\n";
-                                             $$ = typeError;
+                                             $$->type = typeError;
                                           }
                                        } else {
                                           ++errorCount;
                                           cout << "Error using operator '.' at line: " << @2.begin.line << ", column: ";
                                           cout << @3.begin.column << ". The left expression is not a registeer type ";
                                           cout << "or unown type.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
 
                                        delete($3); /*NOTE puede que esto se use despues*/
                                     }
-      | '!' EXPR                    {  if (((scopeTree.lookup("boolbasaur"))->second == (dynamic_cast<Basic*>($2))) || ($2 == typeError))
-                                          $$ = $2;
+      | '!' EXPR                    {  $$ = new UnaryExpr("!",$2);
+                                       if (((scopeTree.lookup("boolbasaur"))->second == (dynamic_cast<Basic*>($2->type))) || 
+                                          ($2->type == typeError))
+                                          $$->type = $2->type;
                                        else {
                                           ++errorCount;
                                           cout << "Type error using operator '!' at line: " << @1.begin.line;
                                           cout << ", column: " << @1.begin.column << ". The expression is ";
                                           cout << "not boolbasaur type.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
                                     }
-      | '-' EXPR %prec UMINUS       {  if (scopeTree.lookup("intmonchan")->second == (dynamic_cast<Basic*>($2)) ||
-                                           scopeTree.lookup("floatzel")->second == (dynamic_cast<Basic*>($2)) ||
-                                           ($2 == typeError))
-                                           $$ = $2;
+      | '-' EXPR %prec UMINUS       {  $$ = new UnaryExpr("-",$2);
+                                       if (scopeTree.lookup("intmonchan")->second == (dynamic_cast<Basic*>($2->type)) ||
+                                           scopeTree.lookup("floatzel")->second == (dynamic_cast<Basic*>($2->type)) ||
+                                           ($2->type == typeError))
+                                           $$->type = $2->type;
                                        else {
                                           ++errorCount;
                                           cout << "Type error using operator unary '-' at line: " << @1.begin.line;
                                           cout << ", column: " << @1.begin.column << ". The expression is ";
                                           cout << "not intmonchan or floatzel type.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        }
                                     }
       | '(' EXPR ')'                {  $$ = $2; }
       | '(' error ')'               {  ++errorCount;
                                        cout << "Error in expression at line: " << @2.begin.line;
                                        cout << ", column: " << @2.begin.column << ".\n";
-                                       $$ = typeError;
+                                       $$ = new Expression();
+                                       $$->type = typeError;
                                     }
       | '(' ')'                     {  ++errorCount;
                                        cout << "Error at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column;
                                        cout << ": parenthesis must contain an expression.\n";
-                                       $$ = typeError;
+                                       $$ = new Expression();
+                                       $$->type = typeError;
                                     }
       | CONST
       | FUNCCALL
       | tk_identifier               {  pair<string,Symbol*> *id = scopeTree.lookup(*$1);
+                                       $$ = new Identifier(*$1);
 
                                        if (id == nullptr) {
                                           ++errorCount;
                                           yy::position pos = @1.begin;
                                           cout << "The variable '" << *$1 << "' at line: " << pos.line;
                                           cout << ", column: " << pos.column << " has not been declared.\n";
-                                          $$ = typeError;
+                                          $$->type = typeError;
                                        } else {
 
 
@@ -570,29 +610,36 @@
                                           if (t == nullptr)
                                              t = typeError;
 
-                                          $$ = t;
+                                          $$->type = t;
                                           delete(id);
                                        }
 
                                        delete($1); //NOTE puede que esto se use despues
                                     }
-      | tk_string                   {  $$ = (String*)(scopeTree.lookup("onix")->second); }
+      | tk_string                   {  $$ = new StringNode($1);
+                                       $$->type = (String*)(scopeTree.lookup("onix")->second); 
+                                    }
       ;
 
    CONST
       : NUMBER
       | BOOLEAN
-      | tk_char   {  $$ = (Character*)(scopeTree.lookup("charizard")->second); }
+      | tk_char   {  $$ = new CharacterNode($1);
+                     $$->type = (Character*)(scopeTree.lookup("charizard")->second); }
       ;
 
    NUMBER
-      : tk_int    {  $$ = (Integer*)(scopeTree.lookup("intmonchan")->second); }
-      | tk_float  {  $$ = (Float*)(scopeTree.lookup("floatzel")->second); }
+      : tk_int    {  $$ = new IntConst($1);
+                     $$->type = (Integer*)(scopeTree.lookup("intmonchan")->second); }
+      | tk_float  {  $$ = new FloatConst($1);
+                     $$->type = (Float*)(scopeTree.lookup("floatzel")->second); }
       ;
 
    BOOLEAN
-      : tk_true   {  $$ = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
-      | tk_false  {  $$ = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
+      : tk_true   {  $$ = new BooleanNode(true);
+                     $$->type = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
+      | tk_false  {  $$ = new BooleanNode(false);
+                     $$->type = (Boolean*)(scopeTree.lookup("boolbasaur")->second); }
       ;
 
    ARGS
@@ -603,8 +650,8 @@
       | ARGSLIST
       ;
    ARGSLIST
-      : EXPR                     {  typeList.push_back($1); }
-      | ARGSLIST tk_comma EXPR   {  typeList.push_back($3); }
+      : EXPR                     {  typeList.push_back($1->type); }
+      | ARGSLIST tk_comma EXPR   {  typeList.push_back($3->type); }
       ;
 
    INST
@@ -699,14 +746,14 @@
       ;
 
    IFSTMT
-      : tk_if EXPR INST %prec IFPREC   {  if (dynamic_cast<Boolean*>($2) == 0) {
+      : tk_if EXPR INST %prec IFPREC   {  if (dynamic_cast<Boolean*>($2->type) == 0) {
                                              ++errorCount;
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
                                              cout << "boolbasaur type.\n";
                                           }
                                        }
-      | tk_if EXPR INST IFLIST         {  if (dynamic_cast<Boolean*>($2) == 0) {
+      | tk_if EXPR INST IFLIST         {  if (dynamic_cast<Boolean*>($2->type) == 0) {
                                              ++errorCount;
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
@@ -734,7 +781,7 @@
       ;
 
    IFHELPER
-      : EXPR INST    {  if (dynamic_cast<Boolean*>($1) == 0) {
+      : EXPR INST    {  if (dynamic_cast<Boolean*>($1->type) == 0) {
                            ++errorCount;
                            cout << "Error at line: " << @1.begin.line << ", column: ";
                            cout << @1.begin.column << ". Elsif condition is not a ";
@@ -750,7 +797,7 @@
       ;
 
    WHILESTMT
-      : tk_while EXPR INST    {  if (dynamic_cast<Boolean*>($2) == 0) {
+      : tk_while EXPR INST    {  if (dynamic_cast<Boolean*>($2->type) == 0) {
                                     ++errorCount;
                                     cout << "Error at line: " << @2.begin.line << ", column: ";
                                     cout << @2.begin.column << ". While condition is not a ";
@@ -771,11 +818,11 @@
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
-                                                                     Integer *basicInt = dynamic_cast<Integer*>($4);
-                                                                     Float *basicFloat = dynamic_cast<Float*>($4);
-                                                                     Character *basicChar = dynamic_cast<Character*>($4);
+                                                                     Integer *basicInt = dynamic_cast<Integer*>($4->type);
+                                                                     Float *basicFloat = dynamic_cast<Float*>($4->type);
+                                                                     Character *basicChar = dynamic_cast<Character*>($4->type);
 
-                                                                     if ($4 == $6 && $6 == $8 && $4 != typeError) {
+                                                                     if ($4->type == $6->type && $6->type == $8->type && $4->type != typeError) {
 
                                                                         pair<string,Symbol*> *sym = nullptr;
 
@@ -797,21 +844,21 @@
                                                                         decl->setType(sym);
                                                                         currentOffset = decl->setOffset(currentOffset);
 
-                                                                     } else if ($4 != $6 && $6 == $8 && $6 != typeError) {
+                                                                     } else if ($4->type != $6->type && $6->type == $8->type && $6->type != typeError) {
 
                                                                         ++errorCount;
                                                                         cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
                                                                         cout << ". Lower bound expression type does not match with upper bound and step";
                                                                         cout << " expression types.\n";
 
-                                                                     } else if ($6 != $4 && $4 == $8 && $4 != typeError) {
+                                                                     } else if ($6->type != $4->type && $4->type == $8->type && $4->type != typeError) {
 
                                                                         ++errorCount;
                                                                         cout << "Error at line: " << @6.begin.line << ", column: " << @6.begin.column;
                                                                         cout << ". Upper bound expression type does not match with lower bound and step";
                                                                         cout << " expression types.\n";
 
-                                                                     } else if ($8 != $6 && $6 == $4 && $6 != typeError) {
+                                                                     } else if ($8->type != $6->type && $6->type == $4->type && $6->type != typeError) {
                                                                         ++errorCount;
                                                                         cout << "Error at line: " << @8.begin.line << ", column: " << @8.begin.column;
                                                                         cout << ". Step expression type does not match with lower bound and upper bound";
@@ -826,15 +873,16 @@
 
       | tk_for tk_identifier tk_from EXPR tk_to EXPR              {  /* Se abre un nuevo alcance para la variable de la
                                                                       * instruccion for y la agrega a la tabla. */
+                                                                     
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
 
-                                                                     Integer *basicInt = dynamic_cast<Integer*>($4);
-                                                                     Float *basicFloat = dynamic_cast<Float*>($4);
-                                                                     Character *basicChar = dynamic_cast<Character*>($4);
+                                                                     Integer *basicInt = dynamic_cast<Integer*>($4->type);
+                                                                     Float *basicFloat = dynamic_cast<Float*>($4->type);
+                                                                     Character *basicChar = dynamic_cast<Character*>($4->type);
 
-                                                                     if ($4 == $6 && $4 != typeError) {
+                                                                     if ($4->type == $6->type && $4->type != typeError) {
 
                                                                         pair<string,Symbol*> *sym = nullptr;
 
@@ -856,7 +904,7 @@
                                                                         decl->setType(sym);
                                                                         currentOffset = decl->setOffset(currentOffset);
 
-                                                                     } else if ($4 != $6 && $6 != typeError) {
+                                                                     } else if ($4->type != $6->type && $6->type != typeError) {
 
                                                                         ++errorCount;
                                                                         cout << "Error at line: " << @4.begin.line << ", column: " << @4.begin.column;
@@ -881,13 +929,13 @@
 
    FUNCCALL
       : tk_identifier '(' ARGS ')'     {  pair<string,Symbol*> *sym = scopeTree.lookup(*$1);
-
+                                          $$ = new FuncCall(*$1);
                                           if (sym == nullptr) {
                                              ++errorCount;
                                              yy::position pos = @1.begin;
                                              cout << "The function '" << *$1 << "' at line: " << pos.line;
                                              cout << ", column: " << pos.column << " has not been declared.\n";
-                                             $$ = typeError;
+                                             $$->type = typeError;
                                           } else {
 
 
@@ -899,12 +947,12 @@
 
 
                                                    if (dynamic_cast<Basic*>(typeList[0]) != 0 && typeList.size() == 1)
-                                                      $$ = func->getType();
+                                                      $$->type = func->getType();
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @3.begin.line << ", column: " << @3.begin.column;
                                                       cout << ". Arguments of the function '" << *$1 << "' must be one of the basic types.\n";
-                                                      $$ = typeError;
+                                                      $$->type = typeError;
                                                    }
 
                                                } else {
@@ -920,13 +968,13 @@
 
                                                    //VER SI CUADRAN
                                                    if (type == func->type->arguments){
-                                                      $$ = func->getType();
+                                                      $$->type = func->getType();
 
                                                    } else {
                                                       ++errorCount;
                                                       cout << "Error at line: "<< @3.begin.line << ", column: " << @3.begin.column;
                                                       cout << ". Arguments of the function '" << *$1 << "' do not match.\n";
-                                                      $$ = typeError;
+                                                      $$->type = typeError;
                                                    }
                                               }
 
@@ -934,7 +982,7 @@
                                                 ++errorCount;
                                                 cout << "Error at line: " << @1.begin.line << ", column: " << @1.begin.column;
                                                 cout << ". '" << *$1 << "' is not a function.\n";
-                                                $$ = typeError;
+                                                $$->type = typeError;
 
 
                                              }
@@ -964,7 +1012,7 @@
       ;
 
    SWITCHSTMT
-      : tk_switch EXPR '{' CASE '}'    {  if ($2 != $4 && $2 != typeError && $4 != typeError) {
+      : tk_switch EXPR '{' CASE '}'    {  if ($2->type != $4 && $2->type != typeError && $4 != typeError) {
                                              ++errorCount;
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". Switch condition does not match ";
@@ -974,11 +1022,11 @@
       ;
 
    CASE
-      : tk_case CONST tk_arrow BLOCK            {  $$ = $2; }
-      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2 == $5 || $5 == typeError)
+      : tk_case CONST tk_arrow BLOCK            {  $$ = $2->type; }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == $5 || $5 == typeError)
                                                       $$ = $5;
                                                    else if ($5 == nullptr)
-                                                      $$ = $2;
+                                                      $$ = $2->type;
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @2.begin.line << ", column: ";
@@ -990,11 +1038,11 @@
 
    CASELIST
       : tk_default tk_arrow BLOCK               {  $$ = nullptr; }
-      | tk_case CONST tk_arrow BLOCK            {  $$ = $2; }
-      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2 == $5 || $5 == typeError)
+      | tk_case CONST tk_arrow BLOCK            {  $$ = $2->type; }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == $5 || $5 == typeError)
                                                       $$ = $5;
                                                    else if ($5 == nullptr)
-                                                      $$ = $2;
+                                                      $$ = $2->type;
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @2.begin.line << ", column: ";

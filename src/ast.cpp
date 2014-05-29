@@ -102,11 +102,3 @@ public:
    AST(DefList *r) : root(r) {};
    
 };
-   
-   
-int main () {
-   
-   
- return 0;
- 
-}

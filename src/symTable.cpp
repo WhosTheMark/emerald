@@ -1,3 +1,5 @@
+#ifndef SYMTABLE_
+#define SYMTABLE_
 
 #include <iostream>
 #include <string>
@@ -78,3 +80,5 @@ public:
       table.clear();
    }
 };
+
+#endif

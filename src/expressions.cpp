@@ -1,7 +1,14 @@
+#ifndef EXPR_
+#define EXPR_
+
 #include <vector>
 #include <string>
+#include "type.cpp"
 
-class Expression { };
+class Expression { 
+public:
+   Type *type;
+};
 
 class BinExpr : public Expression {
   
@@ -48,23 +55,23 @@ public:
    
 };
 
-class Boolean : public Const {
+class BooleanNode : public Const {
    
 public:
 
    bool value;
 
-   Boolean(bool v) : value(v) {};   
+   BooleanNode(bool v) : value(v) {};   
    
 }; 
 
-class Character : public Const {
+class CharacterNode : public Const {
    
 public:
    
    char value;   
   
-   Character(char v) : value(v) {};
+   CharacterNode(char v) : value(v) {};
 };
 
 class Identifier : public Expression {
@@ -77,6 +84,15 @@ public:
    
 };
 
+class StringNode: public Expression{
+   
+public:
+   string content;
+   StringNode(string c) :content(c) {};
+   
+   
+};
+
 class FuncCall : public Expression {
   
 public:
@@ -84,7 +100,7 @@ public:
    string name;
    vector<Expression*> args;
    
-   FuncCall(string n, vector<Expression*> a) : name(n) , args(a) {};
+   FuncCall(string n) : name(n) {};
    
 };
 
@@ -98,3 +114,16 @@ public:
    ArrayExpr(Expression *out, Expression *in) : outBracket(out) , inBracket(in) {};
    
 };
+
+class DotExpression : public Expression {
+   
+public:
+   
+    Expression *left;
+    string id;
+    
+    DotExpression(Expression *l, string i) : left(l), id(i) {};
+    
+};
+
+#endif

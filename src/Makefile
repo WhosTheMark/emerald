@@ -14,7 +14,7 @@ CFLAGS = -O0  $(CDEBUG) $(CSTD)
 CXXFLAGS = -O0  $(CXXDEBUG) $(CXXSTD)
 
 
-CPPOBJ = main driver symbol symTable tableTree type
+CPPOBJ = main driver symbol symTable tableTree type expressions instructions ast
 SOBJ =  parser lexer
 
 FILES = $(addsuffix .cpp, $(CPPOBJ))

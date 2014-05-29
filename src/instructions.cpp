@@ -1,5 +1,7 @@
 #include <string>
 #include <vector>
+#include "expressions.cpp"
+#include "symTable.cpp"
 
 class Inst { };
 
@@ -10,7 +12,7 @@ class Block : public Inst {
 public:
    
    vector<Statement*> list;
-   SymTableNode *table;
+   SymTable *table;
    
    Block(vector<Statement*> l) : list(l) {};
    
