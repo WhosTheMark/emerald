@@ -1,6 +1,6 @@
 
-floatzel global := 21.42;
-boolbasaur global;         # ERROR: variable has already been defined
+floatzel global := 21.20; 
+boolbasaur global;             # ERROR: variable has already been defined
 
 registeer aRegister {
 

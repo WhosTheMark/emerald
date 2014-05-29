@@ -23,7 +23,8 @@ voidporeon main() {
       floatzel a, b := 1.0, 0.0;
       boolbasaur b := true;         # ERROR: Redefined variable
 
-      b := intToFloatzel(a) * i;
+      if (true > 10.0)             # ERROR: The arguments of the operator '>' must be of the same type 
+         b := intToFloatzel(a) * i;
       println(b)
    }
 }

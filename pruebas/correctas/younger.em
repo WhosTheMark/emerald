@@ -2,7 +2,7 @@
 registeer person {
 
    intmonchan id;
-   onix name[1..20];
+   onix name;
    intmonchan age;
 }
 

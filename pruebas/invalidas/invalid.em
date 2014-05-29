@@ -30,7 +30,7 @@ voidporeon main() {
 
    int := @int * 9 + 1;    # ERROR: invalid symbol
 
-   for I from 1 to 10
+   for I from 1 to 10.0    # ERROR: the range of the for statement must of be of the same type
       float := i + 19;     # ERROR: two undeclared variables
 
    println(float)          # ERROR: undeclared variable
