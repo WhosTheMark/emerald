@@ -36,7 +36,7 @@ class Array_Type : public Type {
 public:
    Type *elemType;
 
-   Array_Type(Type *e) : Type(), elemType(e) {};
+   Array_Type(Type *e) : Type(), elemType(e) {}; 
 
   // ~Array_Type() {};
 

@@ -7,7 +7,6 @@
 #include "type.hpp"
 
 using namespace std;
-
 class Symbol {
 
 public:
@@ -20,12 +19,28 @@ public:
    virtual ~Symbol() {};
 };
 
+
+/* Clase de simbolos utilizada para la definicion de tipos primitivos y
+ * definidos por el usuario y funciones.
+ */
+class Definition : public Symbol {
+
+public:
+   int size;
+   Definition(string n, int l, int c, int s) : Symbol(n,l,c), size(s) {};
+   virtual int padding(int os) { return os; };
+   virtual ~Definition() {};
+ 
+};
+
+
 /* Clase de declaracion de simbolos. */
 class Declaration : public Symbol {
 
 public:
    pair<string,Symbol*> *type; //Tipo de la variable declarada.
-   bool constant;
+   bool constant;              //True si es constante
+   int offset = 0;             
 
    Declaration(string n, int l, int c, pair<string,Symbol*> *p, bool con) :
    Symbol(n,l,c), type(p), constant(con) {};
@@ -52,6 +67,24 @@ public:
       else
          return nullptr;
    };
+   
+   int setOffset(int os){
+      
+      if (type != nullptr) {
+         Definition *def = dynamic_cast<Definition*>(type->second);
+         
+         if(def != 0){    
+            os = def->padding(os);
+            offset = os;
+         
+         } else 
+            cout << "ERROR.\n"; 
+         
+         return os + def->size;
+      }
+      
+      return os;
+   };
 
    void printSym(int tabs=0) {
 
@@ -62,7 +95,8 @@ public:
       else
          cout << "Not Defined";
 
-      cout << " LINE: " << line << " COLUMN: " << column << "\n" ;
+      cout << " LINE: " << line << " COLUMN: " << column;
+      cout << " OFFSET: " << offset << "\n" ;
    };
 
    virtual ~Declaration() { };
@@ -72,26 +106,42 @@ public:
 class ArrayDecl : public Declaration {
 
 public:
+   int size = 0;
    ArrayFactory *factory;
+   int lower;
+   int upper;
    Array_Type *arr_type;
+   
+   void setSize(){
+      
+      Definition *def = dynamic_cast<Definition*>(arr_type->elemType);
+      int offsetSize = def->padding(def->size);
+      size = (upper - lower) * offsetSize;
+      
+   };
+   
    ArrayDecl(string n, int l, int c, pair<string,Symbol*> *p, bool con, int low,
-             int up, ArrayFactory *f) : Declaration(n,l,c,p,con), factory(f) {
+             int up, ArrayFactory *f) : Declaration(n,l,c,p,con), factory(f), 
+             lower(low), upper(up) {
 
       Type *arrType;
 
       if (p != nullptr) {
          arrType = dynamic_cast<Type*>(p->second);
          arr_type = factory->buildArray(arrType);
+         setSize();
 
       } else
          arr_type = nullptr;
 
    };
+   
 
    void setType(pair<string,Symbol*> *t) {
 
       type = t;
       arr_type = factory->buildArray(dynamic_cast<Type*>(t->second));
+      setSize();
 
    };
 
@@ -99,6 +149,15 @@ public:
       return arr_type;
    };
 
+   int padding(int os) {
+      
+      int mod = os % 4;
+      
+      if (mod != 0) 
+          os += 4 - mod;  
+      
+      return os;
+   };
 
    //NOTE Imprimir lower y upper?
    void printSym(int tabs=0) {
@@ -118,24 +177,23 @@ public:
    ~ArrayDecl() {};
 };
 
-/* Clase de simbolos utilizada para la definicion de tipos primitivos y
- * definidos por el usuario y funciones.
- */
-class Definition : public Symbol {
-
-public:
-   Definition(string n, int l, int c) : Symbol(n,l,c) {};
-   virtual ~Definition() {};
-};
-
 /* Clase de tipos primitivos. */
 class Basic : public Definition {
 
 public:
-   int size;
 
-   Basic(string n, int l, int c, int s) : Definition(n,l,c), size(s) {};
+   Basic(string n, int l, int c, int s) : Definition(n,l,c,s) {};
 
+   int padding(int os) {
+      
+      int mod = os % size;
+      
+      if (mod != 0) 
+          os += size - mod;  
+      
+      return os;
+   };
+   
    void printSym(int tabs=0) {
 
       cout << "PRIMITIVE TYPE: " << name << "\n" ;
@@ -155,13 +213,13 @@ public:
    //TODO body
 
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args,Type *argsType) :
-         Definition(n,l,c), arguments(args) {
+         Definition(n,l,c,0), arguments(args) {
 
       type = new Function_Type(dynamic_cast<Type*>(r),argsType);
       numArgs = arguments.size();
    };
 
-   Function(string n, int l, int c, Basic *r, Type *arg) : Definition(n,l,c), numArgs(0) {
+   Function(string n, int l, int c, Basic *r, Type *arg) : Definition(n,l,c,0), numArgs(0) {
 
       type = new Function_Type(dynamic_cast<Type*>(r),arg);
 

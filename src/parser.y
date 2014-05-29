@@ -43,9 +43,12 @@
    vector<Declaration*> declList;
    Function *funcAux;
    map<string,Type*> fields;
+   map<string,Declaration*> decls;
    Type_Error *typeError = new Type_Error();
    vector<Type*> typeList;
    ArrayFactory *arrayFactory = new ArrayFactory();
+   int globalOffset = 0;
+   int currentOffset = 0; 
 
 }
 
@@ -768,7 +771,6 @@
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
-
                                                                      Integer *basicInt = dynamic_cast<Integer*>($4);
                                                                      Float *basicFloat = dynamic_cast<Float*>($4);
                                                                      Character *basicChar = dynamic_cast<Character*>($4);
@@ -793,6 +795,7 @@
 
 
                                                                         decl->setType(sym);
+                                                                        currentOffset = decl->setOffset(currentOffset);
 
                                                                      } else if ($4 != $6 && $6 == $8 && $6 != typeError) {
 
@@ -851,6 +854,7 @@
 
 
                                                                         decl->setType(sym);
+                                                                        currentOffset = decl->setOffset(currentOffset);
 
                                                                      } else if ($4 != $6 && $6 != typeError) {
 
@@ -1011,6 +1015,8 @@
                                                       for(; it != $2->rend(); ++it) {
                                                          Declaration *decl = *it;
                                                          decl->setType(symType);
+                                                         
+                                                         currentOffset = decl->setOffset(currentOffset);
 
                                                          scopeTree.insert(decl);
                                                       }
@@ -1025,7 +1031,7 @@
                                                       for(; it != $2->rend(); ++it) {
                                                          Declaration *decl = *it;
                                                          decl->setType(symType);
-
+                                                         currentOffset = decl->setOffset(currentOffset);
                                                          scopeTree.insert(decl);
                                                       }
 
@@ -1206,6 +1212,7 @@
                                                    decl->setType(symType);
                                                    scopeTree.insert(decl);
                                                    fields.insert(pair<string,Type*>(decl->name,decl->getType()));
+                                                   decls.insert(pair<string,Declaration*>(decl->name,decl));
                                                 }
 
                                              delete($2);
@@ -1220,6 +1227,7 @@
                                                 decl->setType(symType);
                                                 scopeTree.insert(decl);
                                                 fields.insert(pair<string,Type*>(decl->name,decl->getType()));
+                                                decls.insert(pair<string,Declaration*>(decl->name,decl));
                                              }
 
                                              delete($2);
@@ -1246,9 +1254,10 @@
 
                              FIELDS '}'   {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             Definition *reg = new Register_Type(*$2,pos.line,pos.column,0,fields);
+                                             Register_Type *reg = new Register_Type(*$2,pos.line,pos.column,0,fields,decls);
                                              scopeTree.insert(reg);
                                              fields.clear();
+                                             decls.clear();
                                              delete($2);
                                              delete($1);
                                           }
@@ -1259,9 +1268,10 @@
 
                             FIELDS '}'    {  scopeTree.exitScope();
                                              yy::position pos = @1.begin;
-                                             Definition *un = new Union_Type(*$2,pos.line,pos.column,0,fields);
+                                             Union_Type *un = new Union_Type(*$2,pos.line,pos.column,0,fields,decls);
                                              scopeTree.insert(un);
                                              fields.clear();
+                                             decls.clear();
                                              delete($2);
                                              delete($1);
                                           }
@@ -1365,26 +1375,40 @@
 
                            /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
                            scopeTree.enterScope();
-
-                           for(args2 = funcAux->arguments.begin(); args2 != funcAux->arguments.end(); ++args2)
-                              scopeTree.insert((*args2)->second);
+                           
+                           int argsOffset = 0;  
+                           
+                           //NOTE !!!!!!!!!!!!!!!!!!!!!!!! NOTE
+                           for(args2 = funcAux->arguments.begin(); args2 != funcAux->arguments.end(); ++args2){
+                              Declaration* decl = (*args2)->second;
+                              scopeTree.insert(decl);
+                              argsOffset = decl->setOffset(argsOffset);
+                              decl->offset = - decl->offset;
+                              
+                           }
 
                            /* Si hay arreglos en los argumentos entonces se agregan
                             * las variables asociadas a sus delimitadores. */
 
                            vector<Declaration*>::reverse_iterator declIt = declList.rbegin();
-                           for(;declIt != declList.rend(); ++declIt)
+                           for(;declIt != declList.rend(); ++declIt){
                               scopeTree.insert(*declIt);
-
+                              argsOffset = (*declIt)->setOffset(argsOffset);
+                              (*declIt)->offset = - (*declIt)->offset;
+                              
+                           }
                            declList.clear(); //Vacia la lista.
 
-                           //NOTE agregar el body
+                           //Respaldo del offset global
+                           globalOffset = currentOffset;
+                           currentOffset = 0;
                         }
                      }
 
                BLOCK {  if (funcAux->arguments.size() != 0)
                            scopeTree.exitScope();
                         funcAux = nullptr;
+                        currentOffset = globalOffset;
                      }
       ;
 
@@ -1402,6 +1426,9 @@
                                           vecFunc args;
                                           vecFunc::reverse_iterator it = $3->rbegin();
                                           vecFunc::iterator it2 = $3->begin();
+ 
+                                          
+                                          
                                           Type *type = dynamic_cast<Type*>((*it2)->second->getType());
                                           ++it2;
 
@@ -1409,7 +1436,9 @@
                                           for(; it != $3->rend(); ++it)
                                              args.push_back(*it);
 
+                                             
                                           for(; it2 != $3->end(); ++it2) {
+                                          
                                              Type *type2 = dynamic_cast<Type*>((*it2)->second->getType());
                                              type = tupleFactory.buildTuple(type2,type);
 

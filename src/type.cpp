@@ -11,10 +11,11 @@ class Tuple;
 typedef map<Type*,map<Type*,Tuple*>>::iterator tuplesMapsIt;
 typedef map<Type*,Tuple*>::iterator tuplesIt;
 
-const int INT_SIZE = 32;
-const int CHAR_SIZE = 8;
-const int FLOAT_SIZE = 32;
+const int INT_SIZE = 4;
+const int CHAR_SIZE = 1;
+const int FLOAT_SIZE = 4;
 const int BOOL_SIZE = 1;
+const int COMPLEX_PADDING = 4; //Registros y uniones alineados en multiplos de 4
 
 
 class Integer : public Type, public Basic {
@@ -48,7 +49,7 @@ public:
 class String : public Type, public Basic {
 
 public:
-   String(): Type(), Basic("onix",-1,-1,0) {};
+   String(): Type(), Basic("onix",-1,-1,1) {};
    //~String() {};
 };
 
@@ -85,11 +86,45 @@ public:
 class Register_Type : public Type, public Definition {
 
 public:
-   int size;
-   map<string,Type*> fields;
-   Register_Type(string n, int l, int c, int s, map<string,Type*> f) :
-      Type(), Definition(n, l, c), size(s), fields(f) {};
 
+   map<string,Type*> fields;
+   map<string,Declaration*> decls;
+   Register_Type(string n, int l, int c, int s, map<string,Type*> f, 
+         map<string,Declaration*> d) : Type(), Definition(n, l, c,s), 
+         fields(f), decls(d) {
+         
+         map<string,Type*>::iterator it = f.begin();
+         
+         for(; it != f.end(); ++it){
+            
+            Definition *def = dynamic_cast<Definition*>(it->second);
+            map<string,Declaration*>::iterator it2 = decls.find(it->first);
+            it2->second->offset = size;
+            
+            if(def != 0)
+               size += def->padding(size) + def->size;
+            else {
+               
+               ArrayDecl *arr = dynamic_cast<ArrayDecl*>(it2->second);
+               size += arr->padding(size) + arr->size;
+                              
+            }
+         }
+         
+         
+         
+      };
+
+   int padding(int os) {
+      
+      int mod = os % COMPLEX_PADDING;
+      
+      if (mod != 0) 
+          os += COMPLEX_PADDING - mod;  
+      
+      return os;
+   };      
+        
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del registro
 
@@ -102,11 +137,36 @@ public:
 class Union_Type : public Type, public Definition {
 
 public:
-   int size;
-   map<string,Type*> fields;
-   Union_Type(string n, int l, int c, int s, map<string,Type*> f) :
-      Type(), Definition(n,l,c), size(s), fields(f) {};
 
+   map<string,Type*> fields;
+   map<string,Declaration*> decls;
+   Union_Type(string n, int l, int c, int s, map<string,Type*> f, 
+         map<string,Declaration*> d) : Type(), Definition(n,l,c,s), 
+         fields(f), decls(d) {
+         
+         map<string,Type*>::iterator it = f.begin();
+         int maxSize = 0;
+         
+         for(; it != f.end(); ++it){
+            Definition *def = dynamic_cast<Definition*>(it->second);
+            if (maxSize < def->size)
+               maxSize = def->size;
+         }
+         
+         size = maxSize;
+         
+      };
+
+   int padding(int os) {
+      
+      int mod = os % COMPLEX_PADDING;
+      
+      if (mod != 0) 
+          os += COMPLEX_PADDING - mod;  
+      
+      return os;
+   };
+      
    void printSym(int tabs=0) {
       //TODO imprimir la tabla del union
 
