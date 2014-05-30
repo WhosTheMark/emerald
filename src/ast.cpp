@@ -9,52 +9,14 @@ using namespace std;
 
 class DefNode { };
 
-class ArgsDef {
-   
-public:
-   
-   string id;
-   bool variable;
-   
-   ArgsDef(string i, bool v) : id(i), variable(v) {};
-   
-};
-
 class FuncDef : public DefNode {
   
 public:
    
    string name;
-   string returnType;
-   vector<ArgsDef*> args;
-   Block *block;
-   SymTableNode *table;   
+   Block *block;  //Esto puede ser nullptr si es un foward declaration!
    
-   FuncDef(string n, string rt, vector<ArgsDef*> a, Block *b) :
-           name(n) , returnType(rt) , args(a) , block(b) {};
-};
-
-class IdNode {
-
-public:
-   
-   string name;
-   bool constant;
-   
-   IdNode(string n, bool c) : name(n), constant(c) {};
-      
-};
-
-class ArrayDeclare : public IdNode {
-   
-public:
-   
-   Expression *lower;
-   Expression *upper;
-   
-   ArrayDeclare(string n, bool c, Expression *l, Expression *u) : 
-               IdNode(n,c) , lower(l), upper(u) {};
-   
+   FuncDef(string n, Block *b) : name(n) , block(b) {};
 };
 
 class DeclareNode : public DefNode {
@@ -62,11 +24,10 @@ class DeclareNode : public DefNode {
 public:
    
    string type;
-   vector<IdNode*> ids;
    vector<Expression*> inits;
    
-   DeclareNode(string t, vector<IdNode*> id, vector<Expression*> init) :
-               type(t), ids(id), inits(init) {};
+   DeclareNode(string t, vector<Expression*> init) :
+               type(t), inits(init) {};
                  
 };
 
@@ -75,30 +36,31 @@ class RegisterDef : public DefNode {
 public:
    
    string name;
-   vector<DeclareNode*> fields;
+   SymTableNode *fields;
    
-   RegisterDef(string n, vector<DeclareNode*> f) : name(n) , fields(f) {};
+   RegisterDef(string n) : name(n) {};
    
 };
 
-
-class DefList {   
-   
+class UnionDef : public DefNode {
+  
 public:
    
-   vector<DefNode*> list;
+   string name;
+   SymTableNode *fields;
    
-   DefList(vector<DefNode*> l) : list(l) {};
-
+   UnionDef(string n) : name(n) {};
+   
 };
 
 class AST {
    
 public:
    
-   DefList *root;
-   TableTree table;
+   vector<DefNode*> list;
+   TableTree *table; //Solo de referencia, no imprimir
+   SymTableNode *globalScope;
    
-   AST(DefList *r) : root(r) {};
+   AST(vector<DefNode*> r, TableTree *t) : list(r), table(t) {};
    
 };

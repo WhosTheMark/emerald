@@ -1,21 +1,29 @@
+#ifndef INST_
+#define INST_
+
 #include <string>
 #include <vector>
 #include "expressions.cpp"
 #include "symTable.cpp"
+#include "tableTree.cpp"
 
 class Inst { 
 public:
    Inst() {};
 };
 
-class Statement : public Inst { };
+class Statement : public Inst { 
+   
+public:
+   Statement() {};
+};
 
 class Block : public Inst {
   
 public:
    
    vector<Statement*> list;
-   SymTable *table;
+   SymTableNode *table;
    
    Block(vector<Statement*> l) : list(l) {};
    
@@ -94,7 +102,7 @@ class Asignment : public Statement {
    
 public:
    
-   vector<LValue*> lvalues;
+   vector<LValue*> lvalues;   //ESTO NO ESTÁ FUNCIONANDO, NO IMPRIMIR.
    vector<Expression*> rvalues;
    
    Asignment(vector<LValue*> l, vector<Expression*> r) : lvalues(l) , rvalues(r) {};   
@@ -158,7 +166,14 @@ public:
    
 };
 
-class Return : public Statement { };
+class Return : public Statement {
+   
+public:
+   Expression *expr;
+   
+   Return(Expression *e) : expr(e) {};
+   
+};
 
 class CaseBranch {
   
@@ -175,7 +190,7 @@ class DefaultBranch : public CaseBranch {
   
 public:
    
-   DefaultBranch(Block *cb) : CaseBranch(nullptr,cb) {};
+   DefaultBranch(Block *cb) : CaseBranch(nullptr,cb) {}; //Aquí la constante está en null porque es default
 };
 
 class SwitchStmt : public Statement {
@@ -199,3 +214,5 @@ public:
    FuncCall(string n) : name(n) {};
    
 };
+
+#endif

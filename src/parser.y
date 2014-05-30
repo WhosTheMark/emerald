@@ -10,6 +10,7 @@
    #include "symbol.cpp"
    #include "expressions.cpp"
    #include "instructions.cpp"
+   #include "ast.cpp"
    class Driver;
    class Scanner;
    class TableTree;
@@ -81,6 +82,15 @@
    FuncCall *fCall;
    vector<CaseBranch*> *caseBranches;
    Const* constant;
+   vector<Statement*> *listStmt;
+   Block *block;
+   Statement *stmt;
+   vector<Expression*> *exprList;
+   RegisterDef *reg;
+   UnionDef *un;
+   FuncDef *fDef;
+   DefNode *defNode;
+   vector<DefNode*> *defList;
 }
 
 %type <idsList> IDLIST
@@ -98,13 +108,21 @@
 %type <chars> tk_char
 %type <str> tk_string
 %type <expr> EXPR NUMBER BOOLEAN
-%type <instr> IFSTMT WHILESTMT FORSTMT SWITCHSTMT
+%type <stmt> STMT IFSTMT WHILESTMT FORSTMT SWITCHSTMT BREAK CONTINUE LABEL RETURN ASIGNMENT
 %type <branches> IFLIST
 %type <branch> IFHELPER
 %type <fCall> FUNCCALL
 %type <caseBranches> CASE CASELIST
 %type <constant> CONST
-
+%type <listStmt> STMTLIST
+%type <block> BLOCK FUNCBODY
+%type <instr> INST
+%type <exprList> EXPRLIST
+%type <reg> REGISTER
+%type <un> UNION
+%type <fDef> FUNCDEF
+%type <defNode> DEFINITION
+%type <defList> DEFLIST
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
 %token tk_stringType  tk_structType  tk_unionType  tk_voidType
@@ -133,19 +151,27 @@
 %%
 
    START
-      : { scopeTree.enterScope(); } DEFLIST { scopeTree.exitScope(); }
+      : { scopeTree.enterScope(); } DEFLIST {   AST *a = new AST(*$2,&scopeTree);
+                                                a->globalScope = scopeTree.currentScope;
+                                                scopeTree.exitScope(); }
       ;
 
    DEFLIST
-      : DEFINITION
-      | DEFINITION DEFLIST
+      : DEFINITION            {  $$ = new vector<DefNode*>();
+                                 if ($1 != nullptr)
+                                    $$->push_back($1);
+                              }
+      | DEFINITION DEFLIST    {  if ($1 != nullptr)
+                                    $2->push_back($1);
+                                 $$ = $2;
+                              }
       ;
 
    DEFINITION
-      : FUNCDEF
-      | REGISTER
-      | UNION
-      | DECLARATION
+      : FUNCDEF      {  $$ = (DefNode*) $1; }
+      | REGISTER     {  $$ = (DefNode*) $1; }
+      | UNION        {  $$ = (DefNode*) $1; }
+      | DECLARATION  {  $$ = nullptr; }
       ;
 
    EXPR
@@ -668,15 +694,16 @@
       ;
 
    INST
-      : STMT
-      | BLOCK ;
+      : STMT   {  $$ = (Inst*) $1; }
+      | BLOCK  {  $$ = (Inst*) $1; }
+      ;
 
    STMT
       : IFSTMT
       | ASIGNMENT
       | WHILESTMT
       | FORSTMT
-      | FUNCCALL
+      | FUNCCALL     { $$ = (Statement*) $1; }
       | BREAK
       | CONTINUE
       | LABEL
@@ -684,39 +711,61 @@
       | SWITCHSTMT ;
 
    BLOCK
-      : '{' STMTLIST
+      : '{' STMTLIST                {  $$ = new Block(*$2); }
       | '{'                         {  scopeTree.enterScope(); }
-         DECLARELIST STMTLIST       {  scopeTree.exitScope();
+         DECLARELIST STMTLIST       {  $$ = new Block(*$4);
+                                       $$->table = scopeTree.currentScope;
+                                       scopeTree.exitScope();
+
                                     }
       | '{' '}'                     {  ++errorCount;
                                        cout << "Error at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column;
                                        cout << ": a block must have at least one statement.\n";
+                                       $$ = new Block(vector<Statement*>());
                                     }
       ;
 
    STMTLIST
-      : STMT '}'
-      | STMT tk_semicolon STMTLIST
+      : STMT '}'                    {  $$ = new vector<Statement*>();
+                                       $$->push_back($1);
+                                    }
+      | STMT tk_semicolon STMTLIST  {  $3->push_back($1);
+                                       $$ = $3;
+                                    }
       | error tk_semicolon STMTLIST {  ++errorCount;
                                        cout << "Invalid statement at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column << ".\n";
                                        yyerrok;
+                                       $$ = $3;
                                     }
       | error '}'                   {  ++errorCount;
                                        cout << "Invalid statement at line: " << @1.begin.line;
                                        cout << ", column: " << @1.begin.column << ".\n";
                                        yyerrok;
+                                       $$ = new vector<Statement*>();
                                     }
      ;
 
    ASIGNMENT
-      : ASIGNLIST tk_asignment ARGSLIST   {  typeList.clear(); }
-      | ASIGNLIST '=' ARGSLIST            {  typeList.clear();
+      : ASIGNLIST tk_asignment EXPRLIST   {  $$ = new Asignment(vector<LValue*>(),*$3);
+                                             typeList.clear();
+                                          }
+      | ASIGNLIST '=' EXPRLIST            {  $$ = new Statement();
+                                             typeList.clear();
                                              ++errorCount;
                                              cout << "Error: Perhaps you meant \":=\" instead of \"=\" at line: ";
                                              cout << @2.begin.line << ", column: " << @2.begin.column << ".\n";
                                           }
+      ;
+
+   EXPRLIST
+      : EXPR                     {  $$ = new vector<Expression*>();
+                                    $$->push_back($1);
+                                 }
+      | EXPRLIST tk_comma EXPR   {  $1->push_back($3);
+                                    $$ = $1;
+                                 }
       ;
 
    ASIGNLIST
@@ -764,12 +813,12 @@
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
                                              cout << "boolbasaur type.\n";
-                                             $$ = new Inst();
+                                             $$ = new Statement();
                                           } else {
-                                             IfBranch *ifB = new IfBranch($2,new Inst()); //TODO Agregar instruccion!
+                                             IfBranch *ifB = new IfBranch($2,$3);
                                              vector<Branch*> vec;
                                              vec.push_back(ifB);
-                                             $$ = new IfStmt(vec); //No tiene else
+                                             $$ = new IfStmt(vec);
                                           }
 
                                        }
@@ -778,21 +827,21 @@
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
                                              cout << "boolbasaur type.\n";
-                                             $$ = new Inst();
+                                             $$ = new Statement();
                                           } else {
-                                             IfBranch *ifB = new IfBranch($2,new Inst()); //TODO Agregar instruccion!
+                                             IfBranch *ifB = new IfBranch($2,$3);
                                              $4->push_back(ifB);
                                              $$ = new IfStmt(*$4);
                                           }
                                        }
-      | tk_if error INST %prec IFPREC  {  $$ = new Inst();
+      | tk_if error INST %prec IFPREC  {  $$ = new Statement();
                                           ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
                                           cout << ".\n";
                                           yyerrok;
                                        }
-      | tk_if error INST IFLIST        {  $$ = new Inst();
+      | tk_if error INST IFLIST        {  $$ = new Statement();
                                           ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
@@ -803,7 +852,7 @@
 
    IFLIST
       : tk_else INST                   { $$ = new vector<Branch*>();
-                                         $$->push_back(new ElseBranch(new Inst())); //TODO agregar la instrucción!
+                                         $$->push_back(new ElseBranch($2));
                                        }
       | tk_elsif IFHELPER              { $$ = new vector<Branch*>();
                                          $$->push_back($2);
@@ -821,7 +870,7 @@
                            cout << "boolbasaur type.\n";
                         }
 
-                        $$ = new IfBranch($1,new Inst()); //TODO Agregar INST !!!
+                        $$ = new IfBranch($1,$2);
                      }
       | error INST   {  ++errorCount;
                         cout << "Invalid expression in elsif condition at line: ";
@@ -840,7 +889,7 @@
                                     cout << "boolbasaur type.\n";
                                  }
 
-                                 $$ = new WhileStmt($2,new Inst()); //TODO Agregar la instrucción!!
+                                 $$ = new WhileStmt($2,$3);
                               }
       | tk_while error INST   {  ++errorCount;
                                  cout << "Invalid expression in while condition at line: ";
@@ -848,7 +897,7 @@
                                  cout << ".\n";
                                  yyerrok;
 
-                                 $$ = new Inst();
+                                 $$ = new Statement();
                               }
       ;
 
@@ -910,7 +959,7 @@
 
                                                                   }
                                                             INST  {  scopeTree.exitScope();
-                                                                     $$ = new ForStmt(*$2,$4,$6,$8,new Inst());  //TODO Agregar la instrucción !!
+                                                                     $$ = new ForStmt(*$2,$4,$6,$8,$10);
                                                                      delete($2);
                                                                   }
 
@@ -960,7 +1009,7 @@
                                                                      scopeTree.insert(decl);
                                                                   }
                                                             INST  {  scopeTree.exitScope();
-                                                                     $$ = new ForStmt(*$2,$4,$6,nullptr,new Inst());  //TODO Agregar la instrucción !!
+                                                                     $$ = new ForStmt(*$2,$4,$6,nullptr,$8); //No tiene step
                                                                      delete($2);
                                                                   }
       | tk_for error INST                                         {  ++errorCount;
@@ -968,6 +1017,7 @@
                                                                      cout << @2.begin.line << ", column: " << @2.begin.column;
                                                                      cout << ".\n";
                                                                      yyerrok;
+                                                                     $$ = new ForStmt("",nullptr,nullptr,nullptr,$3);
                                                                   }
       ;
 
@@ -1037,22 +1087,22 @@
       ;
 
    BREAK
-      : tk_break
-      | tk_break tk_identifier         { delete($2); /*NOTE puede que esto se use despues.*/ }
+      : tk_break                       { $$ = new Break(nullptr); }
+      | tk_break tk_identifier         { $$ = new Break($2); }
       ;
 
    CONTINUE
-      : tk_continue
-      | tk_continue tk_identifier      { delete($2); /*NOTE puede que esto se use despues.*/ }
+      : tk_continue                    { $$ = new Continue(nullptr); }
+      | tk_continue tk_identifier      { $$ = new Continue($2); }
       ;
 
    LABEL
-      : tk_tag tk_colon tk_identifier  { delete($3); /*NOTE puede que esto se use despues.*/ }
+      : tk_tag tk_colon tk_identifier  { $$ = new Tag(*$3); }
       ;
 
    RETURN
-      : tk_return
-      | tk_return EXPR
+      : tk_return          {  $$ = new Return(nullptr); }
+      | tk_return EXPR     {  $$ = new Return($2); }
       ;
 
    SWITCHSTMT
@@ -1070,7 +1120,7 @@
 
    CASE
       : tk_case CONST tk_arrow BLOCK            {  $$ = new vector<CaseBranch*>();
-                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   CaseBranch *cb = new CaseBranch($2,$4); //TODO Poner el bloque!!
                                                    $$->push_back(cb);
                                                    caseType = $2->type;
                                                 }
@@ -1083,7 +1133,7 @@
                                                       cout << "Error at line: " << @2.begin.line << ", column: ";
                                                       cout << @2.begin.column << ". Switch guards' types do not match.\n";
                                                    }
-                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   CaseBranch *cb = new CaseBranch($2,$4);
                                                    $5->push_back(cb);
                                                    $$ = $5;
                                                 }
@@ -1091,12 +1141,12 @@
 
    CASELIST
       : tk_default tk_arrow BLOCK               {  $$ = new vector<CaseBranch*>();
-                                                   DefaultBranch *db = new DefaultBranch(new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   DefaultBranch *db = new DefaultBranch($3);
                                                    $$->push_back(db);
                                                    caseType = nullptr;
                                                 }
       | tk_case CONST tk_arrow BLOCK            {  $$ = new vector<CaseBranch*>();
-                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   CaseBranch *cb = new CaseBranch($2,$4);
                                                    $$->push_back(cb);
                                                    caseType = $2->type;
                                                 }
@@ -1110,7 +1160,7 @@
                                                       cout << @2.begin.column << ". Switch guards' types do not match.\n";
                                                       caseType = typeError;
                                                    }
-                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   CaseBranch *cb = new CaseBranch($2,$4);
                                                    $5->push_back(cb);
                                                    $$ = $5;
                                                 }
@@ -1364,7 +1414,9 @@
    REGISTER
       : tk_structType tk_identifier '{'   {  scopeTree.enterScope(); }
 
-                             FIELDS '}'   {  scopeTree.exitScope();
+                             FIELDS '}'   {  $$ = new RegisterDef(*$2);
+                                             $$->fields = scopeTree.currentScope;
+                                             scopeTree.exitScope();
                                              yy::position pos = @1.begin;
                                              Register_Type *reg = new Register_Type(*$2,pos.line,pos.column,0,fields,decls);
                                              scopeTree.insert(reg);
@@ -1378,7 +1430,9 @@
    UNION
       : tk_unionType tk_identifier '{'    {  scopeTree.enterScope(); }
 
-                            FIELDS '}'    {  scopeTree.exitScope();
+                            FIELDS '}'    {  $$ = new UnionDef(*$2);
+                                             $$->fields = scopeTree.currentScope;
+                                             scopeTree.exitScope();
                                              yy::position pos = @1.begin;
                                              Union_Type *un = new Union_Type(*$2,pos.line,pos.column,0,fields,decls);
                                              scopeTree.insert(un);
@@ -1397,9 +1451,10 @@
                               funcAux = $2;
                               delete(type);
                               delete($1);
+
                            }
 
-                  FUNCBODY
+                  FUNCBODY { $$ = new FuncDef($2->name,$4); }
 
       | tk_voidType FUNC   {  pair<string,Symbol*> *type = scopeTree.lookup(*$1);
                               Type *symType = dynamic_cast<Type*>(type->second);
@@ -1408,7 +1463,7 @@
                               delete(type);
                               delete($1);
                            }
-                  FUNCBODY
+                  FUNCBODY { $$ = new FuncDef($2->name,$4); }
       ;
 
    FUNCBODY
@@ -1424,6 +1479,8 @@
                            scopeTree.insert(funcAux);
                         funcAux = nullptr;
                         declList.clear();
+
+                        $$ = nullptr;
                      }
 
       | /* empty */  {  pair<string,Symbol*> *funcPair = scopeTree.lookup(funcAux->name);
@@ -1521,6 +1578,7 @@
                            scopeTree.exitScope();
                         funcAux = nullptr;
                         currentOffset = globalOffset;
+                        $$ = $2;
                      }
       ;
 

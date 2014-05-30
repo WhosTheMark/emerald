@@ -1,3 +1,6 @@
+#ifndef TABLETREE_
+#define TABLETREE_
+
 #include <iostream>
 #include <string>
 #include <map>
@@ -130,3 +133,5 @@ private:
          printNode(tabs+1,*it);
    };
 };
+
+#endif
