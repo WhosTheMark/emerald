@@ -9,7 +9,7 @@
 
 class Driver {
 public:
-   Driver() : parser(nullptr), scanner(nullptr), scopeTree(nullptr), tupleFactory(nullptr) {};
+   Driver() : parser(nullptr), scanner(nullptr), scopeTree(nullptr), tupleFactory(nullptr), ast(nullptr) {};
    virtual ~Driver();
 
    void parse(const char *file);
@@ -21,6 +21,7 @@ private:
    Scanner *scanner;
    TableTree *scopeTree;
    TupleFactory *tupleFactory;
+   AST *ast;
 };
 
 #endif

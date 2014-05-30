@@ -107,6 +107,8 @@ public:
 
    AST(vector<DefNode*> r, TableTree *t) : list(r), table(t) {};
 
+   AST() {};
+
    void printAST(int tabs=0) {
 
       vector<DefNode*>::reverse_iterator it = list.rbegin();

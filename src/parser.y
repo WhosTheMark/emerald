@@ -29,6 +29,9 @@
 %lex-param { TupleFactory &tupleFactory }
 %parse-param { TupleFactory &tupleFactory }
 
+%lex-param { AST *ast }
+%parse-param { AST *ast }
+
 %code{
 
    #include <iostream>
@@ -40,7 +43,7 @@
    #include <string>
 
    static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc,
-   Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory);
+   Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory, AST *ast);
    typedef std::vector<std::pair<std::string*,yy::position>*> vecString;
    typedef std::vector<std::pair<std::string,Declaration*>*> vecFunc;
    vector<Declaration*> declList;
@@ -151,9 +154,11 @@
 %%
 
    START
-      : { scopeTree.enterScope(); } DEFLIST {   AST *a = new AST(*$2,&scopeTree);
-                                                a->globalScope = scopeTree.currentScope;
-                                                scopeTree.exitScope(); }
+      : { scopeTree.enterScope(); } DEFLIST {   ast->list = *$2;
+                                                ast->table = &scopeTree;
+                                                ast->globalScope = scopeTree.currentScope;
+                                                scopeTree.exitScope();
+                                             }
       ;
 
    DEFLIST
@@ -1715,6 +1720,6 @@ void yy::Parser::error(const yy::Parser::location_type &l, const std::string &er
 
 #include "scanner.hpp"
 static int yylex(yy::Parser::semantic_type *yylval, yy::Parser::location_type *yylloc,
-                 Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory) {
+                 Scanner &scanner, Driver &driver, TableTree &scopeTree, TupleFactory &tupleFactory, AST *ast) {
    return scanner.yylex(yylval,yylloc);
 }

@@ -32,15 +32,19 @@ void Driver::parse(const char *file) {
    initializeTree(scopeTree);
 
    tupleFactory = new TupleFactory();
-   parser = new yy::Parser(*scanner,*this,*scopeTree,*tupleFactory);
+   ast = new AST();
+   parser = new yy::Parser(*scanner,*this,*scopeTree,*tupleFactory,ast);
 
    assert(parser != nullptr);
 
    const int ACCEPT(0);
 
-   if(parser->parse() == ACCEPT && errorCount == 0)
+   if(parser->parse() == ACCEPT && errorCount == 0) {
       scopeTree->printTree();
-   else
+      cout << "\n\n";
+      cout << "-----------------------------------ABSTRACT SYNTAX TREE-----------------------------------\n";
+      ast->printAST(0);
+   } else
       cout << errorCount << " error(s) found.\n";
 
    delete(scopeTree);
