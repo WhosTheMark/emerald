@@ -9,6 +9,7 @@
 %code requires{
    #include "symbol.cpp"
    #include "expressions.cpp"
+   #include "instructions.cpp"
    class Driver;
    class Scanner;
    class TableTree;
@@ -49,7 +50,8 @@
    vector<Type*> typeList;
    ArrayFactory *arrayFactory = new ArrayFactory();
    int globalOffset = 0;
-   int currentOffset = 0; 
+   int currentOffset = 0;
+   Type *caseType;
 
 }
 
@@ -73,6 +75,12 @@
    std::pair<int,int> *range;
    Type *typeCheck;
    Expression *expr;
+   Inst *instr;
+   vector<Branch*> *branches;
+   Branch *branch;
+   FuncCall *fCall;
+   vector<CaseBranch*> *caseBranches;
+   Const* constant;
 }
 
 %type <idsList> IDLIST
@@ -89,8 +97,13 @@
 %type <floatNum> tk_float
 %type <chars> tk_char
 %type <str> tk_string
-%type <typeCheck> SWITCHSTMT CASELIST CASE
-%type <expr> EXPR CONST NUMBER BOOLEAN FUNCCALL
+%type <expr> EXPR NUMBER BOOLEAN
+%type <instr> IFSTMT WHILESTMT FORSTMT SWITCHSTMT
+%type <branches> IFLIST
+%type <branch> IFHELPER
+%type <fCall> FUNCCALL
+%type <caseBranches> CASE CASELIST
+%type <constant> CONST
 
 
 %token tk_boolType tk_intType  tk_charType  tk_floatType
@@ -139,9 +152,9 @@
       : EXPR '+' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
                                        $$ = new BinExpr("+",$1,$3);
-                                       
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
-                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) ||
                                           ($1->type == typeError && $3->type == typeError))
                                           $$->type = $1->type;
                                        else {
@@ -177,9 +190,9 @@
       | EXPR '-' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
                                        $$ = new BinExpr("-",$1,$3);
-                                       
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
-                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) ||
                                           ($1->type == typeError && $3->type == typeError))
                                           $$->type = $1->type;
                                        else {
@@ -214,9 +227,9 @@
       | EXPR '*' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
                                        $$ = new BinExpr("*",$1,$3);
-                                       
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
-                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) ||
                                           ($1->type == typeError && $3->type == typeError))
                                           $$->type = $1->type;
                                        else {
@@ -251,9 +264,9 @@
       | EXPR '/' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
                                        $$ = new BinExpr("/",$1,$3);
-                                       
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
-                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) || 
+                                       if (($1->type == $3->type && (b1 == symInt || b1 == symFloat)) ||
                                           ($1->type == typeError && $3->type == typeError))
                                           $$->type = $1->type;
                                        else {
@@ -287,8 +300,8 @@
                                     }
       | EXPR '^' EXPR               {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        Symbol *symFloat = (scopeTree.lookup("floatzel"))->second;
-                                       $$ = new BinExpr("^",$1,$3);                                       
-                                       
+                                       $$ = new BinExpr("^",$1,$3);
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
                                        Basic *b2 = dynamic_cast<Basic*>($3->type);
                                        if (((b1 == symInt || b1 == symFloat) && b2 == symInt) || ($1->type == typeError && $3->type == typeError))
@@ -361,9 +374,9 @@
                                     }
       | EXPR tk_mod EXPR            {  Symbol *symInt = (scopeTree.lookup("intmonchan"))->second;
                                        $$ = new BinExpr("%",$1,$3);
-      
+
                                        Basic *b1 = dynamic_cast<Basic*>($1->type);
-                                       if (($1->type == $3->type && b1 == symInt) || 
+                                       if (($1->type == $3->type && b1 == symInt) ||
                                           ($1->type == typeError && $3->type == typeError))
                                           $$->type = $1->type;
                                        else {
@@ -549,7 +562,7 @@
                                        delete($3); /*NOTE puede que esto se use despues*/
                                     }
       | '!' EXPR                    {  $$ = new UnaryExpr("!",$2);
-                                       if (((scopeTree.lookup("boolbasaur"))->second == (dynamic_cast<Basic*>($2->type))) || 
+                                       if (((scopeTree.lookup("boolbasaur"))->second == (dynamic_cast<Basic*>($2->type))) ||
                                           ($2->type == typeError))
                                           $$->type = $2->type;
                                        else {
@@ -587,8 +600,8 @@
                                        $$ = new Expression();
                                        $$->type = typeError;
                                     }
-      | CONST
-      | FUNCCALL
+      | CONST                       { $$ = (Expression*) $1; }
+      | FUNCCALL                    { $$ = (Expression*) $1; }
       | tk_identifier               {  pair<string,Symbol*> *id = scopeTree.lookup(*$1);
                                        $$ = new Identifier(*$1);
 
@@ -617,13 +630,13 @@
                                        delete($1); //NOTE puede que esto se use despues
                                     }
       | tk_string                   {  $$ = new StringNode($1);
-                                       $$->type = (String*)(scopeTree.lookup("onix")->second); 
+                                       $$->type = (String*)(scopeTree.lookup("onix")->second);
                                     }
       ;
 
    CONST
-      : NUMBER
-      | BOOLEAN
+      : NUMBER    { $$ = (Const*) $1; }
+      | BOOLEAN   { $$ = (Const*) $1; }
       | tk_char   {  $$ = new CharacterNode($1);
                      $$->type = (Character*)(scopeTree.lookup("charizard")->second); }
       ;
@@ -751,22 +764,36 @@
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
                                              cout << "boolbasaur type.\n";
+                                             $$ = new Inst();
+                                          } else {
+                                             IfBranch *ifB = new IfBranch($2,new Inst()); //TODO Agregar instruccion!
+                                             vector<Branch*> vec;
+                                             vec.push_back(ifB);
+                                             $$ = new IfStmt(vec); //No tiene else
                                           }
+
                                        }
       | tk_if EXPR INST IFLIST         {  if (dynamic_cast<Boolean*>($2->type) == 0) {
                                              ++errorCount;
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". If condition is not a ";
                                              cout << "boolbasaur type.\n";
+                                             $$ = new Inst();
+                                          } else {
+                                             IfBranch *ifB = new IfBranch($2,new Inst()); //TODO Agregar instruccion!
+                                             $4->push_back(ifB);
+                                             $$ = new IfStmt(*$4);
                                           }
                                        }
-      | tk_if error INST %prec IFPREC  {  ++errorCount;
+      | tk_if error INST %prec IFPREC  {  $$ = new Inst();
+                                          ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
                                           cout << ".\n";
                                           yyerrok;
                                        }
-      | tk_if error INST IFLIST        {  ++errorCount;
+      | tk_if error INST IFLIST        {  $$ = new Inst();
+                                          ++errorCount;
                                           cout << "Invalid expression in if condition at line: ";
                                           cout << @2.begin.line << ", column: " << @2.begin.column;
                                           cout << ".\n";
@@ -775,9 +802,15 @@
       ;
 
    IFLIST
-      : tk_else INST
-      | tk_elsif IFHELPER
-      | tk_elsif IFHELPER IFLIST
+      : tk_else INST                   { $$ = new vector<Branch*>();
+                                         $$->push_back(new ElseBranch(new Inst())); //TODO agregar la instrucción!
+                                       }
+      | tk_elsif IFHELPER              { $$ = new vector<Branch*>();
+                                         $$->push_back($2);
+                                       }
+      | tk_elsif IFHELPER IFLIST       { $3->push_back($2);
+                                         $$ = $3;
+                                       }
       ;
 
    IFHELPER
@@ -787,12 +820,15 @@
                            cout << @1.begin.column << ". Elsif condition is not a ";
                            cout << "boolbasaur type.\n";
                         }
+
+                        $$ = new IfBranch($1,new Inst()); //TODO Agregar INST !!!
                      }
       | error INST   {  ++errorCount;
                         cout << "Invalid expression in elsif condition at line: ";
                         cout << @1.begin.line << ", column: " << @1.begin.column;
                         cout << ".\n";
                         yyerrok;
+                        $$ = new IfBranch(nullptr,nullptr);
                      }
       ;
 
@@ -803,12 +839,16 @@
                                     cout << @2.begin.column << ". While condition is not a ";
                                     cout << "boolbasaur type.\n";
                                  }
+
+                                 $$ = new WhileStmt($2,new Inst()); //TODO Agregar la instrucción!!
                               }
       | tk_while error INST   {  ++errorCount;
                                  cout << "Invalid expression in while condition at line: ";
                                  cout << @2.begin.line << ", column: " << @2.begin.column;
                                  cout << ".\n";
                                  yyerrok;
+
+                                 $$ = new Inst();
                               }
       ;
 
@@ -867,13 +907,16 @@
                                                                      }
 
                                                                      scopeTree.insert(decl);
+
+                                                                  }
+                                                            INST  {  scopeTree.exitScope();
+                                                                     $$ = new ForStmt(*$2,$4,$6,$8,new Inst());  //TODO Agregar la instrucción !!
                                                                      delete($2);
                                                                   }
-                                                            INST  {  scopeTree.exitScope(); }
 
       | tk_for tk_identifier tk_from EXPR tk_to EXPR              {  /* Se abre un nuevo alcance para la variable de la
                                                                       * instruccion for y la agrega a la tabla. */
-                                                                     
+
                                                                      scopeTree.enterScope();
                                                                      yy::position pos = @2.begin;  //TODO poner el tipo adecuado de la variable
                                                                      Declaration* decl = new Declaration(*$2,pos.line, pos.column, nullptr, false);
@@ -915,9 +958,10 @@
 
 
                                                                      scopeTree.insert(decl);
-                                                                     delete($2);
                                                                   }
                                                             INST  {  scopeTree.exitScope();
+                                                                     $$ = new ForStmt(*$2,$4,$6,nullptr,new Inst());  //TODO Agregar la instrucción !!
+                                                                     delete($2);
                                                                   }
       | tk_for error INST                                         {  ++errorCount;
                                                                      cout << "Error in for statement at line: ";
@@ -1012,43 +1056,63 @@
       ;
 
    SWITCHSTMT
-      : tk_switch EXPR '{' CASE '}'    {  if ($2->type != $4 && $2->type != typeError && $4 != typeError) {
+      : tk_switch EXPR '{' CASE '}'    {  if ($2->type != caseType && $2->type != typeError && caseType != typeError) {
                                              ++errorCount;
                                              cout << "Error at line: " << @2.begin.line << ", column: ";
                                              cout << @2.begin.column << ". Switch condition does not match ";
                                              cout << "with switch guards.\n";
                                           }
+
+                                          $$ = new SwitchStmt($2,*$4);
+
                                        }
       ;
 
    CASE
-      : tk_case CONST tk_arrow BLOCK            {  $$ = $2->type; }
-      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == $5 || $5 == typeError)
-                                                      $$ = $5;
-                                                   else if ($5 == nullptr)
-                                                      $$ = $2->type;
+      : tk_case CONST tk_arrow BLOCK            {  $$ = new vector<CaseBranch*>();
+                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   $$->push_back(cb);
+                                                   caseType = $2->type;
+                                                }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == caseType || caseType == typeError)
+                                                      caseType = caseType;
+                                                   else if (caseType == nullptr)
+                                                      caseType = $2->type;
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @2.begin.line << ", column: ";
                                                       cout << @2.begin.column << ". Switch guards' types do not match.\n";
-                                                      $$ = typeError;
                                                    }
+                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   $5->push_back(cb);
+                                                   $$ = $5;
                                                 }
       ;
 
    CASELIST
-      : tk_default tk_arrow BLOCK               {  $$ = nullptr; }
-      | tk_case CONST tk_arrow BLOCK            {  $$ = $2->type; }
-      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == $5 || $5 == typeError)
-                                                      $$ = $5;
-                                                   else if ($5 == nullptr)
-                                                      $$ = $2->type;
+      : tk_default tk_arrow BLOCK               {  $$ = new vector<CaseBranch*>();
+                                                   DefaultBranch *db = new DefaultBranch(new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   $$->push_back(db);
+                                                   caseType = nullptr;
+                                                }
+      | tk_case CONST tk_arrow BLOCK            {  $$ = new vector<CaseBranch*>();
+                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   $$->push_back(cb);
+                                                   caseType = $2->type;
+                                                }
+      | tk_case CONST tk_arrow BLOCK CASELIST   {  if ($2->type == caseType || caseType == typeError)
+                                                      caseType = caseType;
+                                                   else if (caseType == nullptr)
+                                                      caseType = $2->type;
                                                    else {
                                                       ++errorCount;
                                                       cout << "Error at line: " << @2.begin.line << ", column: ";
                                                       cout << @2.begin.column << ". Switch guards' types do not match.\n";
-                                                      $$ = typeError;
+                                                      caseType = typeError;
                                                    }
+                                                   CaseBranch *cb = new CaseBranch($2,new Block(vector<Statement*>())); //TODO Poner el bloque!!
+                                                   $5->push_back(cb);
+                                                   $$ = $5;
                                                 }
       ;
 
@@ -1063,7 +1127,7 @@
                                                       for(; it != $2->rend(); ++it) {
                                                          Declaration *decl = *it;
                                                          decl->setType(symType);
-                                                         
+
                                                          currentOffset = decl->setOffset(currentOffset);
 
                                                          scopeTree.insert(decl);
@@ -1423,16 +1487,16 @@
 
                            /* Abre un nuevo alcance y se agregan los argumentos a la tabla de simbolos. */
                            scopeTree.enterScope();
-                           
-                           int argsOffset = 0;  
-                           
+
+                           int argsOffset = 0;
+
                            //NOTE !!!!!!!!!!!!!!!!!!!!!!!! NOTE
                            for(args2 = funcAux->arguments.begin(); args2 != funcAux->arguments.end(); ++args2){
                               Declaration* decl = (*args2)->second;
                               scopeTree.insert(decl);
                               argsOffset = decl->setOffset(argsOffset);
                               decl->offset = - decl->offset;
-                              
+
                            }
 
                            /* Si hay arreglos en los argumentos entonces se agregan
@@ -1443,7 +1507,7 @@
                               scopeTree.insert(*declIt);
                               argsOffset = (*declIt)->setOffset(argsOffset);
                               (*declIt)->offset = - (*declIt)->offset;
-                              
+
                            }
                            declList.clear(); //Vacia la lista.
 
@@ -1474,9 +1538,9 @@
                                           vecFunc args;
                                           vecFunc::reverse_iterator it = $3->rbegin();
                                           vecFunc::iterator it2 = $3->begin();
- 
-                                          
-                                          
+
+
+
                                           Type *type = dynamic_cast<Type*>((*it2)->second->getType());
                                           ++it2;
 
@@ -1484,9 +1548,9 @@
                                           for(; it != $3->rend(); ++it)
                                              args.push_back(*it);
 
-                                             
+
                                           for(; it2 != $3->end(); ++it2) {
-                                          
+
                                              Type *type2 = dynamic_cast<Type*>((*it2)->second->getType());
                                              type = tupleFactory.buildTuple(type2,type);
 

@@ -3,7 +3,10 @@
 #include "expressions.cpp"
 #include "symTable.cpp"
 
-class Inst { };
+class Inst { 
+public:
+   Inst() {};
+};
 
 class Statement : public Inst { };
 
@@ -18,25 +21,33 @@ public:
    
 };
 
-class IfBranch {
+class Branch {};
+
+class IfBranch : public Branch {
    
 public:
    
    Expression *condition;
    Inst *instruction;
    
-   IfBranch(Expression *c, Inst *i) : condition(c) , instruction(i) {};
+   IfBranch(Expression *c, Inst *i) : condition(c) , instruction(i) { };
    
+};
+
+class ElseBranch : public Branch{
+public:   
+   Inst *instruction;
+   
+   ElseBranch(Inst *i) : instruction(i) {};
 };
 
 class IfStmt : public Statement {
   
 public:
    
-   vector<IfBranch*> branches;
-   Inst *elseBranch;
+   vector<Branch*> branches;
    
-   IfStmt(vector<IfBranch*> b, Inst *e) : branches(b) , elseBranch(e) {};
+   IfStmt(vector<Branch*> b) : branches(b) {};
    
 };
 
@@ -160,13 +171,31 @@ public:
    
 };
 
-class SwitchStmt : public Statement {
+class DefaultBranch : public CaseBranch {
+  
+public:
    
+   DefaultBranch(Block *cb) : CaseBranch(nullptr,cb) {};
+};
+
+class SwitchStmt : public Statement {
+
+public:   
    Expression *caseExpr;
    vector<CaseBranch*> branches;
-   Block *defaultBranch;
    
-   SwitchStmt(Expression *c, vector<CaseBranch*> b, Block *d) : 
-              caseExpr(c) , branches(b) , defaultBranch(d) {};
+   SwitchStmt(Expression *c, vector<CaseBranch*> b) : 
+              caseExpr(c) , branches(b) {};
      
+};
+
+class FuncCall : public Expression, public Statement {
+  
+public:
+   
+   string name;
+   vector<Expression*> args;
+   
+   FuncCall(string n) : name(n) {};
+   
 };

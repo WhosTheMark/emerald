@@ -93,17 +93,6 @@ public:
    
 };
 
-class FuncCall : public Expression {
-  
-public:
-   
-   string name;
-   vector<Expression*> args;
-   
-   FuncCall(string n) : name(n) {};
-   
-};
-
 class ArrayExpr : public Expression {
   
 public:
