@@ -7,60 +7,115 @@
 using namespace std;
 
 
-class DefNode { };
+class DefNode {
+
+public:
+   virtual void printDefNode(int tabs=0) {};
+   void printTabs(int tabs) {
+
+      for (int i=0; i < tabs ; ++i)
+         cout << "    ";
+   };
+};
 
 class FuncDef : public DefNode {
-  
+
 public:
-   
+
    string name;
    Block *block;  //Esto puede ser nullptr si es un foward declaration!
-   
+
    FuncDef(string n, Block *b) : name(n) , block(b) {};
+
+   void printDefNode(int tabs=0) {
+
+      if (block != nullptr) {
+
+         cout << "FUNCTION: " << name << "\n";
+         printTabs(tabs);
+         block->printInstruction(tabs+1);
+
+      } else
+         cout << "FORWARD DECLARATION OF FUNCTION: " << name << "\n";
+
+   };
 };
 
 class DeclareNode : public DefNode {
-  
+
 public:
-   
+
    string type;
    vector<Expression*> inits;
-   
+
    DeclareNode(string t, vector<Expression*> init) :
                type(t), inits(init) {};
-                 
+
+   void printNode(int tabs=0) {
+
+      cout << "DECLARATION: " << type << "\n";
+
+      vector<Expression*>::iterator it = inits.begin();
+
+      for (; it != inits.end(); ++it) {
+         printTabs(tabs);
+         (*it)->printExpression(tabs+1);
+      }
+
+   };
 };
 
 class RegisterDef : public DefNode {
-  
+
 public:
-   
+
    string name;
    SymTableNode *fields;
-   
+
    RegisterDef(string n) : name(n) {};
-   
+
+   void printNode(int tabs=0) {
+
+      cout << "REGISTER: " << name << "\n";
+
+   };
 };
 
 class UnionDef : public DefNode {
-  
+
 public:
-   
+
    string name;
    SymTableNode *fields;
-   
+
    UnionDef(string n) : name(n) {};
-   
+
+   void printNode(int tabs=0) {
+
+      cout << "UNION: " << name << "\n";
+   };
+
 };
 
 class AST {
-   
+
 public:
-   
+
    vector<DefNode*> list;
    TableTree *table; //Solo de referencia, no imprimir
    SymTableNode *globalScope;
-   
+
    AST(vector<DefNode*> r, TableTree *t) : list(r), table(t) {};
-   
+
+   void printAST(int tabs=0) {
+
+      vector<DefNode*>::reverse_iterator it = list.rbegin();
+
+      for (; it != list.rend(); ++it) {
+
+         (*it)->printDefNode(tabs+1);
+      }
+
+   };
+
 };
