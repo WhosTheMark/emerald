@@ -40,15 +40,6 @@ public:
 
       cout << "BLOCK--------------------------------------\n";
 
-      if (table != nullptr) {
-         printTabs(tabs);
-         cout << "DECLARATIONS";
-         table->table.print(tabs+1);
-         printTabs(tabs);
-         cout << "----------------------------------------\n";
-      }
-
-
       for (; it != list.rend(); ++it) {
          printTabs(tabs);
          (*it)->printInstruction(tabs);
@@ -441,7 +432,7 @@ public:
    string name;
    vector<Expression*> args;
 
-   FuncCall(string n) : name(n) {};
+   FuncCall(string n, vector<Expression*> a) : name(n), args(a) {};
 
    void printInstruction(int tabs=0) {
 
@@ -452,9 +443,12 @@ public:
 
       vector<Expression*>::iterator it = args.begin();
 
+      Inst::printTabs(tabs);
+      cout << "ARGUMENTS: \n";
+      
       for (; it != args.end(); ++it) {
-         Inst::printTabs(tabs);
-         (*it)->printExpression(tabs);
+         Inst::printTabs(tabs+1);
+         (*it)->printExpression(tabs+1);
       }
    };
 
@@ -467,9 +461,12 @@ public:
 
       vector<Expression*>::iterator it = args.begin();
 
+      Expression::printTabs(tabs);
+      cout << "ARGUMENTS: \n";
+      
       for (; it != args.end(); ++it) {
-         Expression::printTabs(tabs);
-         (*it)->printExpression(tabs);
+         Expression::printTabs(tabs+1);
+         (*it)->printExpression(tabs+1);
       }
    };
 

@@ -42,30 +42,6 @@ public:
    };
 };
 
-class DeclareNode : public DefNode {
-
-public:
-
-   string type;
-   vector<Expression*> inits;
-
-   DeclareNode(string t, vector<Expression*> init) :
-               type(t), inits(init) {};
-
-   void printDefNode(int tabs=0) {
-
-      cout << "DECLARATION: " << type << "\n";
-
-      vector<Expression*>::iterator it = inits.begin();
-
-      for (; it != inits.end(); ++it) {
-         printTabs(tabs);
-         (*it)->printExpression(tabs+1);
-      }
-
-   };
-};
-
 class RegisterDef : public DefNode {
 
 public:
@@ -117,14 +93,6 @@ public:
    AST() {};
 
    void printAST(int tabs=0) {
-
-      if (table != nullptr) {
-         printTabs(tabs);
-         cout << "GLOBAL SCOPE";
-         globalScope->table.print(tabs+1);
-         printTabs(tabs);
-         cout << "----------------------------------------\n";
-      }
 
       vector<DefNode*>::reverse_iterator it = list.rbegin();
 

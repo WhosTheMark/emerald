@@ -6,7 +6,10 @@
 #include <vector>
 #include "type.hpp"
 
+
 using namespace std;
+
+class Inst;
 class Symbol {
 
 public:
@@ -210,7 +213,7 @@ public:
    vector<pair<string,Declaration*>*> arguments; //Lista de los argumentos de la funcion.
    int numArgs; //Numero de argumentos de la funcion.
    bool fwdDecl = false; //Flag para determinar si es un forward declaration de una funcion.
-   //TODO body
+   Inst *block = nullptr;
 
    Function(string n, int l, int c, Basic *r, vector<pair<string,Declaration*>*> args,Type *argsType) :
          Definition(n,l,c,0), arguments(args) {

@@ -120,7 +120,7 @@
 %type <listStmt> STMTLIST
 %type <block> BLOCK FUNCBODY
 %type <instr> INST
-%type <exprList> EXPRLIST
+%type <exprList> EXPRLIST ARGSLIST ARGS
 %type <reg> REGISTER
 %type <un> UNION
 %type <fDef> FUNCDEF
@@ -690,12 +690,19 @@
       : /* empty */  {  pair<string,Symbol*> *sym = scopeTree.lookup("voidporeon");
                         Type *type = dynamic_cast<Type*>(sym->second);
                         typeList.push_back(type);
+                        $$ = new vector<Expression*>();
                      }
-      | ARGSLIST
+      | ARGSLIST     {  $$ = $1; }
       ;
    ARGSLIST
-      : EXPR                     {  typeList.push_back($1->type); }
-      | ARGSLIST tk_comma EXPR   {  typeList.push_back($3->type); }
+      : EXPR                     {  typeList.push_back($1->type);
+                                    $$ = new vector<Expression*>();
+                                    $$->push_back($1);
+                                 }
+      | ARGSLIST tk_comma EXPR   {  typeList.push_back($3->type);
+                                    $$ = $1;
+                                    $$->push_back($3);
+                                 }
       ;
 
    INST
@@ -1029,7 +1036,7 @@
 
    FUNCCALL
       : tk_identifier '(' ARGS ')'     {  pair<string,Symbol*> *sym = scopeTree.lookup(*$1);
-                                          $$ = new FuncCall(*$1);
+                                          $$ = new FuncCall(*$1, *$3);
                                           if (sym == nullptr) {
                                              ++errorCount;
                                              yy::position pos = @1.begin;
@@ -1037,7 +1044,6 @@
                                              cout << ", column: " << pos.column << " has not been declared.\n";
                                              $$->type = typeError;
                                           } else {
-
 
                                              Function *func = dynamic_cast<Function*>(sym->second);
 
@@ -1553,7 +1559,6 @@
 
                            int argsOffset = 0;
 
-                           //NOTE !!!!!!!!!!!!!!!!!!!!!!!! NOTE
                            for(args2 = funcAux->arguments.begin(); args2 != funcAux->arguments.end(); ++args2){
                               Declaration* decl = (*args2)->second;
                               scopeTree.insert(decl);
@@ -1582,6 +1587,7 @@
 
                BLOCK {  if (funcAux->arguments.size() != 0)
                            scopeTree.exitScope();
+                        funcAux->block = $2;
                         funcAux = nullptr;
                         currentOffset = globalOffset;
                         $$ = $2;
