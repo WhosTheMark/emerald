@@ -15,10 +15,8 @@ typedef map<string,Symbol*>::iterator TableIt;
 
 class SymTable {
 
-private:
-   map<string,Symbol*> table;
-
 public:
+   map<string,Symbol*> table;
    SymTable() {};
 
    /* Agrega un simbolo a la tabla. */

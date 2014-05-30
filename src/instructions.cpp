@@ -29,7 +29,7 @@ class Block : public Inst {
 public:
 
    vector<Statement*> list;
-   SymTableNode *table;
+   SymTableNode *table = nullptr;
 
    Block(vector<Statement*> l) : list(l) {};
 
@@ -39,6 +39,15 @@ public:
       vector<Statement*>::reverse_iterator it = list.rbegin();
 
       cout << "BLOCK--------------------------------------\n";
+
+      if (table != nullptr) {
+         printTabs(tabs);
+         cout << "DECLARATIONS";
+         table->table.print(tabs+1);
+         printTabs(tabs);
+         cout << "----------------------------------------\n";
+      }
+
 
       for (; it != list.rend(); ++it) {
          printTabs(tabs);

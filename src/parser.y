@@ -720,6 +720,7 @@
       | '{'                         {  scopeTree.enterScope(); }
          DECLARELIST STMTLIST       {  $$ = new Block(*$4);
                                        $$->table = scopeTree.currentScope;
+                                       //$$->table->table.print();
                                        scopeTree.exitScope();
 
                                     }
