@@ -51,7 +51,7 @@ public:
    DeclareNode(string t, vector<Expression*> init) :
                type(t), inits(init) {};
 
-   void printNode(int tabs=0) {
+   void printDefNode(int tabs=0) {
 
       cout << "DECLARATION: " << type << "\n";
 
@@ -74,9 +74,12 @@ public:
 
    RegisterDef(string n) : name(n) {};
 
-   void printNode(int tabs=0) {
+   void printDefNode(int tabs=0) {
 
       cout << "REGISTER: " << name << "\n";
+      fields->table.print(tabs+1);
+      printTabs(tabs+1);
+      cout << "----------------------------------------\n";
 
    };
 };
@@ -90,9 +93,12 @@ public:
 
    UnionDef(string n) : name(n) {};
 
-   void printNode(int tabs=0) {
+   void printDefNode(int tabs=0) {
 
       cout << "UNION: " << name << "\n";
+      fields->table.print(tabs+1);
+      printTabs(tabs+1);
+      cout << "----------------------------------------\n";
    };
 
 };
