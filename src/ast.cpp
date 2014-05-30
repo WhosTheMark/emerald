@@ -3,6 +3,7 @@
 #include "tableTree.cpp"
 #include "expressions.cpp"
 #include "instructions.cpp"
+#include "symTable.cpp"
 
 using namespace std;
 
@@ -109,13 +110,21 @@ public:
 
    vector<DefNode*> list;
    TableTree *table; //Solo de referencia, no imprimir
-   SymTableNode *globalScope;
+   SymTableNode *globalScope = nullptr;
 
    AST(vector<DefNode*> r, TableTree *t) : list(r), table(t) {};
 
    AST() {};
 
    void printAST(int tabs=0) {
+
+      if (table != nullptr) {
+         printTabs(tabs);
+         cout << "GLOBAL SCOPE";
+         globalScope->table.print(tabs+1);
+         printTabs(tabs);
+         cout << "----------------------------------------\n";
+      }
 
       vector<DefNode*>::reverse_iterator it = list.rbegin();
 
@@ -124,6 +133,12 @@ public:
          (*it)->printDefNode(tabs+1);
       }
 
+   };
+
+   void printTabs(int tabs) {
+
+      for (int i=0; i < tabs ; ++i)
+         cout << "    ";
    };
 
 };
